@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Contact, ContactNote, ContactZone, \
-    ContactAddress, ContactRole, Role, Zone
+    ContactAddress, ContactRole, Role, Zone, \
+    Center, IndividualRole, IndividualContactRole
 
 admin.AdminSite.site_header = "aasaan"
 admin.AdminSite.site_title = "aasaan"
@@ -26,6 +27,14 @@ class ContactRoleInline(admin.TabularInline):
 class ContactRoleInline2(admin.TabularInline):
     model = ContactRole
     extra = 20
+
+class CenterInline(admin.TabularInline):
+    model = Center
+    extra = 5
+
+class IndividualContactRoleInline(admin.TabularInline):
+    model = IndividualContactRole
+    extra = 1
 
 class ContactAdmin(admin.ModelAdmin):
     list_display = ('full_name', 'primary_mobile', 'whatsapp_number',
@@ -56,11 +65,16 @@ class ContactAdmin(admin.ModelAdmin):
     readonly_fields = ('profile_image', )
 
     inlines = [ContactAddressInline, ContactZoneInline,
+               IndividualContactRoleInline,
                ContactNoteInline, ContactRoleInline]
 
 class RoleAdmin(admin.ModelAdmin):
     inlines = [ContactRoleInline2]
 
+class ZoneAdmin(admin.ModelAdmin):
+    inlines = [CenterInline]
+
 admin.site.register(Contact, ContactAdmin)
 admin.site.register(Role, RoleAdmin)
-admin.site.register(Zone)
+admin.site.register(Zone, ZoneAdmin)
+admin.site.register(IndividualRole)

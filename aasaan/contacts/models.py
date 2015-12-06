@@ -4,6 +4,7 @@ from django.conf import settings
 
 from datetime import date
 
+
 # Create your models here.
 class Contact(models.Model):
     """Main contact model"""
@@ -171,6 +172,7 @@ class ContactNote(models.Model):
     class Meta:
         ordering = ['-note_timestamp']
 
+
 class ContactAddress(models.Model):
     """Addresses of contacts"""
 
@@ -231,6 +233,7 @@ class ContactAddress(models.Model):
 
         super(ContactAddress, self).save(*args, **kwargs)
 
+
 class Role(models.Model):
     """Roles of contacts"""
     role_name = models.CharField(max_length=50)
@@ -244,8 +247,9 @@ class Role(models.Model):
         return self.role_name
 
     class Meta:
-        verbose_name = 'PCC Role'
+        verbose_name = 'PCC Role Group'
         ordering = ['role_name']
+
 
 class ContactRole(models.Model):
     """Mapping of roles and contacts"""
@@ -257,7 +261,7 @@ class ContactRole(models.Model):
 
 class Zone(models.Model):
     """Zone definitions"""
-    zone_name = models.CharField(max_length=25)
+    zone_name = models.CharField(max_length=50, unique=True)
 
     def _get_contacts_in_zone(self):
         return [item.contact for item in self.contactzone_set.all()]
@@ -274,22 +278,43 @@ class Zone(models.Model):
         verbose_name = 'PCC Zone'
         ordering = ['zone_name']
 
+    def save(self, *args, **kwargs):
+        zone_word_list = [eachword.upper() if eachword.upper() == eachword else eachword.title() for eachword in self.zone_name.split()]
+        self.zonename = ' '.join(zone_word_list).strip()
+
+        super(Zone, self).save(*args, **kwargs)
+
+        default_sector = Sector()
+        default_sector.zone = self
+        default_sector.sector_name = "Default Sector for %s" %(self.zone_name)
+
+        default_sector.save()
+
+
 class Sector(models.Model):
     """Sector definitions. All sectors should be mapped to a zone"""
     zone = models.ForeignKey(Zone)
-    sector_name = models.CharField(max_length=25)
+    sector_name = models.CharField(max_length=50)
 
     def __str__(self):
         return "%s (%s)" %(self.sector_name, self.zone.zone_name)
 
+
 class Center(models.Model):
     """Center definitions. All centers should be mapped to sectors and zones"""
     zone = models.ForeignKey(Zone)
-    sector = models.ForeignKey(Sector)
-    center_name = models.CharField(max_length=25)
+    center_name = models.CharField(max_length=50)
 
     def __str__(self):
         return "%s (%s)" % (self.center_name, self.zone.zone_name)
+
+    class Meta:
+        ordering = ['center_name']
+        verbose_name = 'PCC Center'
+
+    def save(self, *args, **kwargs):
+        self.center_name = self.center_name.title().strip()
+
 
 class ContactZone(models.Model):
     """Zones contacts belong to. Though rare, some contacts can belong to multiple zones"""
@@ -298,3 +323,36 @@ class ContactZone(models.Model):
 
     def __str__(self):
         return "%s (%s)" % (self.contact.full_name, self.zone.zone_name)
+
+
+class IndividualRole(models.Model):
+    """Definition for individual roles
+    like 'Treasurer', 'Organizer' etc
+    Use this to cater only to center level roles
+    For sector or zonal roles, use group roles
+    """
+    role_name = models.CharField(max_length=50, unique=True)
+    role_remarks = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.role_name
+
+    def save(self, *args, **kwargs):
+        self.role_name = self.role_name.title().strip()
+        super(IndividualRole, self).save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['role_name']
+        verbose_name = 'PCC Role'
+
+
+class IndividualContactRole(models.Model):
+    """ Maps individual contacts to individual roles.
+    They always need to be mapped to a center
+    """
+    contact = models.ForeignKey(Contact)
+    center = models.ForeignKey(Center)
+    role = models.ForeignKey(IndividualRole)
+
+    class Meta:
+        ordering = ['contact', 'role', 'center']
