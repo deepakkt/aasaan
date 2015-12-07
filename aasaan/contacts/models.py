@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.conf import settings
 
 from datetime import date
@@ -236,7 +236,7 @@ class ContactAddress(models.Model):
 
 class Role(models.Model):
     """Roles of contacts"""
-    role_name = models.CharField(max_length=50)
+    role_name = models.CharField(max_length=50, unique=True)
     role_remarks = models.TextField(blank=True)
 
     def _get_contacts_with_role(self):
@@ -249,6 +249,15 @@ class Role(models.Model):
     class Meta:
         verbose_name = 'PCC Role Group'
         ordering = ['role_name']
+
+    def clean(self):
+        try:
+            table_role_groups = Role.objects.get(role_name = self.role_name)
+        except ObjectDoesNotExist:
+            return
+
+        if table_role_groups:
+            raise ValidationError('The role group already exists!')
 
 
 class ContactRole(models.Model):
@@ -278,9 +287,23 @@ class Zone(models.Model):
         verbose_name = 'PCC Zone'
         ordering = ['zone_name']
 
+    def clean(self):
+        zone_word_list = [eachword.upper() if eachword.upper() == eachword else eachword.title() for eachword in self.zone_name.split()]
+        self.zone_name = ' '.join(zone_word_list).strip()
+
+        try:
+            table_zones = Zone.objects.get(zone_name = self.zone_name)
+        except ObjectDoesNotExist:
+            return
+
+        if table_zones:
+            raise ValidationError('The zone already exists!')
+
+
+
     def save(self, *args, **kwargs):
         zone_word_list = [eachword.upper() if eachword.upper() == eachword else eachword.title() for eachword in self.zone_name.split()]
-        self.zonename = ' '.join(zone_word_list).strip()
+        self.zone_name = ' '.join(zone_word_list).strip()
 
         super(Zone, self).save(*args, **kwargs)
 
@@ -344,6 +367,15 @@ class IndividualRole(models.Model):
     class Meta:
         ordering = ['role_name']
         verbose_name = 'PCC Role'
+
+    def clean(self):
+        try:
+            table_roles = IndividualRole.objects.get(role_name = self.role_name.title().strip())
+        except ObjectDoesNotExist:
+            return
+
+        if table_roles:
+            raise ValidationError('The role already exists!')
 
 
 class IndividualContactRole(models.Model):

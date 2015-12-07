@@ -21,12 +21,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, '../../media')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-TEMPLATE_DEBUG = True
-
-ALLOWED_HOSTS = []
+#see dev*.py for debug settings and allowed_hosts settings
 
 # Application definition
 
