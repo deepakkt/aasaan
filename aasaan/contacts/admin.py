@@ -1,7 +1,8 @@
 from django.contrib import admin
-from .models import Contact, ContactNote, ContactZone, \
-    ContactAddress, ContactRole, Role, Zone, \
-    Center, IndividualRole, IndividualContactRole
+from .models import Contact, ContactNote, \
+    ContactAddress, ContactRoleGroup, RoleGroup, Zone, \
+    Center, IndividualRole, IndividualContactRoleCenter, \
+    IndividualContactRoleZone
 
 admin.AdminSite.site_header = "aasaan"
 admin.AdminSite.site_title = "aasaan"
@@ -12,29 +13,40 @@ class ContactNoteInline(admin.TabularInline):
     model = ContactNote
     extra = 1
 
-class ContactZoneInline(admin.TabularInline):
-    model = ContactZone
-    extra = 1
-
 class ContactAddressInline(admin.StackedInline):
     model = ContactAddress
     extra = 0
 
-class ContactRoleInline(admin.TabularInline):
-    model = ContactRole
+class ContactRoleGroupInline(admin.TabularInline):
+    model = ContactRoleGroup
     extra = 1
 
-class ContactRoleInline2(admin.TabularInline):
-    model = ContactRole
+class ContactRoleGroupInline2(admin.TabularInline):
+    model = ContactRoleGroup
     extra = 20
 
 class CenterInline(admin.TabularInline):
     model = Center
     extra = 5
 
-class IndividualContactRoleInline(admin.TabularInline):
-    model = IndividualContactRole
+class IndividualContactRoleCenterInline(admin.TabularInline):
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'role':
+            kwargs["queryset"] = IndividualRole.objects.filter(role_level='CE')
+        return super(IndividualContactRoleCenterInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    model = IndividualContactRoleCenter
     extra = 1
+
+class IndividualContactRoleZoneInline(admin.TabularInline):
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'role':
+            kwargs["queryset"] = IndividualRole.objects.filter(role_level='ZO')
+        return super(IndividualContactRoleZoneInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    model = IndividualContactRoleZone
+    extra = 1
+
 
 class ContactAdmin(admin.ModelAdmin):
     list_display = ('full_name', 'primary_mobile', 'whatsapp_number',
@@ -64,17 +76,18 @@ class ContactAdmin(admin.ModelAdmin):
 
     readonly_fields = ('profile_image', )
 
-    inlines = [ContactAddressInline, ContactZoneInline,
-               IndividualContactRoleInline,
-               ContactNoteInline, ContactRoleInline]
+    inlines = [ContactAddressInline,
+               IndividualContactRoleZoneInline,
+               IndividualContactRoleCenterInline,
+               ContactNoteInline, ContactRoleGroupInline]
 
-class RoleAdmin(admin.ModelAdmin):
-    inlines = [ContactRoleInline2]
+class RoleGroupAdmin(admin.ModelAdmin):
+    inlines = [ContactRoleGroupInline2]
 
 class ZoneAdmin(admin.ModelAdmin):
     inlines = [CenterInline]
 
 admin.site.register(Contact, ContactAdmin)
-admin.site.register(Role, RoleAdmin)
+admin.site.register(RoleGroup, RoleGroupAdmin)
 admin.site.register(Zone, ZoneAdmin)
 admin.site.register(IndividualRole)

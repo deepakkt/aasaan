@@ -39,8 +39,8 @@ class Contact(models.Model):
 
     pushbullet_token = models.CharField('pushbullet Token', max_length=64, blank=True)
 
-    id_card_type = models.CharField("iD Card Type", max_length=10, blank=True)
-    id_card_number = models.CharField("iD Card Number", max_length=20, blank=True)
+    id_card_type = models.CharField("Ashram ID Card Type", max_length=10, blank=True)
+    id_card_number = models.CharField("Ashram ID Card Number", max_length=20, blank=True)
 
     ID_PROOF_VALUES = (('DL', 'Driving License'),
                        ('PP', 'Passport'),
@@ -50,10 +50,10 @@ class Contact(models.Model):
                        ('PC', 'PAN Card'),
                        ('OT', 'Other Government Issued'))
 
-    id_proof_type = models.CharField("iD Proof Type", max_length=2,
+    id_proof_type = models.CharField("govt ID Proof Type", max_length=2,
                                      choices=ID_PROOF_VALUES, blank=True)
-    id_proof_number = models.CharField("iD Card Number", max_length=30, blank=True)
-    id_proof_other = models.CharField("type of ID if other", max_length=30, blank=True)
+    id_proof_number = models.CharField("govt ID Card Number", max_length=30, blank=True)
+    id_proof_other = models.CharField("type of govt ID if other", max_length=30, blank=True)
 
     profile_picture = models.ImageField(upload_to='profile_pictures', blank=True)
 
@@ -234,7 +234,7 @@ class ContactAddress(models.Model):
         super(ContactAddress, self).save(*args, **kwargs)
 
 
-class Role(models.Model):
+class RoleGroup(models.Model):
     """Roles of contacts"""
     role_name = models.CharField(max_length=50, unique=True)
     role_remarks = models.TextField(blank=True)
@@ -260,10 +260,10 @@ class Role(models.Model):
             raise ValidationError('The role group already exists!')
 
 
-class ContactRole(models.Model):
+class ContactRoleGroup(models.Model):
     """Mapping of roles and contacts"""
     contact = models.ForeignKey(Contact)
-    role = models.ForeignKey(Role)
+    role = models.ForeignKey(RoleGroup)
 
     def __str__(self):
         return "%s (%s)" %(self.contact.full_name, self.role.role_name)
@@ -271,10 +271,6 @@ class ContactRole(models.Model):
 class Zone(models.Model):
     """Zone definitions"""
     zone_name = models.CharField(max_length=50, unique=True)
-
-    def _get_contacts_in_zone(self):
-        return [item.contact for item in self.contactzone_set.all()]
-    contacts = property(_get_contacts_in_zone)
 
     def _get_centers_in_zone(self):
         return self.center_set.all()
@@ -339,33 +335,29 @@ class Center(models.Model):
         self.center_name = self.center_name.title().strip()
 
 
-class ContactZone(models.Model):
-    """Zones contacts belong to. Though rare, some contacts can belong to multiple zones"""
-    contact = models.ForeignKey(Contact)
-    zone = models.ForeignKey(Zone)
-
-    def __str__(self):
-        return "%s (%s)" % (self.contact.full_name, self.zone.zone_name)
-
-
 class IndividualRole(models.Model):
     """Definition for individual roles
     like 'Treasurer', 'Organizer' etc
-    Use this to cater only to center level roles
-    For sector or zonal roles, use group roles
+    The role can be at center level, sector level
+    or zone level
     """
     role_name = models.CharField(max_length=50, unique=True)
+
+    ROLE_LEVEL_CHOICES = (('ZO', 'Zone'),
+                          ('SC', 'Sector'),
+                          ('CE', 'Center'),)
+    role_level = models.CharField(max_length=2, choices=ROLE_LEVEL_CHOICES)
     role_remarks = models.TextField(blank=True)
 
     def __str__(self):
-        return self.role_name
+        return "%s (%s)" %(self.role_name, self.get_role_level_display())
 
     def save(self, *args, **kwargs):
         self.role_name = self.role_name.title().strip()
         super(IndividualRole, self).save(*args, **kwargs)
 
     class Meta:
-        ordering = ['role_name']
+        ordering = ['role_name', 'role_level']
         verbose_name = 'PCC Role'
 
     def clean(self):
@@ -378,7 +370,7 @@ class IndividualRole(models.Model):
             raise ValidationError('The role already exists!')
 
 
-class IndividualContactRole(models.Model):
+class IndividualContactRoleCenter(models.Model):
     """ Maps individual contacts to individual roles.
     They always need to be mapped to a center
     """
@@ -388,3 +380,64 @@ class IndividualContactRole(models.Model):
 
     class Meta:
         ordering = ['contact', 'role', 'center']
+        verbose_name = 'PCC center level contact role'
+
+    def clean(self):
+        if (self.role.get_role_level_display() != 'Center'):
+            raise ValidationError("Only center level roles can be mapped to a center")
+
+        existing_contact_roles = IndividualContactRoleCenter.objects.filter(contact=self.contact)
+        center_role_combos = [(item.center, item.role) for item in existing_contact_roles]
+
+        if ((self.center, self.role) in center_role_combos) and (not self.id):
+            raise ValidationError("This role has already been mapped for this contact and center")
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.contact.full_name, self.center.center_name,
+                               self.role.role_name)
+
+
+class IndividualContactRoleZone(models.Model):
+    """ Maps individual contacts to individual roles.
+    They always need to be mapped to a center
+    """
+    contact = models.ForeignKey(Contact)
+    zone = models.ForeignKey(Zone)
+    role = models.ForeignKey(IndividualRole)
+
+    class Meta:
+        ordering = ['contact', 'role', 'zone']
+        verbose_name = 'PCC zone level contact role'
+
+    def clean(self):
+        if (self.role.get_role_level_display() != 'Zone'):
+            raise ValidationError("Only zone level roles can be mapped to a zone")
+
+        existing_contact_roles = IndividualContactRoleZone.objects.filter(contact=self.contact)
+        zone_role_combos = [(item.zone, item.role) for item in existing_contact_roles]
+
+        if ((self.zone, self.role) in zone_role_combos) and (not self.id):
+            raise ValidationError("This role has already been mapped for this contact and zone")
+
+
+class IndividualContactRoleSector(models.Model):
+    """ Maps individual contacts to individual roles.
+    They always need to be mapped to a center
+    """
+    contact = models.ForeignKey(Contact)
+    sector = models.ForeignKey(Sector)
+    role = models.ForeignKey(IndividualRole)
+
+    class Meta:
+        ordering = ['contact', 'role', 'sector']
+        verbose_name = 'PCC sector level contact role'
+
+    def clean(self):
+        if (self.role.get_role_level_display() != 'Sector'):
+            raise ValidationError("Only sector level roles can be mapped to a sector")
+
+        existing_contact_roles = IndividualContactRoleSector.objects.filter(contact=self.contact)
+        sector_role_combos = [(item.sector, item.role) for item in existing_contact_roles]
+
+        if ((self.sector, self.role) in sector_role_combos) and (not self.id):
+            raise ValidationError("This role has already been mapped for this contact and sector")
