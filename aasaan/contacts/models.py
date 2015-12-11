@@ -333,6 +333,7 @@ class Center(models.Model):
 
     def save(self, *args, **kwargs):
         self.center_name = self.center_name.title().strip()
+        super(Center, self).save(*args, **kwargs)
 
 
 class IndividualRole(models.Model):
