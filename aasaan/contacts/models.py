@@ -283,20 +283,6 @@ class Zone(models.Model):
         verbose_name = 'PCC Zone'
         ordering = ['zone_name']
 
-    def clean(self):
-        zone_word_list = [eachword.upper() if eachword.upper() == eachword else eachword.title() for eachword in self.zone_name.split()]
-        self.zone_name = ' '.join(zone_word_list).strip()
-
-        try:
-            table_zones = Zone.objects.get(zone_name = self.zone_name)
-        except ObjectDoesNotExist:
-            return
-
-        if table_zones:
-            raise ValidationError('The zone already exists!')
-
-
-
     def save(self, *args, **kwargs):
         zone_word_list = [eachword.upper() if eachword.upper() == eachword else eachword.title() for eachword in self.zone_name.split()]
         self.zone_name = ' '.join(zone_word_list).strip()
