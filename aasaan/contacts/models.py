@@ -1,9 +1,15 @@
 from django.db import models
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.conf import settings
+from django.utils.text import slugify
+import os.path
 
 from datetime import date
 
+def _generate_profile_path(instance, filename):
+    image_extension = os.path.splitext(filename)[-1]
+    profile_picture_name = slugify(instance.full_name + " profile picture") + image_extension
+    return os.path.join('profile_pictures', profile_picture_name)
 
 # Create your models here.
 class Contact(models.Model):
@@ -55,7 +61,7 @@ class Contact(models.Model):
     id_proof_number = models.CharField("govt ID Card Number", max_length=30, blank=True)
     id_proof_other = models.CharField("type of govt ID if other", max_length=30, blank=True)
 
-    profile_picture = models.ImageField(upload_to='profile_pictures', blank=True)
+    profile_picture = models.ImageField(upload_to=_generate_profile_path, blank=True)
 
     remarks = models.TextField(max_length=500, blank=True)
 
