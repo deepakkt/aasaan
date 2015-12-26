@@ -48,13 +48,14 @@ class Schedule(models.Model):
 
                 self.match_confidence = 100
                 self.match_approved = 'Y'
+                self.matched = 'Y'
                 self.match_overridden = 'Y'
 
                 base_remarks = """
 
 %s:
 Changed center from "%s" to "%s"
-Setting confidence to 100 percent, override and approved as positive!
+Setting match as success, confidence to 100 percent, override and approved as positive!
 """
                 additional_remarks = base_remarks %(datetime.now().isoformat(),
                                                    existing_entry.center.center_name,
@@ -64,9 +65,10 @@ Setting confidence to 100 percent, override and approved as positive!
                 base_remarks = """
 
 %s:
-Admin approved system generated match. Setting confidence to 100 percent!
+Admin approved system generated match. Setting match as success and confidence to 100 percent!
 """
                 self.match_confidence = 100
+                self.matched = 'Y'
                 additional_remarks = base_remarks % (datetime.now().isoformat())
 
         self.remarks += additional_remarks
