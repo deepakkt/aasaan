@@ -4,6 +4,8 @@ from django.conf import settings
 from django.utils.text import slugify
 import os.path
 
+from django_markdown.models import MarkdownField
+
 from datetime import date
 
 def _generate_profile_path(instance, filename):
@@ -63,7 +65,7 @@ class Contact(models.Model):
 
     profile_picture = models.ImageField(upload_to=_generate_profile_path, blank=True)
 
-    remarks = models.TextField(max_length=500, blank=True)
+    remarks = MarkdownField(max_length=500, blank=True)
 
     def profile_image(self):
         image_style = 'style="width:50px; height:50px"'
@@ -168,7 +170,7 @@ class ContactNote(models.Model):
 
     note_type = models.CharField(max_length=2, choices=NOTE_TYPE_VALUES)
 
-    note = models.TextField(max_length=500)
+    note = MarkdownField(max_length=500)
 
     note_timestamp = models.DateTimeField(auto_now_add=True)
 

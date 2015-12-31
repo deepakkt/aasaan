@@ -1,6 +1,8 @@
 from django.db import models
 from contacts.models import Center
 
+from django_markdown.models import MarkdownField
+
 from datetime import datetime
 
 # Create your models here.
@@ -28,7 +30,7 @@ class Schedule(models.Model):
 
     match_approved = models.CharField(max_length=1, default="N", choices=MATCH_APPROVED)
 
-    remarks = models.TextField(blank=True)
+    remarks = MarkdownField(blank=True)
     date_created= models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
 

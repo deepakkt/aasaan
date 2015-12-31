@@ -4,30 +4,38 @@ from .models import Contact, ContactNote, \
     Center, IndividualRole, IndividualContactRoleCenter, \
     IndividualContactRoleZone
 
+from django_markdown.admin import MarkdownModelAdmin, MarkdownInlineAdmin
+
 admin.AdminSite.site_header = "aasaan"
 admin.AdminSite.site_title = "aasaan"
 
 # Register your models here.
 
-class ContactNoteInline(admin.TabularInline):
+
+class ContactNoteInline(MarkdownInlineAdmin, admin.TabularInline):
     model = ContactNote
     extra = 1
+
 
 class ContactAddressInline(admin.StackedInline):
     model = ContactAddress
     extra = 0
 
+
 class ContactRoleGroupInline(admin.TabularInline):
     model = ContactRoleGroup
     extra = 1
+
 
 class ContactRoleGroupInline2(admin.TabularInline):
     model = ContactRoleGroup
     extra = 20
 
+
 class CenterInline(admin.TabularInline):
     model = Center
     extra = 5
+
 
 class IndividualContactRoleCenterInline(admin.TabularInline):
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
@@ -37,6 +45,7 @@ class IndividualContactRoleCenterInline(admin.TabularInline):
 
     model = IndividualContactRoleCenter
     extra = 1
+
 
 class IndividualContactRoleZoneInline(admin.TabularInline):
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
@@ -48,7 +57,7 @@ class IndividualContactRoleZoneInline(admin.TabularInline):
     extra = 1
 
 
-class ContactAdmin(admin.ModelAdmin):
+class ContactAdmin(MarkdownModelAdmin):
     list_display = ('full_name', 'primary_mobile', 'whatsapp_number',
                     'primary_email', 'teacher_tno', 'status', 'profile_image')
 
@@ -81,8 +90,10 @@ class ContactAdmin(admin.ModelAdmin):
                IndividualContactRoleCenterInline,
                ContactNoteInline, ContactRoleGroupInline]
 
+
 class RoleGroupAdmin(admin.ModelAdmin):
     inlines = [ContactRoleGroupInline2]
+
 
 class ZoneAdmin(admin.ModelAdmin):
     inlines = [CenterInline]

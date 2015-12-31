@@ -1,9 +1,12 @@
 from django.contrib import admin
 from .models import Schedule, SyncLog
 
+from django_markdown.admin import MarkdownModelAdmin
+
 # Register your models here.
 
-class ScheduleAdmin(admin.ModelAdmin):
+
+class ScheduleAdmin(MarkdownModelAdmin):
     list_display = ('program_title', 'program_code', 'start_date',
                     'center', 'match_confidence')
 
