@@ -98,7 +98,7 @@ class DonorInfo(models.Model):
         return "%s (%s)" % (self.first_name, self.mobile)
 
 
-# Loan
+# LoanInfo
 class LoanInfo(models.Model):
     trans_master = models.OneToOneField(TransMaster, blank=True, null=True)
     destination_center = models.ForeignKey(Center)
