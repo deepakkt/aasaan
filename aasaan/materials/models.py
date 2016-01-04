@@ -13,8 +13,8 @@ def _generate_profile_path(instance, filename):
 # Create your models here.
 class ItemMaster(models.Model):
     name = models.CharField(max_length=50)
-    model_no = models.CharField(max_length=50)
-    description = models.TextField("Description", blank=True)
+    model_no = models.CharField(max_length=50, blank=True)
+    description = models.TextField()
 
     def __str__(self):
         return self.name
@@ -44,16 +44,16 @@ class CenterNotes(models.Model):
         return "(%s)-%s" % (self.center, self.note[:25])
 
 
-class TransMaster(models.Model):
+class TransactionMaster(models.Model):
     center = models.ForeignKey(Center)
-    TRANS_VALUES = (('IKDN', 'In-Kind Donation'),
-                    ('PURC', 'Cash Purchase'),
-                    ('LEND', 'Lend'),
-                    ('LOCL', 'Loan Closure'))
-    trans_type = models.CharField(max_length=6, choices=TRANS_VALUES, blank=True)
+    TRANSACTION_VALUES = (('IKDN', 'In-Kind Donation'),
+                          ('PURC', 'Cash Purchase'),
+                          ('LEND', 'Lend'),
+                          ('LOCL', 'Loan Closure'))
+    transaction_type = models.CharField(max_length=6, choices=TRANSACTION_VALUES, blank=True)
     center = models.ForeignKey(Center)
     description = models.TextField()
-    total_cost = models.IntegerField("Total Cost", max_length=10)
+    total_cost = models.IntegerField()
     create_timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -61,11 +61,11 @@ class TransMaster(models.Model):
 
 
 # Inkind or Purchase
-class TransDetail(models.Model):
-    trans_master = models.ForeignKey(TransMaster)
+class TransactionDetail(models.Model):
+    transaction_master = models.ForeignKey(TransactionMaster)
     item = models.ForeignKey(ItemMaster)
-    quantity = models.IntegerField("Quantity", max_length=3)
-    unit_cost = models.IntegerField("Unit Cost", max_length=10)
+    quantity = models.SmallIntegerField()
+    unit_cost = models.IntegerField()
 
     def __str__(self):
         return "%s - %s (%d)" % (self.item, self.quantity, self.unit_cost)
@@ -73,7 +73,7 @@ class TransDetail(models.Model):
 
 # Cash Purchase
 class BillInfo(models.Model):
-    trans_master = models.OneToOneField(TransMaster, blank=True, null=True)
+    transaction_master = models.OneToOneField(TransactionMaster)
     bill_no = models.CharField(max_length=20)
     supplier_name = models.CharField(max_length=50)
     bill_date = models.DateTimeField(auto_now_add=True)
@@ -86,21 +86,25 @@ class BillInfo(models.Model):
 
 # In-Kind Donation
 class DonorInfo(models.Model):
-    trans_master = models.OneToOneField(TransMaster, blank=True, null=True)
+    transaction_master = models.OneToOneField(TransactionMaster)
     first_name = models.CharField("first Name", max_length=50)
-    last_name = models.CharField("last Name", max_length=50)
+    last_name = models.CharField("last Name", max_length=50, blank=True)
     mobile = models.CharField("mobile", max_length=15, blank=True)
-    email = models.EmailField("Email", max_length=50)
+    email = models.EmailField("Email", max_length=50, blank=True)
     donated_date = models.DateTimeField(auto_now_add=True)
     remark = models.TextField()
 
     def __str__(self):
         return "%s (%s)" % (self.first_name, self.mobile)
 
+    class Meta:
+        ordering = ['first_name', 'last_name']
+        verbose_name = 'Donor Contact'
+
 
 # LoanInfo
 class LoanInfo(models.Model):
-    trans_master = models.OneToOneField(TransMaster, blank=True, null=True)
+    transaction_master = models.OneToOneField(TransMaster)
     destination_center = models.ForeignKey(Center)
     loan_date = models.DateTimeField(auto_now_add=True)
     STATUS_VALUES = (('LOND', 'Loaned'),
