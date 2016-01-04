@@ -49,25 +49,26 @@ class TransMaster(models.Model):
     TRANS_VALUES = (('IKDN', 'In-Kind Donation'),
                     ('PURC', 'Cash Purchase'),
                     ('LEND', 'Lend'),
-                    ('LOCL', 'Loan Closure'))# need to check
+                    ('LOCL', 'Loan Closure'))
     trans_type = models.CharField(max_length=6, choices=TRANS_VALUES, blank=True)
-    center = models.ForeignKey(Center)#, null=True, blank=True)  # make nullable
+    center = models.ForeignKey(Center)
     description = models.TextField()
-    #trans_date = models.DateTimeField(auto_now_add=True)
-    total_cost = models.IntegerField("Total Cost", max_length=10)  # calculated, nullable for donations and loans
+    total_cost = models.IntegerField("Total Cost", max_length=10)
     create_timestamp = models.DateTimeField(auto_now_add=True)
-    #modify_timestamp = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.trans_type
 
 
-#Inkind or Purchase?
+# Inkind or Purchase
 class TransDetail(models.Model):
     trans_master = models.ForeignKey(TransMaster)
     item = models.ForeignKey(ItemMaster)
     quantity = models.IntegerField("Quantity", max_length=3)
     unit_cost = models.IntegerField("Unit Cost", max_length=10)
+
+    def __str__(self):
+        return "%s - %s (%d)" % (self.item, self.quantity, self.unit_cost)
 
 
 # Cash Purchase
@@ -76,19 +77,25 @@ class BillInfo(models.Model):
     bill_no = models.CharField(max_length=20)
     supplier_name = models.CharField(max_length=50)
     bill_date = models.DateTimeField(auto_now_add=True)
-    bill_soft_copy = models.FileField(upload_to=_generate_profile_path, blank=True)# If bill is PDF? FileField?
+    bill_soft_copy = models.FileField(upload_to=_generate_profile_path, blank=True)
     payment_remark = models.TextField()
+
+    def __str__(self):
+        return "%s (%s)" % (self.bill_no, self.supplier_name)
 
 
 # In-Kind Donation
-class Donor(models.Model):
+class DonorInfo(models.Model):
     trans_master = models.OneToOneField(TransMaster, blank=True, null=True)
     first_name = models.CharField("first Name", max_length=50)
     last_name = models.CharField("last Name", max_length=50)
     mobile = models.CharField("mobile", max_length=15, blank=True)
     email = models.EmailField("Email", max_length=50)
-    donated_date = models.DateTimeField(auto_now_add=True) # diff from trans_date?
+    donated_date = models.DateTimeField(auto_now_add=True)
     remark = models.TextField()
+
+    def __str__(self):
+        return "%s (%s)" % (self.first_name, self.mobile)
 
 
 # Loan
@@ -96,11 +103,14 @@ class LoanInfo(models.Model):
     trans_master = models.OneToOneField(TransMaster, blank=True, null=True)
     destination_center = models.ForeignKey(Center)
     loan_date = models.DateTimeField(auto_now_add=True)
-    STATUS_VALUES = (('LOAN', 'Loaned'),
-                    ('LOCL', 'Loan Closed'),
-                    ('LOPR', 'Loan - Partially Returned')
-                    ('LCPR', 'Loan Closed - Partially Returned'))# need to check
-    trans_type = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True)
+    STATUS_VALUES = (('LOND', 'Loaned'),
+                     ('LOCL', 'Loan Closed'),
+                     ('LOPR', 'Loan - Partially Returned')
+                     ('LCPR', 'Loan Closed - Partially Returned'))  # need to check
+    loan_status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True)
 
-#loan status
-#Assumptions for scensrios
+    def __str__(self):
+        return "%s (%s)" % (self.destination_center, self.loan_status)
+
+# loan status
+# Assumptions for scensrios
