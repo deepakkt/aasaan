@@ -1,31 +1,32 @@
-import os.path
-#dkt - can be removed
-
 from django.db import models
-from django.utils.text import slugify
-#dkt - slugify is not needed. can be removed
-
 from contacts.models import Center
 
-#dkt - all Textfields need to use markdown. Check schedules model and admin
-# to see how it is implemented. I will later explain what it is and why
-# it is required.
-
-
-def _generate_profile_path(instance, filename):
-    image_extension = os.path.splitext(filename)[-1]
-    profile_picture_name = slugify(instance.full_name + " profile picture") + image_extension
-    return os.path.join('profile_pictures', profile_picture_name)
-#dkt this function is not relevant. can be removed
+from django_markdown.models import MarkdownField
 
 # Create your models here.
+
+
 class ItemMaster(models.Model):
     name = models.CharField(max_length=50)
     model_no = models.CharField(max_length=50, blank=True)
-    description = models.TextField()
+    description = MarkdownField()
 
     def __str__(self):
-        return self.name
+        if self.model_no:
+            return "%s (%s)" % (self.name, self.model_no)
+        else:
+            return self.name
+
+    class Meta:
+        ordering = ['name']
+
+    def save(self, *args, **kwargs):
+        #clean up the name of all redundant spaces and title case it
+        self.name = ' '.join([each_word if each_word.upper() == each_word
+                                       else each_word.title()
+                              for each_word in self.name.split()])
+
+        super(ItemMaster, self).save(*args, **kwargs)
 
 
 class CenterMaterial(models.Model):
@@ -35,86 +36,107 @@ class CenterMaterial(models.Model):
     STATUS_VALUES = (('ACTV', 'Active'),
                      ('DMGD', 'Damaged'),
                      ('LOST', 'Lost'),
-                     ('LOAN', 'Loaned'))
-    status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True)
+                     ('LOAN', 'Loaned'),)
+    status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True,
+                              default='ACTV')
 
     def __str__(self):
         return "%s - %s (%d)" % (self.center, self.item, self.quantity)
 
 
-class CenterNotes(models.Model):
+class CenterItemNotes(models.Model):
     center = models.ForeignKey(Center)
-    note = models.TextField()
-    create_timestamp = models.DateTimeField(auto_now_add=True)
-    modify_timestamp = models.DateTimeField(auto_now=True)
+    note = MarkdownField()
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "(%s)-%s" % (self.center, self.note[:25])
 
 
-class TransactionMaster(models.Model):
+class Transaction(models.Model):
     center = models.ForeignKey(Center)
     TRANSACTION_VALUES = (('IKDN', 'In-Kind Donation'),
                           ('PURC', 'Cash Purchase'),
-                          ('LEND', 'Lend'),
+                          ('LOAN', 'Loan'),
                           ('LOCL', 'Loan Closure'))
     transaction_type = models.CharField(max_length=6, choices=TRANSACTION_VALUES, blank=True)
-    center = models.ForeignKey(Center)
-    description = models.TextField()
-    total_cost = models.IntegerField()
-    create_timestamp = models.DateTimeField(auto_now_add=True)
+    transaction_date = models.DateField(auto_now_add=True)
+    description = MarkdownField()
+
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeFeld(auto_now=True)
 
     def __str__(self):
-        return self.trans_type
+        return "%s (%s) - %s" % (self.center, self.transaction_type,
+                                 self.transaction_date.isoformat())
+
+    class Meta:
+        ordering = ['-transaction_date', 'transaction_type']
 
 
-# Inkind or Purchase
-class TransactionDetail(models.Model):
-    transaction_master = models.ForeignKey(TransactionMaster)
+class TransactionItems(models.Model):
+    transaction = models.ForeignKey(Transaction)
     item = models.ForeignKey(ItemMaster)
     quantity = models.SmallIntegerField()
-    unit_cost = models.IntegerField()
+    unit_cost = models.DecimalField(default=0)
 
     def __str__(self):
         return "%s - %s (%d)" % (self.item, self.quantity, self.unit_cost)
 
 
-# Cash Purchase
-class BillInfo(models.Model):
-    transaction_master = models.OneToOneField(TransactionMaster)
-    bill_no = models.CharField(max_length=20)
-    supplier_name = models.CharField(max_length=50)
-    bill_date = models.DateTimeField(auto_now_add=True)
-    bill_soft_copy = models.FileField(upload_to=_generate_profile_path, blank=True)
-    payment_remark = models.TextField()
+class TransactionNotes(models.Model):
+    transaction = models.ForeignKey(Transaction)
+    note = MarkdownField()
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeFeld(auto_now=True)
 
     def __str__(self):
-        return "%s (%s)" % (self.bill_no, self.supplier_name)
+        return "%s - Note #%d" % (self.transaction, self.id)
+
+    class Meta:
+        ordering = ['-created']
+
+
+# Cash Purchase
+class PurchaseTransaction(models.Model):
+    transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE,
+                                              primary_key=True)
+    invoice_number = models.CharField(max_length=50)
+    supplier_name = models.CharField(max_length=100)
+    bill_date = models.DateTimeField(auto_now_add=True)
+    bill_soft_copy = models.FileField(blank=True)
+    total_cost = models.DecimalField(default=0)
+    payment_remarks = MarkdownField()
+
+    def __str__(self):
+        return self.transaction
 
 
 # In-Kind Donation
-class DonorInfo(models.Model):
-    transaction_master = models.OneToOneField(TransactionMaster)
-    first_name = models.CharField("first Name", max_length=50)
-    last_name = models.CharField("last Name", max_length=50, blank=True)
-    mobile = models.CharField("mobile", max_length=15, blank=True)
-    email = models.EmailField("Email", max_length=50, blank=True)
-    donated_date = models.DateTimeField(auto_now_add=True)
-    remark = models.TextField()
+class DonationTransaction(models.Model):
+    transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE,
+                                              primary_key=True)
+
+    donor_first_name = models.CharField(max_length=50)
+    donor_last_name = models.CharField(max_length=50, blank=True)
+    donor_mobile = models.CharField(max_length=15, blank=True)
+    donor_email = models.EmailField(max_length=50, blank=True)
+    donated_date = models.DateField(default=transaction.transaction_date)
+
+    donation_remarks = MarkdownField()
 
     def __str__(self):
-        return "%s (%s)" % (self.first_name, self.mobile)
-
-    class Meta:
-        ordering = ['first_name', 'last_name']
-        verbose_name = 'Donor Contact'
+        self.transaction
 
 
 # LoanInfo
-class LoanInfo(models.Model):
-    transaction_master = models.OneToOneField(TransMaster)
+class LoanTransaction(models.Model):
+    transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE,
+                                              primary_key=True)
+
     destination_center = models.ForeignKey(Center)
-    loan_date = models.DateTimeField(auto_now_add=True)
+    loan_date = models.DateField(default=transaction.transaction_date)
     STATUS_VALUES = (('LOND', 'Loaned'),
                      ('LOCL', 'Loan Closed'),
                      ('LOPR', 'Loan - Partially Returned')
@@ -122,7 +144,4 @@ class LoanInfo(models.Model):
     loan_status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True)
 
     def __str__(self):
-        return "%s (%s)" % (self.destination_center, self.loan_status)
-
-# loan status
-# Assumptions for scensrios
+        self.transaction
