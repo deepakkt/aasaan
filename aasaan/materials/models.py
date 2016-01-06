@@ -1,20 +1,29 @@
 import os.path
+#dkt - can be removed
+
 from django.db import models
 from django.utils.text import slugify
+#dkt - slugify is not needed. can be removed
+
 from contacts.models import Center
+
+#dkt - all Textfields need to use markdown. Check schedules model and admin
+# to see how it is implemented. I will later explain what it is and why
+# it is required.
 
 
 def _generate_profile_path(instance, filename):
     image_extension = os.path.splitext(filename)[-1]
     profile_picture_name = slugify(instance.full_name + " profile picture") + image_extension
     return os.path.join('profile_pictures', profile_picture_name)
-
+#dkt this function is not relevant. can be removed
 
 # Create your models here.
 class ItemMaster(models.Model):
     name = models.CharField(max_length=50)
     model_no = models.CharField(max_length=50)
     description = models.TextField("Description", blank=True)
+    #dkt remove "Description" as first parm
 
     def __str__(self):
         return self.name
