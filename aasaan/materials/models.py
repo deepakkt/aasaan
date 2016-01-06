@@ -9,7 +9,7 @@ from django_markdown.models import MarkdownField
 class ItemMaster(models.Model):
     name = models.CharField(max_length=50)
     model_no = models.CharField(max_length=50, blank=True)
-    description = MarkdownField()
+    description = MarkdownField(blank=True)
 
     def __str__(self):
         if self.model_no:
@@ -46,7 +46,7 @@ class CenterMaterial(models.Model):
 
 class CenterItemNotes(models.Model):
     center = models.ForeignKey(Center)
-    note = MarkdownField()
+    note = MarkdownField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -62,7 +62,7 @@ class Transaction(models.Model):
                           ('LOCL', 'Loan Closure'))
     transaction_type = models.CharField(max_length=6, choices=TRANSACTION_VALUES, blank=True)
     transaction_date = models.DateField(auto_now_add=True)
-    description = MarkdownField()
+    description = MarkdownField(blank=True)
 
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
@@ -87,7 +87,7 @@ class TransactionItems(models.Model):
 
 class TransactionNotes(models.Model):
     transaction = models.ForeignKey(Transaction)
-    note = MarkdownField()
+    note = MarkdownField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -107,7 +107,7 @@ class PurchaseTransaction(models.Model):
     bill_date = models.DateTimeField(auto_now_add=True)
     bill_soft_copy = models.FileField(blank=True)
     total_cost = models.DecimalField(default=0, max_digits=9, decimal_places=2)
-    payment_remarks = MarkdownField()
+    payment_remarks = MarkdownField(blank=True)
 
     def __str__(self):
         return self.transaction
@@ -124,7 +124,7 @@ class DonationTransaction(models.Model):
     donor_email = models.EmailField(max_length=50, blank=True)
     donated_date = models.DateField(auto_now_add=True)
 
-    donation_remarks = MarkdownField()
+    donation_remarks = MarkdownField(blank=True)
 
     def __str__(self):
         return self.transaction
