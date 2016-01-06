@@ -65,7 +65,7 @@ class Transaction(models.Model):
     description = MarkdownField()
 
     created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeFeld(auto_now=True)
+    modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "%s (%s) - %s" % (self.center, self.transaction_type,
@@ -79,17 +79,17 @@ class TransactionItems(models.Model):
     transaction = models.ForeignKey(Transaction)
     item = models.ForeignKey(ItemMaster)
     quantity = models.SmallIntegerField()
-    unit_cost = models.DecimalField(default=0)
+    unit_cost = models.DecimalField(default=0, max_digits=9, decimal_places=2)
 
     def __str__(self):
-        return "%s - %s (%d)" % (self.item, self.quantity, self.unit_cost)
+        return "%s - %s" % (self.item, self.quantity)
 
 
 class TransactionNotes(models.Model):
     transaction = models.ForeignKey(Transaction)
     note = MarkdownField()
     created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeFeld(auto_now=True)
+    modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "%s - Note #%d" % (self.transaction, self.id)
@@ -106,7 +106,7 @@ class PurchaseTransaction(models.Model):
     supplier_name = models.CharField(max_length=100)
     bill_date = models.DateTimeField(auto_now_add=True)
     bill_soft_copy = models.FileField(blank=True)
-    total_cost = models.DecimalField(default=0)
+    total_cost = models.DecimalField(default=0, max_digits=9, decimal_places=2)
     payment_remarks = MarkdownField()
 
     def __str__(self):
@@ -122,12 +122,12 @@ class DonationTransaction(models.Model):
     donor_last_name = models.CharField(max_length=50, blank=True)
     donor_mobile = models.CharField(max_length=15, blank=True)
     donor_email = models.EmailField(max_length=50, blank=True)
-    donated_date = models.DateField(default=transaction.transaction_date)
+    donated_date = models.DateField(auto_now_add=True)
 
     donation_remarks = MarkdownField()
 
     def __str__(self):
-        self.transaction
+        return self.transaction
 
 
 # LoanInfo
@@ -136,12 +136,12 @@ class LoanTransaction(models.Model):
                                               primary_key=True)
 
     destination_center = models.ForeignKey(Center)
-    loan_date = models.DateField(default=transaction.transaction_date)
+    loan_date = models.DateField(auto_now_add=True)
     STATUS_VALUES = (('LOND', 'Loaned'),
                      ('LOCL', 'Loan Closed'),
-                     ('LOPR', 'Loan - Partially Returned')
+                     ('LOPR', 'Loan - Partially Returned'),
                      ('LCPR', 'Loan Closed - Partially Returned'))  # need to check
     loan_status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True)
 
     def __str__(self):
-        self.transaction
+        return self.transaction
