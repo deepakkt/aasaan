@@ -1,9 +1,19 @@
 from django.db import models
 from contacts.models import Center
-
 from django_markdown.models import MarkdownField
 
+
 # Create your models here.
+
+class MaterialsCenter(Center):
+
+    def item_count(self):
+        center_items_count = CenterMaterial.objects.filter(center=self).count()
+        return center_items_count
+
+    class Meta:
+        proxy = True
+        verbose_name = 'Material for Center'
 
 
 class ItemMaster(models.Model):
@@ -21,9 +31,9 @@ class ItemMaster(models.Model):
         ordering = ['name']
 
     def save(self, *args, **kwargs):
-        #clean up the name of all redundant spaces and title case it
+        # clean up the name of all redundant spaces and title case it
         self.name = ' '.join([each_word if each_word.upper() == each_word
-                                       else each_word.title()
+                              else each_word.title()
                               for each_word in self.name.split()])
 
         super(ItemMaster, self).save(*args, **kwargs)
@@ -101,7 +111,7 @@ class TransactionNotes(models.Model):
 # Cash Purchase
 class PurchaseTransaction(models.Model):
     transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE,
-                                              primary_key=True)
+                                       primary_key=True)
     invoice_number = models.CharField(max_length=50)
     supplier_name = models.CharField(max_length=100)
     bill_date = models.DateTimeField(auto_now_add=True)
@@ -116,7 +126,7 @@ class PurchaseTransaction(models.Model):
 # In-Kind Donation
 class DonationTransaction(models.Model):
     transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE,
-                                              primary_key=True)
+                                       primary_key=True)
 
     donor_first_name = models.CharField(max_length=50)
     donor_last_name = models.CharField(max_length=50, blank=True)
@@ -133,7 +143,7 @@ class DonationTransaction(models.Model):
 # LoanInfo
 class LoanTransaction(models.Model):
     transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE,
-                                              primary_key=True)
+                                       primary_key=True)
 
     destination_center = models.ForeignKey(Center)
     loan_date = models.DateField(auto_now_add=True)
