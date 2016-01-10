@@ -1,0 +1,38 @@
+{% extends 'contacts/base.html' %}
+{% load django_markdown %}
+
+{% block title %}List of contacts{% endblock %}
+
+{% block body_block %}
+
+    {% block pagetitle %}
+        List of contacts
+    {% endblock %}
+
+    {% block main %}
+    <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Mobile</th>
+              <th>Whatsapp</th>
+              <th>Email</th>
+                <th>Remarks</th>
+            </tr>
+          </thead>
+        <tbody>
+        {% for contact in object_list %}
+            <tr>
+              <td>{{ contact.id }}</td>
+              <td>{{ contact.full_name }}</td>
+              <td>{{ contact.primary_mobile }}</td>
+              <td>{{ contact.whatsapp_number }}</td>
+              <td>{{ contact.primary_email }}</td>
+              <td>{{ contact.remarks|markdown }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    {% endblock %}
+    </table>
+{% endblock %}

@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db.models.query import QuerySet
+
 from .models import Contact, ContactNote, \
     ContactAddress, ContactRoleGroup, RoleGroup, Zone, \
     Center, IndividualRole, IndividualContactRoleCenter, \
@@ -58,6 +60,33 @@ class IndividualContactRoleZoneInline(admin.TabularInline):
 
 
 class ContactAdmin(MarkdownModelAdmin):
+    def get_queryset(self, request):
+        qs = super(ContactAdmin, self).get_queryset(request)
+
+        #give entire set if user is a superuser irrespective of zone and center assignments
+        if request.user.is_superuser:
+            return qs
+
+        #get all centers this user belongs to
+        user_centers = [x.center for x in request.user.aasaanusercenter_set.all()]
+        user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
+
+        #get all contacts who have a role in above user's centers
+        center_contacts = Contact.objects.filter(individualcontactrolecenter__center__in=user_centers)
+
+        #contacts may belong to centers which belong to zones above user has permission for. get those too
+        center_zonal_contacts = Contact.objects.filter(individualcontactrolecenter__center__zone__in=user_zones)
+
+        #finally directly get contacts belonging to zone the user has access to
+        zone_contacts = Contact.objects.filter(individualcontactrolezone__zone__in=user_zones)
+
+        #merge all of them
+        all_contacts = center_contacts | zone_contacts | center_zonal_contacts
+        #and de-dupe them!
+        all_contacts = all_contacts.distinct()
+
+        return all_contacts
+
     list_display = ('full_name', 'primary_mobile', 'whatsapp_number',
                     'primary_email', 'teacher_tno', 'status', 'profile_image')
 
