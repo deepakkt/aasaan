@@ -1,12 +1,12 @@
 from django.db import models
 from contacts.models import Center
 from django_markdown.models import MarkdownField
+from django.core.exceptions import ValidationError
 
 
 # Create your models here.
 
 class MaterialsCenter(Center):
-
     def item_count(self):
         center_items_count = CenterMaterial.objects.filter(center=self).count()
         return center_items_count
@@ -52,6 +52,17 @@ class CenterMaterial(models.Model):
 
     def __str__(self):
         return "%s - %s (%d)" % (self.center, self.item, self.quantity)
+
+    def clean(self):
+        if self.id:
+            existing_entry = CenterMaterial.objects.get(id=self.id)
+            if self.item != existing_entry.item:
+                raise ValidationError("Existing item can not be changed")
+            if self.status == 'LOAN':
+                raise ValidationError("Status can not be changed to Loan. Please go to Loan Transaction")
+        else:
+            if CenterMaterial.objects.filter(center=self.center).filter(item=self.item).filter(status=self.status):
+                raise ValidationError("Duplicate enter. Please update existing entry.")
 
 
 class CenterItemNotes(models.Model):
