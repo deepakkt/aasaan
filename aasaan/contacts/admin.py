@@ -60,6 +60,7 @@ class IndividualContactRoleZoneInline(admin.TabularInline):
 
 
 class ContactAdmin(MarkdownModelAdmin):
+    #filter contact records based on user permissions
     def get_queryset(self, request):
         qs = super(ContactAdmin, self).get_queryset(request)
 
