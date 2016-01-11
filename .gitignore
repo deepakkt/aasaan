@@ -1,4 +1,8 @@
 aasaan/aasaan/settings/config.py
+<<<<<<< HEAD
 aasaan/.idea/workspace.xml
 aasaan/media/*.*
+=======
+aasaan/.idea/*.*
+>>>>>>> materials
 *.pyc

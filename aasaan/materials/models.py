@@ -1,89 +1,169 @@
-import os.path
-
 from django.db import models
-from django.utils.text import slugify
 from contacts.models import Center
-
-def _generate_profile_path(instance, filename):
-    image_extension = os.path.splitext(filename)[-1]
-    profile_picture_name = slugify(instance.full_name + " profile picture") + image_extension
-    return os.path.join('profile_pictures', profile_picture_name)
+from django_markdown.models import MarkdownField
+from django.core.exceptions import ValidationError
 
 
 # Create your models here.
-class Materials(models.Model):
-    """Materials model"""
-    MATERIAL_VALUES = (('PJ', 'Projector'),
-                       ('SC', 'Screen'),
-                       ('AV', 'Audio'),
-                       ('VD', 'Video'),
-                       ('CP', 'Carpet'),
-                       ('SP', 'Sadhguru Photo'),
-                       ('GS', 'Gurupooja Set'))
 
-    material_type = models.CharField(max_length=2, choices=MATERIAL_VALUES)
+class MaterialsCenter(Center):
+    def item_count(self):
+        center_items_count = CenterMaterial.objects.filter(center=self).count()
+        return center_items_count
 
-    name = models.CharField("Name", max_length=50)
-
-    model_no = models.CharField("Model No", max_length=50)
-
-    purchase_date = models.DateField("purchase date", null=True, blank=True)
-
-    PURCHASE_VALUES = (('AP', 'Ashram Purchase'),
-                       ('SELF', 'Own Purchase'),
-                       ('IK', 'In Kind Donation'))
-
-    purchase_type = models.CharField(max_length=2, choices=PURCHASE_VALUES)
-
-    STATUS_VALUES = (('ACT', 'Active'),
-                     ('INACTV', 'Inactive'))
-
-    status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True)
-    unit = models.IntegerField("Quantity", max_length=10)
-    unit_price = models.IntegerField("Unit price", max_length=10)
-    remarks = models.TextField(max_length=500, blank=True)
+    class Meta:
+        proxy = True
+        verbose_name = 'Material for Center'
 
 
-class Brochure(models.Model):
-    """Paper Materials model"""
+class ItemMaster(models.Model):
+    name = models.CharField(max_length=50)
+    model_no = models.CharField(max_length=50, blank=True)
+    description = MarkdownField(blank=True)
 
-    item_name = models.CharField("Item Name", max_length=50)
-    item_type = models.CharField("Item Type", max_length=50)
-    version = models.CharField("Version No", max_length=2)
-    unit = models.IntegerField("Quantity", max_length=10)
-    unit_price = models.IntegerField("Unit price", max_length=10)
-    remarks = models.TextField(max_length=500, blank=True)
-    STATUS_VALUES = (('ACT', 'Active'),
-                     ('INACTV', 'Inactive'))
-    status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True)
+    def __str__(self):
+        if self.model_no:
+            return "%s (%s)" % (self.name, self.model_no)
+        else:
+            return self.name
 
+    class Meta:
+        ordering = ['name']
 
-class Sponsor(models.Model):
-    materials = models.ForeignKey(Materials)
-    first_name = models.CharField("first Name", max_length=50)
-    last_name = models.CharField("last Name", max_length=50)
-    mail = models.EmailField("Email", max_length=50)
-    phone = models.CharField("Mobile", max_length=15, blank=True)
+    def save(self, *args, **kwargs):
+        # clean up the name of all redundant spaces and title case it
+        self.name = ' '.join([each_word if each_word.upper() == each_word
+                              else each_word.title()
+                              for each_word in self.name.split()])
 
-
-class Inventory(models.Model):
-    materials = models.ForeignKey(Center)
-    first_name = models.CharField("Inventory Name", max_length=50)
-    remarks = models.TextField(max_length=500, blank=True)
+        super(ItemMaster, self).save(*args, **kwargs)
 
 
-class InboundOutbound(models.Model):
+class CenterMaterial(models.Model):
+    center = models.ForeignKey(Center)
+    item = models.ForeignKey(ItemMaster)
+    quantity = models.SmallIntegerField()
+    STATUS_VALUES = (('ACTV', 'Active'),
+                     ('DMGD', 'Damaged'),
+                     ('LOST', 'Lost'),
+                     ('LOAN', 'Loaned'),)
+    status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True,
+                              default='ACTV')
 
-    brochure = models.ForeignKey(Brochure)
-    source = models.CharField("source Name", max_length=50)
-    destination = models.CharField("destination Name", max_length=50)
-    sent_date = models.DateField("sent date", null=True, blank=True)
-    received_date = models.DateField("received date", null=True, blank=True)
-    unit = models.IntegerField("Quantity", max_length=10)
-    remarks = models.TextField(max_length=500, blank=True)
-    STATUS_VALUES = (('RR', 'Request Received'),
-                     ('SH', 'Shipped'),
-                     ('DD', 'Delivered'))
-    status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True)
+    def __str__(self):
+        return "%s - %s (%d)" % (self.center, self.item, self.quantity)
+
+    def clean(self):
+        if self.id:
+            existing_entry = CenterMaterial.objects.get(id=self.id)
+            if self.item != existing_entry.item:
+                raise ValidationError("Item type cannot be modified")
+        else:
+            if CenterMaterial.objects.filter(center=self.center).filter(item=self.item).filter(status=self.status):
+                raise ValidationError("This entry seems to already exist. Please update quantity on existing entry")
+
+        if self.status == 'LOAN':
+                raise ValidationError("Loan transactions cannot be handled here")
 
 
+class CenterItemNotes(models.Model):
+    center = models.ForeignKey(Center)
+    note = MarkdownField(blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "(%s)-%s" % (self.center, self.note[:25])
+
+
+class Transaction(models.Model):
+    center = models.ForeignKey(Center)
+    TRANSACTION_VALUES = (('IKDN', 'In-Kind Donation'),
+                          ('PURC', 'Cash Purchase'),
+                          ('LOAN', 'Loan'),
+                          ('LOCL', 'Loan Closure'))
+    transaction_type = models.CharField(max_length=6, choices=TRANSACTION_VALUES, blank=True)
+    transaction_date = models.DateField(auto_now_add=True)
+    description = MarkdownField(blank=True)
+
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s (%s) - %s" % (self.center, self.transaction_type,
+                                 self.transaction_date.isoformat())
+
+    class Meta:
+        ordering = ['-transaction_date', 'transaction_type']
+
+
+class TransactionItems(models.Model):
+    transaction = models.ForeignKey(Transaction)
+    item = models.ForeignKey(ItemMaster)
+    quantity = models.SmallIntegerField()
+    unit_cost = models.DecimalField(default=0, max_digits=9, decimal_places=2)
+
+    def __str__(self):
+        return "%s - %s" % (self.item, self.quantity)
+
+
+class TransactionNotes(models.Model):
+    transaction = models.ForeignKey(Transaction)
+    note = MarkdownField(blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s - Note #%d" % (self.transaction, self.id)
+
+    class Meta:
+        ordering = ['-created']
+
+
+# Cash Purchase
+class PurchaseTransaction(models.Model):
+    transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE,
+                                       primary_key=True)
+    invoice_number = models.CharField(max_length=50)
+    supplier_name = models.CharField(max_length=100)
+    bill_date = models.DateTimeField(auto_now_add=True)
+    bill_soft_copy = models.FileField(blank=True)
+    total_cost = models.DecimalField(default=0, max_digits=9, decimal_places=2)
+    payment_remarks = MarkdownField(blank=True)
+
+    def __str__(self):
+        return self.transaction
+
+
+# In-Kind Donation
+class DonationTransaction(models.Model):
+    transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE,
+                                       primary_key=True)
+
+    donor_first_name = models.CharField(max_length=50)
+    donor_last_name = models.CharField(max_length=50, blank=True)
+    donor_mobile = models.CharField(max_length=15, blank=True)
+    donor_email = models.EmailField(max_length=50, blank=True)
+    donated_date = models.DateField(auto_now_add=True)
+
+    donation_remarks = MarkdownField(blank=True)
+
+    def __str__(self):
+        return self.transaction
+
+
+# LoanInfo
+class LoanTransaction(models.Model):
+    transaction = models.OneToOneField(Transaction, on_delete=models.CASCADE,
+                                       primary_key=True)
+
+    destination_center = models.ForeignKey(Center)
+    loan_date = models.DateField(auto_now_add=True)
+    STATUS_VALUES = (('LOND', 'Loaned'),
+                     ('LOCL', 'Loan Closed'),
+                     ('LOPR', 'Loan - Partially Returned'),
+                     ('LCPR', 'Loan Closed - Partially Returned'))  # need to check
+    loan_status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True)
+
+    def __str__(self):
+        return self.transaction
