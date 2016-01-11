@@ -57,12 +57,13 @@ class CenterMaterial(models.Model):
         if self.id:
             existing_entry = CenterMaterial.objects.get(id=self.id)
             if self.item != existing_entry.item:
-                raise ValidationError("Existing item can not be changed")
-            if self.status == 'LOAN':
-                raise ValidationError("Status can not be changed to Loan. Please go to Loan Transaction")
+                raise ValidationError("Item type cannot be modified")
         else:
             if CenterMaterial.objects.filter(center=self.center).filter(item=self.item).filter(status=self.status):
-                raise ValidationError("Duplicate enter. Please update existing entry.")
+                raise ValidationError("This entry seems to already exist. Please update quantity on existing entry")
+
+        if self.status == 'LOAN':
+                raise ValidationError("Loan transactions cannot be handled here")
 
 
 class CenterItemNotes(models.Model):

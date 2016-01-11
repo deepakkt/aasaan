@@ -7,6 +7,9 @@ class CenterItemNotesInline(admin.TabularInline):
     model = CenterItemNotes
     extra = 1
 
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 
 class CenterMaterialInline(admin.TabularInline):
     model = CenterMaterial
@@ -21,7 +24,7 @@ class MaterialsAdmin(admin.ModelAdmin):
 
     readonly_fields = ('zone', 'center_name')
 
-    inlines = [CenterMaterialInline]
+    inlines = [CenterMaterialInline, CenterItemNotesInline]
 
     def has_add_permission(self, request):
         return False
