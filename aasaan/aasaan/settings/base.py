@@ -39,6 +39,7 @@ INSTALLED_APPS = (
     'schedules',
     'AasaanUser',
     'materials',
+    'schedulemaster',
 )
 
 MIDDLEWARE_CLASSES = (
