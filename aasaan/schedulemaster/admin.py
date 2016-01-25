@@ -16,10 +16,10 @@ class ScheduleNoteInline(MarkdownInlineAdmin, admin.TabularInline):
     max_num = 1
 
 
-class TeachersInline(MarkdownInlineAdmin, admin.TabularInline):
+class TeachersInline(admin.TabularInline):
     model = ClassTeachers
     extra = 0
-    max_num = 1
+    max_num = 10
 
 
 class ProgramScheduleAdmin(MarkdownModelAdmin):
