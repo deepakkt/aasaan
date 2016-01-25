@@ -3,54 +3,60 @@ from contacts.models import Center, Contact, Zone, Sector
 from django_markdown.models import MarkdownField
 
 
-# Create your models here.
-class ProgramMaster(models.Model):
+class LanguageMaster(models.Model):
     name = models.CharField(max_length=50)
-    PROG_TYPE = (('NONE', 'Please Select'),
-                 ('IP', 'Introductory Programs'),
-                 ('AP', 'Advanced Programs'),
-                 ('RP', 'Rejuvenation Programs'),
-                 ('CP', 'Childrens Programs'),
-                 ('SS', 'Sadhgurus Schedule'),
-                 ('SP', 'Special Events & Other Programs'),)
-    program_type = models.CharField(max_length=4, choices=PROG_TYPE, blank=True,
-                                    default='NONE')
-
-    LANG_TYPE = (('NONE', 'Please Select'),
-                 ('TM', 'Tamil'),
-                 ('EG', 'English'),
-                 ('HI', 'Hindi'),
-                 ('BI', 'bilingual'),
-                 ('CH', 'Chinese'),)
-
-    language_type = models.CharField(max_length=4, choices=LANG_TYPE, blank=True,
-                                     default='NONE')
-
     description = MarkdownField(blank=True)
 
     def __str__(self):
-        return "%s (%s)" % (self.name, self.program_type)
+        return "%s" % self.name
 
     class Meta:
-        ordering = ['name', 'program_type']
+        verbose_name = 'Language Master'
 
-    def save(self, *args, **kwargs):
-        # clean up the name of all redundant spaces and title case it
-        self.name = ' '.join([each_word if each_word.upper() == each_word
-                              else each_word.title()
-                              for each_word in self.name.split()])
 
-        super(ProgramMaster, self).save(*args, **kwargs)
+class ProgramMaster(models.Model):
+    name = models.CharField(max_length=50)
+    STATUS_VALUES = (('A', 'Active'),
+                     ('IA', 'In-Active'))
+    status = models.CharField(max_length=2, choices=STATUS_VALUES, blank=True,
+                              default='A')
+    description = MarkdownField(blank=True)
+
+    def __str__(self):
+        return "%s" % self.name
+
+    class Meta:
+        verbose_name = 'Program Master'
+
+
+# # Create your models here.
+# class ProgramMaster(models.Model):
+#     program = models.ForeignKey(ProgramTypeMaster)
+#     language = models.ForeignKey(LanguageMaster)
+#     description = MarkdownField(blank=True)
+#
+#     def __str__(self):
+#         return "%s (%s)" % (self.program, self.language)
+#
+#     class Meta:
+#         ordering = ['program']
+#
+#     def save(self, *args, **kwargs):
+#         # clean up the name of all redundant spaces and title case it
+#         self.name = ' '.join([each_word if each_word.upper() == each_word
+#                               else each_word.title()
+#                               for each_word in self.name.split()])
+#
+#         super(ProgramMaster, self).save(*args, **kwargs)
 
 
 class ProgramSchedule(models.Model):
     center = models.ForeignKey(Center)
     program = models.ForeignKey(ProgramMaster)
+    language = models.ForeignKey(LanguageMaster)
     start_date = models.DateField("start Date", null=True, blank=True)
     end_date = models.DateField("end Date", null=True, blank=True)
     donation = models.DecimalField(default=0, max_digits=9, decimal_places=0)
-    teacher_name = models.CharField("teacher Name", null=True, blank=True, max_length=50)
-    coteacher_name = models.CharField("co-teacher Name", null=True, blank=True, max_length=50)
     ONLINE_REG_VALUES = (('Y', 'Yes'),
                          ('N', 'No'))
 
@@ -71,6 +77,7 @@ class ProgramSchedule(models.Model):
 
     status = models.CharField(max_length=2, choices=STATUS_VALUES, default='Y', null=True,
                               blank=True, )
+    description = MarkdownField(blank=True)
 
     def __str__(self):
         return "%s, %s" % (self.program, self.center)
@@ -80,6 +87,9 @@ class ProgramSchedule(models.Model):
 
     def zone_name(self):
         return Zone.objects.get(center=self.center)
+
+    class Meta:
+        verbose_name = 'Program Schedule'
 
 
 class VenueAddress(models.Model):
@@ -134,10 +144,35 @@ class VenueAddress(models.Model):
 
         super(VenueAddress, self).save(*args, **kwargs)
 
+    class Meta:
+        verbose_name = 'Venue Address'
+
 
 class ScheduleNote(models.Model):
-    contact = models.ForeignKey(ProgramSchedule)
+    program = models.ForeignKey(ProgramSchedule)
     note = MarkdownField(max_length=500)
 
     class Meta:
         verbose_name = 'Intro Session Detail'
+
+
+class ClassTeachers(models.Model):
+    program = models.ForeignKey(ProgramSchedule)
+    BATCH_VALUES = (('M', 'Morning'),
+                    ('N', 'Noon'),
+                    ('E', 'Evening'),
+                    ('F', 'Full day'))
+
+    batch = models.CharField(max_length=2, choices=BATCH_VALUES, default='F', null=True,
+                             blank=True)
+
+    TEACHER_VALUES = (('MT', 'Main Teacher'),
+                      ('CT', 'Co Teacher'),
+                      ('OT', 'Observation Teacher'))
+
+    teacher_type = models.CharField(max_length=2, choices=TEACHER_VALUES, default='MT', null=True,
+                                    blank=True)
+    teachers = models.ForeignKey(Contact)
+
+    class Meta:
+        verbose_name = 'Class Teachers'

@@ -1,6 +1,7 @@
 from django.contrib import admin
-from .models import ProgramMaster, ProgramSchedule, VenueAddress, ScheduleNote
-from django_markdown.admin import MarkdownModelAdmin,MarkdownInlineAdmin
+from .models import ProgramMaster, ProgramSchedule, VenueAddress, ScheduleNote, ClassTeachers, \
+    LanguageMaster
+from django_markdown.admin import MarkdownModelAdmin, MarkdownInlineAdmin
 
 
 class VenueAddressInline(admin.StackedInline):
@@ -15,17 +16,23 @@ class ScheduleNoteInline(MarkdownInlineAdmin, admin.TabularInline):
     max_num = 1
 
 
-class ProgramScheduleAdmin(MarkdownModelAdmin):
+class TeachersInline(MarkdownInlineAdmin, admin.TabularInline):
+    model = ClassTeachers
+    extra = 0
+    max_num = 1
 
+
+class ProgramScheduleAdmin(MarkdownModelAdmin):
     list_display = ('program', 'zone_name', 'center', 'status', 'session_details', 'contact_phone1')
 
     list_filter = ('program', 'status')
 
     search_fields = ('program', 'center', 'status')
 
-    inlines = [VenueAddressInline, ScheduleNoteInline]
+    inlines = [VenueAddressInline, ScheduleNoteInline, TeachersInline]
 
 
 # Register your models here.
+admin.site.register(LanguageMaster)
 admin.site.register(ProgramMaster)
 admin.site.register(ProgramSchedule, ProgramScheduleAdmin)
