@@ -12,9 +12,23 @@ class LanguageMaster(models.Model):
 
     class Meta:
         verbose_name = 'Language Master'
+        ordering = ['name']
+
+
+class ProgramCategory(models.Model):
+    name = models.CharField(max_length=50)
+    description = MarkdownField(blank=True)
+
+    def __str__(self):
+        return "%s" % self.name
+
+    class Meta:
+        verbose_name = 'Program Category'
+        ordering = ['name']
 
 
 class ProgramMaster(models.Model):
+    category = models.ForeignKey(ProgramCategory)
     name = models.CharField(max_length=50)
     STATUS_VALUES = (('A', 'Active'),
                      ('IA', 'In-Active'))
@@ -27,57 +41,33 @@ class ProgramMaster(models.Model):
 
     class Meta:
         verbose_name = 'Program Master'
-
-
-# # Create your models here.
-# class ProgramMaster(models.Model):
-#     program = models.ForeignKey(ProgramTypeMaster)
-#     language = models.ForeignKey(LanguageMaster)
-#     description = MarkdownField(blank=True)
-#
-#     def __str__(self):
-#         return "%s (%s)" % (self.program, self.language)
-#
-#     class Meta:
-#         ordering = ['program']
-#
-#     def save(self, *args, **kwargs):
-#         # clean up the name of all redundant spaces and title case it
-#         self.name = ' '.join([each_word if each_word.upper() == each_word
-#                               else each_word.title()
-#                               for each_word in self.name.split()])
-#
-#         super(ProgramMaster, self).save(*args, **kwargs)
+        ordering = ['name']
 
 
 class ProgramSchedule(models.Model):
     center = models.ForeignKey(Center)
     program = models.ForeignKey(ProgramMaster)
     language = models.ForeignKey(LanguageMaster)
+    second_language = models.ForeignKey(LanguageMaster, null=True, blank=True, related_name='second_language')
     start_date = models.DateField("start Date", null=True, blank=True)
     end_date = models.DateField("end Date", null=True, blank=True)
-    donation = models.DecimalField(default=0, max_digits=9, decimal_places=0)
-    ONLINE_REG_VALUES = (('Y', 'Yes'),
-                         ('N', 'No'))
+    donation_amount = models.IntegerField()
+    online_registration = models.CharField(null=True, blank=True, max_length=15)
 
-    online_registration = models.CharField(max_length=2, choices=ONLINE_REG_VALUES, default='Y', null=True,
-                                           blank=True, )
-    session_details = models.CharField(max_length=50, default='6.0.6')
-    contact_name = models.CharField("contact Name", null=True, blank=True, max_length=50)
-    contact_phone1 = models.CharField("Contact Phone1", max_length=15, blank=True)
+    contact_name = models.CharField("contact Name", max_length=50)
+    contact_phone1 = models.CharField("Contact Phone1", max_length=15)
     contact_phone2 = models.CharField("Contact Phone2", max_length=15, blank=True)
-    contact_email = models.EmailField("contact Email", default='xyz@gmail.com', max_length=50)
-    STATUS_VALUES = (('NW', 'New'),
+    contact_email = models.EmailField("contact Email", max_length=50)
+    STATUS_VALUES = (('AN', 'Announced'),
                      ('RO', 'Registration Open'),
-                     ('RC', 'Registration Close'),
+                     ('RC', 'Registration Closed'),
                      ('CA', 'Cancelled'),
-                     ('CO', 'Closed'),
-                     ('PE', 'Preponed'),
-                     ('PO', 'Postponed'))
+                     ('CO', 'Closed'))
 
-    status = models.CharField(max_length=2, choices=STATUS_VALUES, default='Y', null=True,
-                              blank=True, )
+    status = models.CharField(max_length=2, choices=STATUS_VALUES, default='RO')
+    total_participant_count = models.IntegerField(null=True, blank=True)
     description = MarkdownField(blank=True)
+
 
     def __str__(self):
         return "%s, %s" % (self.program, self.center)
@@ -90,6 +80,7 @@ class ProgramSchedule(models.Model):
 
     class Meta:
         verbose_name = 'Program Schedule'
+        ordering = ['start_date', 'status']
 
 
 class VenueAddress(models.Model):
@@ -158,13 +149,6 @@ class ScheduleNote(models.Model):
 
 class ClassTeachers(models.Model):
     program = models.ForeignKey(ProgramSchedule)
-    BATCH_VALUES = (('M', 'Morning'),
-                    ('N', 'Noon'),
-                    ('E', 'Evening'),
-                    ('F', 'Full day'))
-
-    batch = models.CharField(max_length=2, choices=BATCH_VALUES, default='F', null=True,
-                             blank=True)
 
     TEACHER_VALUES = (('MT', 'Main Teacher'),
                       ('CT', 'Co Teacher'),
@@ -176,3 +160,25 @@ class ClassTeachers(models.Model):
 
     class Meta:
         verbose_name = 'Class Teachers'
+
+
+class BatchMaster(models.Model):
+    name = models.CharField(max_length=50)
+    description = MarkdownField(blank=True)
+
+    def __str__(self):
+        return "%s" % self.name
+
+    class Meta:
+        verbose_name = 'Batch Master'
+        ordering = ['name']
+
+
+class ProgramBatch(models.Model):
+    program = models.ForeignKey(ProgramSchedule)
+    batch = models.ForeignKey(BatchMaster)
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Program Batch'

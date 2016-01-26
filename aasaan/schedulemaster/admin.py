@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import ProgramMaster, ProgramSchedule, VenueAddress, ScheduleNote, ClassTeachers, \
-    LanguageMaster
+    LanguageMaster, ProgramCategory, ProgramBatch, BatchMaster
 from django_markdown.admin import MarkdownModelAdmin, MarkdownInlineAdmin
 
 
@@ -22,17 +22,26 @@ class TeachersInline(admin.TabularInline):
     max_num = 10
 
 
+class BatchMasterInline(admin.TabularInline):
+    model = ProgramBatch
+    extra = 0
+    max_num = 10
+
+
 class ProgramScheduleAdmin(MarkdownModelAdmin):
-    list_display = ('program', 'zone_name', 'center', 'status', 'session_details', 'contact_phone1')
+    list_display = ('program', 'zone_name', 'center', 'status', 'contact_phone1')
 
     list_filter = ('program', 'status')
 
     search_fields = ('program', 'center', 'status')
 
-    inlines = [VenueAddressInline, ScheduleNoteInline, TeachersInline]
+    inlines = [VenueAddressInline, ScheduleNoteInline, TeachersInline, BatchMasterInline]
 
 
 # Register your models here.
 admin.site.register(LanguageMaster)
+admin.site.register(ProgramCategory)
 admin.site.register(ProgramMaster)
+admin.site.register(BatchMaster)
 admin.site.register(ProgramSchedule, ProgramScheduleAdmin)
+
