@@ -68,7 +68,6 @@ class ProgramSchedule(models.Model):
     total_participant_count = models.IntegerField(null=True, blank=True)
     description = MarkdownField(blank=True)
 
-
     def __str__(self):
         return "%s, %s" % (self.program, self.center)
 
@@ -182,3 +181,14 @@ class ProgramBatch(models.Model):
 
     class Meta:
         verbose_name = 'Program Batch'
+
+
+class ProgramDetails(models.Model):
+    program = models.ForeignKey(ProgramSchedule)
+    intro_count = models.IntegerField(null=True, blank=True)
+    absentees_count = models.IntegerField(null=True, blank=True)
+    volunteers_count = models.IntegerField(null=True, blank=True)
+    initiation_volunteers = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Program Details'
