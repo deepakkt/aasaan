@@ -37,6 +37,7 @@ INSTALLED_APPS = (
     'contacts',
     'schedules',
     'django_markdown',
+    'communication',
 )
 
 MIDDLEWARE_CLASSES = (
