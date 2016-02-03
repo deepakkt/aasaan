@@ -121,6 +121,7 @@ class ContactAdmin(MarkdownModelAdmin):
                ContactNoteInline, ContactRoleGroupInline]
 
 
+
 class RoleGroupAdmin(admin.ModelAdmin):
     inlines = [ContactRoleGroupInline2]
 

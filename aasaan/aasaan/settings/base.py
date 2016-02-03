@@ -39,6 +39,8 @@ INSTALLED_APPS = (
     'schedules',
     'AasaanUser',
     'materials',
+    'django_markdown',
+    'communication',
 )
 
 MIDDLEWARE_CLASSES = (
