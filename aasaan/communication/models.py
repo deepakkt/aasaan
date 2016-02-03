@@ -45,7 +45,7 @@ class Payload(AbstractPayload):
                                           default=COMMUNICATION_TYPES[0][0], blank=True)
     communication_context = models.CharField(max_length=15, choices=COMMUNICATION_CONTEXTS,
                                              default=COMMUNICATION_CONTEXTS[0][0])
-    communication_date = models.DateField(auto_now_add=True)
+    communication_date = models.DateTimeField(auto_now_add=True)
     communication_hash = models.CharField(max_length=100, blank=True)
     communication_notes = MarkdownField()
     communication_message = MarkdownField()
@@ -101,6 +101,18 @@ class PayloadDetail(AbstractPayload):
 
     class Meta:
         ordering = ['communication', 'communication_recipient']
+
+
+class EmailSetting(models.Model):
+    RECIPIENT_VISIBILITY = (('BCC', 'All recipients in BCC'),
+                            ('TO/CC', 'First recipient in "To", others in CC'),
+                            ('TO/BCC', 'First recipient in "To", others in BCC'),
+                            ('Individual', 'Send individual email to all (Slower)'),)
+    recipient_visibility = models.CharField(max_length=10, choices=RECIPIENT_VISIBILITY,
+                                            default=RECIPIENT_VISIBILITY[0][0])
+
+    def __str__(self):
+        return "!!Do not delete this row -AND- do not add another row!!"
 
 
 class EmailProfile(models.Model):
