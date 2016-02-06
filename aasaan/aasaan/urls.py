@@ -12,6 +12,7 @@ urlpatterns = patterns('',
     url(r'^admin/', include(admin.site.urls)),
     url(r'^contacts/', include(contacts.urls, namespace='contacts')),
     url(r'^markdown/', include('django_markdown.urls')),
+    url(r'^accounts/', include('allauth.urls')),
 )
 
 

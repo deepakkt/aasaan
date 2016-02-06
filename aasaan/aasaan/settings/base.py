@@ -27,6 +27,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Application definition
 
+# core django apps
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -34,13 +35,30 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_markdown',
+    'django.contrib.sites',
+    'django.contrib.admindocs',)
+
+# apps built for this application
+INSTALLED_APPS += (
     'contacts',
     'schedules',
     'AasaanUser',
     'materials',
     'communication',
 )
+
+# third party apps
+INSTALLED_APPS += (
+    'django_markdown',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    # 'allauth.socialaccount.providers.facebook',
+)
+
+SITE_ID = 1
+
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -52,6 +70,37 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of `allauth`
+    "django.contrib.auth.backends.ModelBackend",
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    "allauth.account.auth_backends.AuthenticationBackend"
+)
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+    "django.core.context_processors.request",
+    "django.contrib.auth.context_processors.auth",
+)
+
+# auth and allauth settings
+LOGIN_REDIRECT_URL = '/admin/'
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_PROVIDERS = {
+    'google':
+        {'SCOPE': ['profile', 'email'],
+         'AUTH_PARAMS': {'access_type': 'online'}},
+
+    'facebook': {
+        'SCOPE': ['email', 'publish_stream'],
+        'METHOD': 'js_sdk'  # instead of 'oauth2'
+    },
+}
+
+# Override allauth adapter to auto-login the user
+# We are overriding logic in allauth.socialaccount.adapter.DefaultSocialAccountAdapter
+# under adapter.py in django-allauth
+SOCIALACCOUNT_ADAPTER = 'AasaanUser.social_login.SocialAccountAdapter'
 
 ROOT_URLCONF = 'aasaan.urls'
 
