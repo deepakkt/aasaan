@@ -45,6 +45,7 @@ INSTALLED_APPS += (
     'AasaanUser',
     'materials',
     'communication',
+    'schedulemaster',
 )
 
 # third party apps
