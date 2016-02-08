@@ -98,7 +98,7 @@ class ProgramSchedule(models.Model):
     center = models.ForeignKey(Center)
     program_location = models.CharField(max_length=100)
     language = models.ForeignKey(LanguageMaster)
-    second_language = models.ForeignKey(LanguageMaster, null=True,
+    second_language = models.ForeignKey(LanguageMaster, null=True, blank=True,
                                         related_name='second_language')
     start_date = models.DateField("start Date")
     end_date = models.DateField("end Date")
@@ -157,6 +157,7 @@ class ProgramVenueAddress(models.Model):
     country = models.CharField(max_length=25, blank=True)
 
     contact_number = models.CharField("contact number for this address", max_length=15, blank=True)
+    contact_email = models.EmailField("email for this address", max_length=100, blank=True)
 
     def __str__(self):
         return "%s - venue for program" % self.program
@@ -252,7 +253,7 @@ class ProgramScheduleCounts(models.Model):
     value = models.IntegerField(default=0)
 
     def __str__(self):
-        return "%s - %s - count" % self.program, self.category
+        return "%s - %s - count" % (self.program, self.category)
 
     class Meta:
         verbose_name = 'program count'
