@@ -199,7 +199,7 @@ class ProgramVenueAddress(models.Model):
         if self.country:
             self.country = self.country.title().strip()
 
-        super(VenueAddress, self).save(*args, **kwargs)
+        super(ProgramVenueAddress, self).save(*args, **kwargs)
 
     class Meta:
         verbose_name = 'venue address'

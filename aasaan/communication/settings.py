@@ -19,6 +19,6 @@ COMMUNICATION_CONTEXTS = (('Communication', 'Planned Communication'),
 communication_dispatcher = {'SMS': 'send_smscountry_sms',
                             'EMail': 'send_email'}
 
-#sms defaults
-sms_length_limit = 450  #allow upto 3 SMS'es as one SMS. More than that is unreliable
+# sms defaults
+sms_length_limit = 450  # allow upto 3 SMS'es as one SMS. More than that is unreliable
 smscountry_api_url = "http://api.smscountry.com/SMSCwebservice_bulk.aspx"
