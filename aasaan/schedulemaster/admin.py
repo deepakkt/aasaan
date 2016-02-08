@@ -1,52 +1,99 @@
 from django.contrib import admin
-from .models import ProgramMaster, ProgramSchedule, VenueAddress, ScheduleNote, ClassTeachers, \
-    LanguageMaster, ProgramCategory, ProgramBatch, BatchMaster, ProgramDetails
+
+from contacts.models import Contact, IndividualRole
+from .models import LanguageMaster, ProgramCategory, ProgramMaster, \
+    ProgramMasterCategory, ProgramSchedule, ProgramVenueAddress, ProgramScheduleNote, \
+    ProgramTeacher, BatchMaster, ProgramBatch, ProgramScheduleCounts, \
+    ProgramCountMaster
+
 from django_markdown.admin import MarkdownModelAdmin, MarkdownInlineAdmin
 
 
-class VenueAddressInline(admin.StackedInline):
-    model = VenueAddress
-    extra = 0
-    max_num = 1
+class LanguageMasterAdmin(MarkdownModelAdmin):
+    list_display = ('name',)
 
 
-class ScheduleNoteInline(MarkdownInlineAdmin, admin.TabularInline):
-    model = ScheduleNote
-    extra = 0
-    max_num = 1
+class BatchMasterAdmin(MarkdownModelAdmin):
+    list_display = ('name',)
 
 
-class TeachersInline(admin.TabularInline):
-    model = ClassTeachers
-    extra = 0
-    max_num = 10
+class ProgramCategoryAdmin(MarkdownModelAdmin):
+    list_display = ('name',)
 
 
-class BatchMasterInline(admin.TabularInline):
+class ProgramCountMasterAdmin(admin.ModelAdmin):
+    list_display = ('count_category',)
+
+
+class ProgramMasterCategoryAdmin(admin.TabularInline):
+    model = ProgramMasterCategory
+    extra = 1
+
+
+class ProgramMasterAdmin(MarkdownModelAdmin):
+    list_display = ('name', 'active')
+    list_filter = ('active',)
+
+    inlines = [ProgramMasterCategoryAdmin]
+
+
+class ProgramBatchAdmin(admin.TabularInline):
     model = ProgramBatch
+    extra = 1
+
+
+class ProgramTeacherAdmin(admin.TabularInline):
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'teacher':
+            teacher_role = IndividualRole.objects.get(role_name='Teacher', role_level='ZO')
+            kwargs["queryset"] = Contact.objects.filter(individualcontactrolezone__role=teacher_role)
+        return super(ProgramTeacherAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    model = ProgramTeacher
+    extra = 1
+
+
+class ProgramScheduleCountsAdmin(admin.TabularInline):
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'category':
+            kwargs["queryset"] = ProgramCountMaster.active_objects.all()
+        return super(ProgramScheduleCountsAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    model = ProgramScheduleCounts
     extra = 0
-    max_num = 10
 
 
-class ProgramDetailsInline(admin.StackedInline):
-    model = ProgramDetails
+class ProgramVenueAdmin(admin.StackedInline):
+    model = ProgramVenueAddress
     extra = 0
-    max_num = 1
 
 
-class ProgramScheduleAdmin(MarkdownModelAdmin):
-    list_display = ('program', 'zone_name', 'center', 'status', 'contact_phone1')
-
-    list_filter = ('program', 'status')
-
-    search_fields = ('program', 'center', 'status')
-
-    inlines = [VenueAddressInline, ScheduleNoteInline, TeachersInline, BatchMasterInline, ProgramDetailsInline]
+class ProgramScheduleNoteAdmin(MarkdownInlineAdmin, admin.TabularInline):
+    model = ProgramScheduleNote
+    extra = 0
 
 
-# Register your models here.
-admin.site.register(LanguageMaster)
-admin.site.register(ProgramCategory)
-admin.site.register(ProgramMaster)
-admin.site.register(BatchMaster)
+class ProgramScheduleAdmin(admin.ModelAdmin):
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'program':
+            kwargs["queryset"] = ProgramMaster.active_objects.all()
+        return super(ProgramScheduleAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    list_display = ['program_name', 'center', 'program_location', 'start_date',
+                    'status']
+
+    list_filter = ['status']
+
+    search_fields = ['center', 'program_location']
+
+    inlines = [ProgramBatchAdmin, ProgramTeacherAdmin,
+               ProgramScheduleCountsAdmin, ProgramVenueAdmin,
+               ProgramScheduleNoteAdmin]
+
+
+admin.site.register(LanguageMaster, LanguageMasterAdmin)
+admin.site.register(BatchMaster, BatchMasterAdmin)
+admin.site.register(ProgramCategory, ProgramCategoryAdmin)
+admin.site.register(ProgramMaster, ProgramMasterAdmin)
+admin.site.register(ProgramCountMaster, ProgramCountMasterAdmin)
 admin.site.register(ProgramSchedule, ProgramScheduleAdmin)

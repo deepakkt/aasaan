@@ -159,6 +159,7 @@ class Contact(models.Model):
         ordering = ['first_name', 'last_name']
         verbose_name = 'PCC Contact'
 
+
 class ContactNote(models.Model):
     """Notes about the contact"""
     contact = models.ForeignKey(Contact)
@@ -275,6 +276,7 @@ class ContactRoleGroup(models.Model):
 
     def __str__(self):
         return "%s (%s)" %(self.contact.full_name, self.role.role_name)
+
 
 class Zone(models.Model):
     """Zone definitions"""
