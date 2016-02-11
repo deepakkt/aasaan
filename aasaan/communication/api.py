@@ -10,7 +10,102 @@ from django.core.mail.message import EmailMultiAlternatives
 
 import communication.settings as comm_settings
 from .settings import communication_dispatcher
-from .models import Payload, PayloadDetail, EmailProfile, EmailSetting
+from .models import Payload, PayloadDetail, EmailProfile, EmailSetting, \
+    SendGridProfile
+import sendgrid
+
+
+def send_sendgrid_email(message=None, *args, **kwargs):
+    def _setup_smtp_connection(profile):
+        try:
+            default_profile = SendGridProfile.objects.get(default=True)
+        except ObjectDoesNotExist:
+            raise ValidationError('No default SendGrid profile found. Mark one profile as default.')
+
+        if profile is None:
+            sendgrid_email_profile = default_profile
+        else:
+            try:
+                sendgrid_email_profile = SendGridProfile.objects.get(profile_name=profile)
+            except ObjectDoesNotExist:
+                sendgrid_email_profile = default_profile
+
+        try:
+            connection = sendgrid.SendGridClient(sendgrid_email_profile.api_key,
+                                                 raise_errors=True)
+        except (sendgrid.SendGridClientError, sendgrid.SendGridServerError):
+            raise ValidationError('Could not setup SendGrid connection. Check connectivity or credentials.')
+
+        return connection, sendgrid_email_profile
+
+    connection, email_profile = _setup_smtp_connection(kwargs.get('profile'))
+
+    message_recipients = PayloadDetail.objects.filter(communication=message)
+    message.set_in_progress()
+    message.save()
+
+    email_message = sendgrid.Mail()
+    email_message.set_from('%s <%s>' %(email_profile.display_name,
+                                       email_profile.from_email))
+    email_message.set_subject(message.communication_title)
+    email_message.set_html(markdown.markdown(message.communication_message))
+    email_message.set_text(message.communication_message)
+
+    email_setting = EmailSetting.objects.all()[0]
+
+    if email_setting.recipient_visibility == "BCC":
+        email_message.add_bcc([x.communication_recipient for x in message_recipients])
+    elif email_setting.recipient_visibility == "TO/CC":
+        email_message.add_to([message_recipients[0].communication_recipient])
+        email_message.add_cc([x.communication_recipient for x in message_recipients[1:]])
+    elif email_setting.recipient_visibility == "TO/BCC":
+        email_message.add_to([message_recipients[0].communication_recipient])
+        email_message.add_bcc([x.communication_recipient for x in message_recipients[1:]])
+
+    if email_setting.recipient_visibility in ['BCC', 'TO/BCC', 'TO/CC']:
+        try:
+            connection.send(email_message)
+            message.set_success()
+            for each_recipient in message_recipients:
+                each_recipient.set_success()
+                each_recipient.communication_send_time = datetime.now()
+                each_recipient.save()
+        except (sendgrid.SendGridClientError, sendgrid.SendGridServerError):
+            message.set_error()
+
+            for each_recipient in message_recipients:
+                each_recipient.set_error()
+                each_recipient.save()
+
+        message.save()
+        return message.communication_status
+
+    error_free = True
+
+    for each_recipient in message_recipients:
+        each_recipient.set_in_progress()
+        each_recipient.save()
+
+        email_message.add_to([each_recipient.communication_recipient])
+
+        try:
+            connection.send(email_message)
+            each_recipient.set_success()
+            each_recipient.communication_send_time = datetime.now()
+        except (sendgrid.SendGridClientError, sendgrid.SendGridServerError):
+            each_recipient.set_error()
+            error_free = False
+
+        each_recipient.save()
+
+    if error_free:
+        message.set_success()
+    else:
+        message.set_error()
+
+    message.save()
+    return message.communication_status
+
 
 
 def send_email(message=None, *args, **kwargs):

@@ -146,3 +146,62 @@ class EmailProfile(models.Model):
                         profile.save()
 
         super(EmailProfile, self).save(*args, **kwargs)
+
+
+class SendGridProfile(models.Model):
+    profile_name = models.CharField(max_length=255)
+    display_name = models.CharField("name to display in the 'From' field", max_length=100)
+    from_email = models.EmailField("from email address", max_length=100)
+    api_key = models.CharField(max_length=100)
+    default = models.BooleanField("use this as default profile?", default=False)
+    remarks = MarkdownField(blank=True)
+
+    def __str__(self):
+        return self.profile_name
+
+    def save(self, *args, **kwargs):
+        # if this profile is made default, mark others as not default
+        if self.default:
+            for profile in SendGridProfile.objects.all():
+                if profile == self:
+                    pass
+                else:
+                    if profile.default:
+                        profile.default = False
+                        profile.save()
+
+        super(SendGridProfile, self).save(*args, **kwargs)
+
+
+class CommunicationProfile(models.Model):
+    communication_type = models.CharField(max_length=25, choices=COMMUNICATION_TYPES,
+                                          default=COMMUNICATION_TYPES[0][0])
+    profile_name = models.CharField(max_length=255)
+    sender_name = models.CharField("sender name to use", max_length=100, blank=True)
+    sender_id = models.CharField("from email or ID to use", max_length=100, blank=True)
+    user_name = models.CharField("user name or API key", max_length=100)
+    password = models.CharField("password (if applicable)", max_length=255, blank=True)
+    smtp_server = models.CharField("SMTP server address (for email only)", max_length=100,
+                                   default="smtp.gmail.com")
+    smtp_port = models.SmallIntegerField("SMTP port (for email only)", default=587)
+    use_tls = models.BooleanField("TLS settings (email only)", default=True)
+    use_ssl = models.BooleanField("SSL settings (email only)", default=False)
+    default = models.BooleanField("use this as default profile?", default=False)
+    remarks = MarkdownField(blank=True)
+
+    def __str__(self):
+        return "%s (%s)" % (self.profile_name, self.communication_type)
+
+    def save(self, *args, **kwargs):
+        # if this profile is made default, mark others as not default
+        if self.default:
+            for profile in CommunicationProfile.objects.all():
+                if profile == self:
+                    pass
+                else:
+                    if profile.default and profile.communication_type \
+                            == self.communication_type:
+                        profile.default = False
+                        profile.save()
+
+        super(CommunicationProfile, self).save(*args, **kwargs)

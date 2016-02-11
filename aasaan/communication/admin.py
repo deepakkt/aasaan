@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Payload, PayloadDetail, EmailProfile, EmailSetting
+from .models import Payload, PayloadDetail, EmailProfile, EmailSetting, \
+    SendGridProfile
 
 from django_markdown.admin import MarkdownModelAdmin
 from django.forms import ModelForm, PasswordInput
@@ -75,3 +76,4 @@ class EmailProfileAdmin(MarkdownModelAdmin):
 admin.site.register(Payload, PayloadAdmin)
 admin.site.register(EmailProfile, EmailProfileAdmin)
 admin.site.register(EmailSetting)
+admin.site.register(SendGridProfile)
