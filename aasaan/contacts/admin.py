@@ -1,15 +1,17 @@
 from django.contrib import admin
 from django.db.models.query import QuerySet
-
+from import_export import resources
+from import_export.admin import ImportExportModelAdmin
+from import_export.admin import ImportExportMixin, ExportActionModelAdmin
 from .models import Contact, ContactNote, \
     ContactAddress, ContactRoleGroup, RoleGroup, Zone, \
     Center, IndividualRole, IndividualContactRoleCenter, \
     IndividualContactRoleZone
-
 from django_markdown.admin import MarkdownModelAdmin, MarkdownInlineAdmin
 
 admin.AdminSite.site_header = "aasaan"
 admin.AdminSite.site_title = "aasaan"
+
 
 # Register your models here.
 
@@ -59,31 +61,31 @@ class IndividualContactRoleZoneInline(admin.TabularInline):
     extra = 1
 
 
-class ContactAdmin(MarkdownModelAdmin):
-    #filter contact records based on user permissions
+class ContactAdmin(ImportExportMixin, MarkdownModelAdmin):
+    # filter contact records based on user permissions
     def get_queryset(self, request):
         qs = super(ContactAdmin, self).get_queryset(request)
 
-        #give entire set if user is a superuser irrespective of zone and center assignments
+        # give entire set if user is a superuser irrespective of zone and center assignments
         if request.user.is_superuser:
             return qs
 
-        #get all centers this user belongs to
+        # get all centers this user belongs to
         user_centers = [x.center for x in request.user.aasaanusercenter_set.all()]
         user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
 
-        #get all contacts who have a role in above user's centers
+        # get all contacts who have a role in above user's centers
         center_contacts = Contact.objects.filter(individualcontactrolecenter__center__in=user_centers)
 
-        #contacts may belong to centers which belong to zones above user has permission for. get those too
+        # contacts may belong to centers which belong to zones above user has permission for. get those too
         center_zonal_contacts = Contact.objects.filter(individualcontactrolecenter__center__zone__in=user_zones)
 
-        #finally directly get contacts belonging to zone the user has access to
+        # finally directly get contacts belonging to zone the user has access to
         zone_contacts = Contact.objects.filter(individualcontactrolezone__zone__in=user_zones)
 
-        #merge all of them
+        # merge all of them
         all_contacts = center_contacts | zone_contacts | center_zonal_contacts
-        #and de-dupe them!
+        # and de-dupe them!
         all_contacts = all_contacts.distinct()
 
         return all_contacts
@@ -109,17 +111,16 @@ class ContactAdmin(MarkdownModelAdmin):
                                               'id_proof_type', 'id_proof_other',
                                               'id_proof_number',
                                               'pushbullet_token'
-                                         ], 'classes' : ['collapse']}),
+                                              ], 'classes': ['collapse']}),
         ('Remarks', {'fields': ['remarks']}),
     ]
 
-    readonly_fields = ('profile_image', )
+    readonly_fields = ('profile_image',)
 
     inlines = [ContactAddressInline,
                IndividualContactRoleZoneInline,
                IndividualContactRoleCenterInline,
                ContactNoteInline, ContactRoleGroupInline]
-
 
 
 class RoleGroupAdmin(admin.ModelAdmin):
@@ -129,7 +130,19 @@ class RoleGroupAdmin(admin.ModelAdmin):
 class ZoneAdmin(admin.ModelAdmin):
     inlines = [CenterInline]
 
+
+class RoleResource(resources.ModelResource):
+    class Meta:
+        model = IndividualRole
+        fields = ('id', 'role_name', 'role_level', 'role_remarks')
+        ordering = 'role_name'
+
+
+class RoleAdmin(ImportExportMixin, admin.ModelAdmin):
+    resource_class = RoleResource
+
+
 admin.site.register(Contact, ContactAdmin)
 admin.site.register(RoleGroup, RoleGroupAdmin)
 admin.site.register(Zone, ZoneAdmin)
-admin.site.register(IndividualRole)
+admin.site.register(IndividualRole, RoleAdmin)
