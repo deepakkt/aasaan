@@ -2,7 +2,8 @@ from django.contrib import admin
 from django.db.models.query import QuerySet
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
-from import_export.admin import ImportExportMixin, ExportActionModelAdmin
+from import_export.admin import ImportExportMixin, ExportActionModelAdmin, ExportMixin
+from import_export.formats import base_formats
 from .models import Contact, ContactNote, \
     ContactAddress, ContactRoleGroup, RoleGroup, Zone, \
     Center, IndividualRole, IndividualContactRoleCenter, \
@@ -61,7 +62,22 @@ class IndividualContactRoleZoneInline(admin.TabularInline):
     extra = 1
 
 
-class ContactAdmin(ImportExportMixin, MarkdownModelAdmin):
+class ContactResource(resources.ModelResource):
+
+
+    formats = base_formats.XLS
+
+    class Meta:
+        model = Contact
+        fields = ('id', 'first_name', 'last_name', 'primary_email', 'date_of_birth')
+        ordering = 'first_name'
+        widgets = {
+                'date_of_birth': {'format': '%d.%m.%Y'},
+                }
+
+
+
+class ContactAdmin(ExportMixin, MarkdownModelAdmin):
     # filter contact records based on user permissions
     def get_queryset(self, request):
         qs = super(ContactAdmin, self).get_queryset(request)
@@ -121,6 +137,10 @@ class ContactAdmin(ImportExportMixin, MarkdownModelAdmin):
                IndividualContactRoleZoneInline,
                IndividualContactRoleCenterInline,
                ContactNoteInline, ContactRoleGroupInline]
+
+    formats = [base_formats.XLS,]
+
+    resource_class = ContactResource
 
 
 class RoleGroupAdmin(admin.ModelAdmin):
