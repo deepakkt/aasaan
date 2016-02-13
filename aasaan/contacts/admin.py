@@ -139,7 +139,7 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
                ContactNoteInline, ContactRoleGroupInline]
 
     formats = [base_formats.XLS,]
-
+    to_encoding = 'utf-8'
     resource_class = ContactResource
 
 
