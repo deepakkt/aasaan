@@ -7,7 +7,7 @@ from django_markdown.admin import MarkdownModelAdmin
 from django.forms import ModelForm, PasswordInput
 from django.core.exceptions import ValidationError
 
-from .api import send_communication
+from .api_refactor import send_communication
 
 
 
@@ -42,10 +42,10 @@ class PayloadAdmin(MarkdownModelAdmin):
     list_filter = ('communication_type', 'communication_status')
 
     fields = ('communication_title', 'communication_type', 'communication_date',
-              'communication_status',
+              'communication_status', 'communication_status_message',
               'communication_hash', 'communication_notes', 'communication_message')
 
-    readonly_fields = ('communication_date', 'communication_hash')
+    readonly_fields = ('communication_date', 'communication_hash', 'communication_status_message')
 
     inlines = [PayloadDetailAdmin]
 
@@ -66,6 +66,7 @@ class PayloadAdmin(MarkdownModelAdmin):
         self.message_user(request, 'Communication dispatched. API reports ==> %s' % message_status)
 
     send_selected_messages.short_description = "Send selected message"
+
 
 class EmailProfileAdmin(MarkdownModelAdmin):
     form = EmailProfileForm

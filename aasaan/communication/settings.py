@@ -25,13 +25,19 @@ communication_dispatcher = {'SMS': 'communication.api.SMSCountryMessageAdapter',
 sms_length_limit = 450  # allow upto 3 SMS'es as one SMS. More than that is unreliable
 smscountry_api_url = "http://api.smscountry.com/SMSCwebservice_bulk.aspx"
 
+smscountry_parms = {'user' : '',
+            'passwd' : '',
+            'message': '',
+            'mobilenumber': '',
+            'mtype' : 'N',
+            'DR': 'Y'}
+
+
 # email settings
 RECIPIENT_VISIBILITY = (('BCC', 'All recipients in BCC'),
                         ('TO/CC', 'First recipient in "To", others in CC'),
                         ('TO/BCC', 'First recipient in "To", others in BCC'),
                         ('Individual', 'Send individual email to all (Slower)'),)
-
-recipient_visibility = RECIPIENT_VISIBILITY[0][0]
 
 DEFAULT_EMAIL_TYPE = (('HTML', 'HTML Email'),
                       ('Text', 'Text Email'))

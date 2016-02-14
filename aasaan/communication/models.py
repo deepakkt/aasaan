@@ -6,13 +6,14 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django_markdown.models import MarkdownField
 from .settings import COMMUNICATION_TYPES, COMMUNICATION_STATUS, \
-    COMMUNICATION_CONTEXTS
+    COMMUNICATION_CONTEXTS, RECIPIENT_VISIBILITY
 
 
 # Create your models here.
 class AbstractPayload(models.Model):
     communication_status = models.CharField(max_length=25, choices=COMMUNICATION_STATUS,
                                             default=COMMUNICATION_STATUS[0][0])
+    communication_status_message = MarkdownField(blank=True)
 
     def _set_status(self, status):
         self.communication_status = status
@@ -49,6 +50,11 @@ class Payload(AbstractPayload):
     communication_hash = models.CharField(max_length=100, blank=True)
     communication_notes = MarkdownField()
     communication_message = MarkdownField()
+
+    recipient_visibility = models.CharField("recipient visibility (applies only to email profiles)",
+                                            max_length=20, blank="",
+                                            choices=RECIPIENT_VISIBILITY,
+                                            default=RECIPIENT_VISIBILITY[0][0])
 
     def recipient_count(self):
         return PayloadDetail.objects.filter(communication=self).count()
@@ -90,7 +96,6 @@ class PayloadDetail(AbstractPayload):
     communication = models.ForeignKey(Payload, on_delete=models.CASCADE)
     communication_recipient = models.CharField(max_length=100)
     communication_send_time = models.DateTimeField(null=True)
-    communication_status_message = models.TextField(blank=True)
 
     def set_send_time(self):
         self.communication_send_time = datetime.now()
