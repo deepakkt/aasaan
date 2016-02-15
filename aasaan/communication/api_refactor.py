@@ -1,16 +1,16 @@
 import requests
-import markdown
 from sys import modules
 
-from .settings import smscountry_parms as base_smscountry_parms
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-
 from django.core.mail import get_connection
 from django.core.mail.message import EmailMultiAlternatives
 
+from .settings import smscountry_parms as base_smscountry_parms
 from . import settings as comm_settings
 from .models import Payload, PayloadDetail, CommunicationProfile
+
 import sendgrid
+import markdown
 
 
 def _get_param(param_name):
@@ -36,7 +36,7 @@ class MessageAdapter(object):
             raise ValidationError('Message key cannot be empty')
 
         try:
-            self.message = Payload.object.get(message_key=self.message_key)
+            self.message = Payload.objects.get(communication_hash=self.message_key)
         except ObjectDoesNotExist:
             raise ValidationError("Message key '%s' not found" % (self.message_key))
 
@@ -140,7 +140,9 @@ class MessageAdapter(object):
         self.message.set_in_progress()
         self.message.save()
         error_free = True
+        raised_exception = None
 
+        print('looper ==>', self.loop_individual_recipient)
         if self.loop_individual_recipient:
             for each_recipient in self.message_recipients:
                 self.setup_final_adapter_message(recipient=each_recipient)
@@ -152,6 +154,7 @@ class MessageAdapter(object):
                     each_recipient.communication_status_message = 'Success!'
                     each_recipient.save()
                 except self.message_send_exceptions as e:
+                    raised_exception = e
                     each_recipient.set_error()
                     each_recipient.communication_status_message = 'Error: %s' % (e.args[0])
                     each_recipient.save()
@@ -166,6 +169,7 @@ class MessageAdapter(object):
                     each_recipient.save()
             except self.message_send_exceptions as e:
                 error_free = False
+                raised_exception = e
                 for each_recipient in self.message_recipients:
                     each_recipient.set_error()
                     each_recipient.communication_status_message = 'Error: %s' % (e.args[0])
@@ -173,9 +177,10 @@ class MessageAdapter(object):
 
         if error_free:
             self.message.set_success()
+            self.message.communication_status_message = 'Message appears to be successfully sent!'
         else:
             self.message.set_error()
-            self.message.communication_status_message = '; '.join(e.args)
+            self.message.communication_status_message = raised_exception.args[0]
 
         self.message.save()
 
@@ -203,17 +208,18 @@ class EmailMessageAdapter(MessageAdapter):
         super(EmailMessageAdapter, self).load_communication_settings()
         self.recipient_visibility = self.message.recipient_visibility
         self.default_email_type = _get_param('default_email_type').lower()
-        self.loop_individual_recipient = True if self.recipient_visibility == 'Individual' else False
+        self.loop_individual_recipient = True if \
+            self.recipient_visibility == comm_settings.RECIPIENT_VISIBILITY[-1][0] \
+            else False
         self.message_send_exceptions = ValidationError
-
-        # setup a lambda function to return markdown processing if html else return parm as is
-        self._message_munge = lambda mtype: markdown.markdown if mtype == 'html' else (lambda x: x)
-        self._message_munge = self._message_munge(self.default_email_type)
+        self._message_munge = markdown.markdown if \
+            self.default_email_type == comm_settings.DEFAULT_EMAIL_TYPE[0][0] \
+            else (lambda x: x)
 
     def setup_initial_adapter_message(self):
         self.adapter_message = EmailMultiAlternatives()
         self.adapter_message.subject = self.message.communication_title
-        self.adapter_message.from_email = "%s <%s>" % (self.profile.display_name,
+        self.adapter_message.from_email = "%s <%s>" % (self.profile.sender_name,
                                                        self.profile.user_name)
         self.adapter_message.body = self._message_munge(self.message.communication_message)
         self.adapter_message.content_subtype = self.default_email_type
@@ -299,10 +305,10 @@ class SMSCountryMessageAdapter(MessageAdapter):
         self.connection = _get_param('smscountry_api_url')
         self.adapter_message = base_smscountry_parms.copy()
         self.adapter_message['user'] = self.profile.user_name
-        self.adapter_message['password'] = self.profile.password
+        self.adapter_message['passwd'] = self.profile.password
 
     def validate_message(self):
-        message_length = len(self.message.communication_mesdsage)
+        message_length = len(self.message.communication_message)
         if message_length > self.allowed_sms_length:
             raise ValidationError('SMS length exceeds allowed limit. '
                                   'Allowed ==> %d, '
@@ -319,9 +325,11 @@ class SMSCountryMessageAdapter(MessageAdapter):
 
     def setup_final_adapter_message(self, *args, **kwargs):
         self.adapter_message['mobilenumber'] = kwargs.get('recipient').communication_recipient
+        print('adapter message ==> ', self.adapter_message)
 
     def send_adapter_communication(self):
         sms_request = requests.get(self.connection, params=self.adapter_message)
+        print('sms status==>', sms_request.text)
 
         if sms_request.text[:3] == "OK:":
             pass
@@ -334,19 +342,24 @@ class SMSCountryMessageAdapter(MessageAdapter):
 def send_communication(communication_type="EMail",
                        message_key="", *args, **kwargs):
     this_module = modules[__name__]
-    message_api = getattr(this_module,
-                          _get_param('communication_dispatcher')[communication_type])
+    api_full_name = _get_param('communication_dispatcher')[communication_type]
+    api_name = api_full_name.split('.')[-1]
+    message_api = getattr(this_module, api_name)
 
     if not message_api:
         raise ValidationError("No API has been defined for communication type '%s'"
                               % (communication_type))
 
-    message_container = message_api(message_key)
+    print('stage1', message_api)
+    message_container = message_api(message_key=message_key)
+    print('stage2')
     message_status = message_container.send_message()
+    print('stage3')
 
-    if message_status != comm_settings.COMMUNICATION_STATUS[2]:
+    if message_status != comm_settings.COMMUNICATION_STATUS[2][0]:
         raise ValidationError("Message send for key '%s' does not report success. "
                               "Review communication status inside payload"
                               "for error details" % (message_key))
 
+    print('stage4')
     return message_status

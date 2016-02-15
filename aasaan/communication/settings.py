@@ -17,9 +17,9 @@ COMMUNICATION_CONTEXTS = (('Communication', 'Planned Communication'),
 # add dispatchers here. Define a new python module under communication
 # say pushbullet.py or pushover.py. Include your logic there. Import the core function
 # (added to dispatcher below) into api.py
-communication_dispatcher = {'SMS': 'communication.api.SMSCountryMessageAdapter',
-                            'EMail': 'communication.api.EmailMessageAdapter',
-                            'SendGrid': 'communication.api.SendGridMessageAdapter'}
+communication_dispatcher = {'SMS': 'communication.api_refactor.SMSCountryMessageAdapter',
+                            'EMail': 'communication.api_refactor.EmailMessageAdapter',
+                            'SendGrid': 'communication.api_refactor.SendGridMessageAdapter'}
 
 # sms defaults
 sms_length_limit = 450  # allow upto 3 SMS'es as one SMS. More than that is unreliable

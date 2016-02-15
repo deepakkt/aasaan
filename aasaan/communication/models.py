@@ -108,76 +108,6 @@ class PayloadDetail(AbstractPayload):
         ordering = ['communication', 'communication_recipient']
 
 
-class EmailSetting(models.Model):
-    RECIPIENT_VISIBILITY = (('BCC', 'All recipients in BCC'),
-                            ('TO/CC', 'First recipient in "To", others in CC'),
-                            ('TO/BCC', 'First recipient in "To", others in BCC'),
-                            ('Individual', 'Send individual email to all (Slower)'),)
-    recipient_visibility = models.CharField(max_length=10, choices=RECIPIENT_VISIBILITY,
-                                            default=RECIPIENT_VISIBILITY[0][0])
-
-    def __str__(self):
-        return "!!Do not delete this row -AND- do not add another row!!"
-
-
-class EmailProfile(models.Model):
-    profile_name = models.CharField(max_length=100)
-    display_name = models.CharField("name to display in the 'From' field", max_length=100)
-    user_name = models.CharField(max_length=100)
-    password = models.CharField(max_length=255)
-    smtp_server = models.CharField(max_length=100, default="smtp.gmail.com")
-    smtp_port = models.SmallIntegerField(default=587)
-    use_tls = models.BooleanField(default=True)
-    use_ssl = models.BooleanField(default=False)
-    default = models.BooleanField("use this as default profile?", default=False)
-    remarks = MarkdownField(blank=True)
-
-    def __str__(self):
-        return self.profile_name
-
-    def clean(self):
-        if self.use_ssl and self.use_tls:
-            raise ValidationError('Both SSL and TLS cannot be true. Uncheck one of them')
-
-    def save(self, *args, **kwargs):
-        # if this profile is made default, mark others as not default
-        if self.default:
-            for profile in EmailProfile.objects.all():
-                if profile == self:
-                    pass
-                else:
-                    if profile.default:
-                        profile.default = False
-                        profile.save()
-
-        super(EmailProfile, self).save(*args, **kwargs)
-
-
-class SendGridProfile(models.Model):
-    profile_name = models.CharField(max_length=255)
-    display_name = models.CharField("name to display in the 'From' field", max_length=100)
-    from_email = models.EmailField("from email address", max_length=100)
-    api_key = models.CharField(max_length=100)
-    default = models.BooleanField("use this as default profile?", default=False)
-    remarks = MarkdownField(blank=True)
-
-    def __str__(self):
-        return self.profile_name
-
-    def save(self, *args, **kwargs):
-        # if this profile is made default, mark others as not default
-        if self.default:
-            for profile in SendGridProfile.objects.all():
-                if profile == self:
-                    pass
-                else:
-                    if profile.default:
-                        profile.default = False
-                        profile.save()
-
-        super(SendGridProfile, self).save(*args, **kwargs)
-
-
 class CommunicationProfile(models.Model):
     communication_type = models.CharField(max_length=25, choices=COMMUNICATION_TYPES,
                                           default=COMMUNICATION_TYPES[0][0])
@@ -209,4 +139,8 @@ class CommunicationProfile(models.Model):
                         profile.default = False
                         profile.save()
 
+        self.profile_name = self.profile_name.strip().title()
         super(CommunicationProfile, self).save(*args, **kwargs)
+
+    class Meta:
+        unique_together = ['communication_type', 'profile_name']
