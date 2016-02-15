@@ -1,209 +1,358 @@
 import requests
-import markdown
-from datetime import datetime
+from sys import modules
 
-from aasaan.settings.config import smscountry_parms as base_smscountry_parms
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-
 from django.core.mail import get_connection
 from django.core.mail.message import EmailMultiAlternatives
 
-import communication.settings as comm_settings
-from .settings import communication_dispatcher
-from .models import Payload, PayloadDetail, EmailProfile, EmailSetting
+from .settings import smscountry_parms as base_smscountry_parms
+from . import settings as comm_settings
+from .models import Payload, PayloadDetail, CommunicationProfile
+
+import sendgrid
+import markdown
 
 
-def send_email(message=None, *args, **kwargs):
-    def _setup_smtp_connection(profile):
+def _get_param(param_name):
+    try:
+        param_value = getattr(comm_settings, param_name)
+    except KeyError:
+        raise ValidationError("Trying to locate '%s' parameter but could not find it. "
+                              "Please define the parameter in settings.py in the communication app" % param_name)
+
+    return param_value
+
+
+class MessageAdapter(object):
+    def __init__(self, *args, **kwargs):
+        self._validate_message_key(*args, **kwargs)
+        self._setup_profile(*args, **kwargs)
+        self.get_connection()
+
+    def _validate_message_key(self, *args, **kwargs):
+        self.message_key = kwargs.get('message_key')
+
+        if not self.message_key:
+            raise ValidationError('Message key cannot be empty')
+
         try:
-            default_profile = EmailProfile.objects.get(default=True)
+            self.message = Payload.objects.get(communication_hash=self.message_key)
+        except ObjectDoesNotExist:
+            raise ValidationError("Message key '%s' not found" % (self.message_key))
+
+        if self.message.recipient_count() == 0:
+            raise ValidationError("No recipients staged for message key '%s'"
+                                  %(self.message_key))
+
+        if not self.message.is_status_pending():
+            raise ValidationError("%s is not 'pending'. Restage a fresh message" % self.message)
+
+        self.message_recipients = PayloadDetail.objects.filter(communication=self.message)
+
+        self.communication_type = self.message.communication_type
+
+    def _setup_profile(self, *args, **kwargs):
+        profile_name = kwargs.get('profile_name')
+
+        try:
+            default_profile = CommunicationProfile.objects.get(communication_type=self.communication_type,
+                                                   default=True)
         except ObjectDoesNotExist:
             raise ValidationError('No default email profile found. Mark one profile as default.')
 
-        if profile is None:
-            email_profile = default_profile
-        else:
+        if profile_name:
             try:
-                email_profile = EmailProfile.objects.get(profile_name=profile)
+                self.profile = CommunicationProfile.objects.get(communication_type=self.communication_type,
+                                                           profile_name=profile_name)
             except ObjectDoesNotExist:
-                email_profile = default_profile
+                self.profile = default_profile
+        else:
+            self.profile = default_profile
+
+    def get_connection(self):
+        """
+        inheriting class to set this up. assign self.connection at end of function
+        """
+        pass
+
+    def close_connection(self):
+        """
+        Close connection here
+        """
+        pass
+
+    def validate_message(self):
+        """
+        Place validations prior to sending the message here
+        """
+        pass
+
+    def load_communication_settings(self):
+        """
+        Load adapter specific settings here. One important variable
+        the loader needs to set is self.loop_individual_recipient.
+        Set other settings here which can be used by methods later
+        in the workflow
+        """
+        self.message_send_exceptions = None
+
+    def setup_initial_adapter_message(self):
+        """
+        This is the hook to setup the communication adapter specific message
+        object
+        """
+        self.adapter_message = None
+
+    def setup_final_adapter_message(self, *args, **kwargs):
+        """
+        Use this hook to setup the final message that will go out through the
+        communication channel
+        """
+        pass
+
+    def send_adapter_communication(self):
+        """
+        Setup the actual logic to send the message via the adapter
+        """
+        pass
+
+    def send_message(self):
+        try:
+            connection = self.connection
+        except NameError:
+            raise ValidationError("No valid connection present to send message")
+        else:
+            connection = None
+
+        self.load_communication_settings()
+        self.validate_message()
 
         try:
-            connection = get_connection(host=email_profile.smtp_server,
-                                        port=email_profile.smtp_port,
-                                        username=email_profile.user_name,
-                                        password=email_profile.password,
-                                        use_tls=email_profile.use_tls,
-                                        use_ssl=email_profile.use_ssl)
+            looper = self.loop_individual_recipient
+        except NameError:
+            raise ValidationError("'loop_individual_recipient' flag was not found. The default adapter "
+                                  "expects the inheritor to set this flag. Set this flag in the "
+                                  "'load_communication_settings' method")
+        else:
+            del looper
+
+        self.setup_initial_adapter_message()
+        self.message.set_in_progress()
+        self.message.save()
+        error_free = True
+        raised_exception = None
+
+        if self.loop_individual_recipient:
+            for each_recipient in self.message_recipients:
+                self.setup_final_adapter_message(recipient=each_recipient)
+
+                try:
+                    self.send_adapter_communication()
+                    each_recipient.set_success()
+                    each_recipient.set_send_time()
+                    each_recipient.communication_status_message = 'Success!'
+                    each_recipient.save()
+                except self.message_send_exceptions as e:
+                    raised_exception = e
+                    each_recipient.set_error()
+                    each_recipient.communication_status_message = 'Error: %s' % (e.args[0])
+                    each_recipient.save()
+                    error_free = False
+        else:
+            self.setup_final_adapter_message()
+            try:
+                self.send_adapter_communication()
+                for each_recipient in self.message_recipients:
+                    each_recipient.set_success()
+                    each_recipient.set_send_time()
+                    each_recipient.save()
+            except self.message_send_exceptions as e:
+                error_free = False
+                raised_exception = e
+                for each_recipient in self.message_recipients:
+                    each_recipient.set_error()
+                    each_recipient.communication_status_message = 'Error: %s' % (e.args[0])
+                    each_recipient.save()
+
+        if error_free:
+            self.message.set_success()
+            self.message.communication_status_message = 'Message appears to be successfully sent!'
+        else:
+            self.message.set_error()
+            self.message.communication_status_message = raised_exception.args[0]
+
+        self.message.save()
+
+        return self.message.communication_status
+
+
+class EmailMessageAdapter(MessageAdapter):
+    def get_connection(self):
+        try:
+            connection = get_connection(host=self.profile.smtp_server,
+                                        port=self.profile.smtp_port,
+                                        username=self.profile.user_name,
+                                        password=self.profile.password,
+                                        use_tls=self.profile.use_tls,
+                                        use_ssl=self.profile.use_ssl)
         except:
             raise ValidationError('Could not setup SMTP connection. Check connectivity or credentials.')
 
-        if not connection:
-            raise ValidationError('Could not setup SMTP connection. Check connectivity or credentials.')
+        self.connection = connection
 
-        return connection, email_profile
+    def close_connection(self):
+        self.connection.close()
 
-    connection, email_profile = _setup_smtp_connection(kwargs.get('profile'))
+    def load_communication_settings(self):
+        super(EmailMessageAdapter, self).load_communication_settings()
+        self.recipient_visibility = self.message.recipient_visibility
+        self.default_email_type = _get_param('default_email_type').lower()
+        self.loop_individual_recipient = True if \
+            self.recipient_visibility == comm_settings.RECIPIENT_VISIBILITY[-1][0] \
+            else False
+        self.message_send_exceptions = ValidationError
+        self._message_munge = markdown.markdown if \
+            self.default_email_type == comm_settings.DEFAULT_EMAIL_TYPE[0][0] \
+            else (lambda x: x)
 
-    message_recipients = PayloadDetail.objects.filter(communication=message)
-    message.set_in_progress()
-    message.save()
+    def setup_initial_adapter_message(self):
+        self.adapter_message = EmailMultiAlternatives()
+        self.adapter_message.subject = self.message.communication_title
+        self.adapter_message.from_email = "%s <%s>" % (self.profile.sender_name,
+                                                       self.profile.user_name)
+        self.adapter_message.body = self._message_munge(self.message.communication_message)
+        self.adapter_message.content_subtype = self.default_email_type
+        self.adapter_message.connection = self.connection
 
-    email_message = EmailMultiAlternatives()
-    email_message.subject = message.communication_title
-    email_message.from_email = "%s <%s>" % (email_profile.display_name, email_profile.user_name)
-    email_message.body = markdown.markdown(message.communication_message)
-    # email_message.attach_alternative(message.communication_message, "text/plain")
-    # deepak- this seems to override html content. Not sure why. Commenting out for now.
-    email_message.content_subtype = "html"
-    email_message.connection = connection
+    def setup_final_adapter_message(self, *args, **kwargs):
+        recipient = kwargs.get('recipient')
 
-    email_setting = EmailSetting.objects.all()[0]
+        if recipient:
+            self.adapter_message.to = recipient.communication_recipient
+            return
 
-    if email_setting.recipient_visibility == "BCC":
-        email_message.bcc = [x.communication_recipient for x in message_recipients]
-    elif email_setting.recipient_visibility == "TO/CC":
-        email_message.to = [message_recipients[0].communication_recipient]
-        email_message.cc = [x.communication_recipient for x in message_recipients[1:]]
-    elif email_setting.recipient_visibility == "TO/BCC":
-        email_message.to = [message_recipients[0].communication_recipient]
-        email_message.bcc = [x.communication_recipient for x in message_recipients[1:]]
+        if self.recipient_visibility == "BCC":
+            self.adapter_message.bcc = [x.communication_recipient for
+                                          x in self.message_recipients]
+        elif self.recipient_visibility == "TO/CC":
+            self.adapter_message.to = [self.message_recipients[0].communication_recipient]
+            self.adapter_message.cc = [x.communication_recipient for
+                                         x in self.message_recipients[1:]]
+        elif self.recipient_visibility == "TO/BCC":
+            self.adapter_message.to = [self.message_recipients[0].communication_recipient]
+            self.adapter_message.bcc = [x.communication_recipient for
+                                         x in self.message_recipients[1:]]
 
-    if email_setting.recipient_visibility in ['BCC', 'TO/BCC', 'TO/CC']:
+    def send_adapter_communication(self):
         try:
-            email_message.send()
-            message.set_success()
-
-            for each_recipient in message_recipients:
-                each_recipient.set_success()
-                each_recipient.communication_send_time = datetime.now()
-                each_recipient.save()
+            self.adapter_message.send()
         except:
-            message.set_error()
+            raise ValidationError('Error sending message ==> %s' % (self.message))
 
-            for each_recipient in message_recipients:
-                each_recipient.set_error()
-                each_recipient.save()
 
-        message.save()
-        connection.close()
-        return message.communication_status
-
-    error_free = True
-
-    for each_recipient in message_recipients:
-        each_recipient.set_in_progress()
-        each_recipient.save()
-
-        email_message.to = [each_recipient.communication_recipient]
-
+class SendGridMessageAdapter(EmailMessageAdapter):
+    def get_connection(self):
         try:
-            email_message.send()
-            each_recipient.set_success()
-            each_recipient.communication_send_time = datetime.now()
-        except:
-            each_recipient.set_error()
-            error_free = False
+            connection = sendgrid.SendGridClient(self.profile.user_name,
+                                                 raise_errors=True)
+        except (sendgrid.SendGridClientError, sendgrid.SendGridServerError):
+            raise ValidationError('Could not setup SendGrid connection. Check connectivity or credentials.')
 
-        each_recipient.save()
+        self.connection = connection
 
-    if error_free:
-        message.set_success()
-    else:
-        message.set_error()
+    def close_connection(self):
+        pass
 
-    message.save()
-    connection.close()
+    def load_communication_settings(self):
+        super(SendGridMessageAdapter, self).load_communication_settings()
+        self.message_send_exceptions = (sendgrid.SendGridClientError, sendgrid.SendGridServerError)
 
-    return message.communication_status
+    def setup_initial_adapter_message(self):
+        self.adapter_message = sendgrid.Mail()
+        self.adapter_message.set_from('%s <%s>' %(self.profile.sender_name,
+                                           self.profile.sender_id))
+        self.adapter_message.set_subject(self.message.communication_title)
+        self.adapter_message.set_html(self._message_munge(self.message.communication_message))
+        self.adapter_message.set_text(self.message.communication_message)
+
+    def setup_final_adapter_message(self, *args, **kwargs):
+        recipient = kwargs.get('recipient')
+
+        if recipient:
+            self.setup_initial_adapter_message()
+            self.adapter_message.add_to(recipient.communication_recipient)
+            return
+
+        if self.recipient_visibility == "BCC":
+            self.adapter_message.add_bcc([x.communication_recipient for
+                                          x in self.message_recipients])
+        elif self.recipient_visibility == "TO/CC":
+            self.adapter_message.add_to(self.message_recipients[0].communication_recipient)
+            self.adapter_message.add_cc([x.communication_recipient for
+                                         x in self.message_recipients[1:]])
+        elif self.recipient_visibility == "TO/BCC":
+            self.adapter_message.add_to(self.message_recipients[0].communication_recipient)
+            self.adapter_message.add_bcc([x.communication_recipient for
+                                         x in self.message_recipients[1:]])
+
+    def send_adapter_communication(self):
+        self.connection.send(self.adapter_message)
 
 
-def send_smscountry_sms(message=None, *args, **kwargs):
-    def _get_param(param_name):
-        try:
-            param_value = getattr(comm_settings, param_name)
-        except KeyError:
-            raise ValidationError("Trying to locate '%s' parameter but could not find it. "
-                                  "Please define the parameter in settings.py in the communication app" % param_name)
+class SMSCountryMessageAdapter(MessageAdapter):
+    def get_connection(self):
+        self.connection = _get_param('smscountry_api_url')
+        self.adapter_message = base_smscountry_parms.copy()
+        self.adapter_message['user'] = self.profile.user_name
+        self.adapter_message['passwd'] = self.profile.password
 
-        return param_value
+    def validate_message(self):
+        message_length = len(self.message.communication_message)
+        if message_length > self.allowed_sms_length:
+            raise ValidationError('SMS length exceeds allowed limit. '
+                                  'Allowed ==> %d, '
+                                  'Provided ==> %d' % (self.allowed_sms_length,
+                                                    message_length))
 
-    message_recipients = PayloadDetail.objects.filter(communication=message)
-    smscountry_parms = base_smscountry_parms
-    message.set_in_progress()
-    message.save()
+    def load_communication_settings(self):
+        self.allowed_sms_length = _get_param('sms_length_limit')
+        self.loop_individual_recipient = True
+        self.message_send_exceptions = ValidationError
 
-    sms_length_limit = _get_param('sms_length_limit')
-    smscountry_api_url = _get_param('smscountry_api_url')
+    def setup_initial_adapter_message(self):
+        self.adapter_message['message'] = self.message.communication_message
 
-    if len(message.communication_message) > sms_length_limit:
-        raise ValidationError("Message length over limit. Defined limit is %d while message is %d" %(sms_length_limit,
-                            len(message.communication_message)))
+    def setup_final_adapter_message(self, *args, **kwargs):
+        self.adapter_message['mobilenumber'] = kwargs.get('recipient').communication_recipient
 
-    smscountry_parms['message'] = message.communication_message
-    error_free = True
-
-    for each_recipient in message_recipients:
-        each_recipient.set_in_progress()
-        each_recipient.save()
-
-        smscountry_parms['mobilenumber'] = each_recipient.communication_recipient
-
-        sms_request = requests.get(smscountry_api_url, params=smscountry_parms)
-
-        each_recipient.communication_status_message = sms_request.text
-        each_recipient.communication_send_time = datetime.now()
+    def send_adapter_communication(self):
+        sms_request = requests.get(self.connection, params=self.adapter_message)
 
         if sms_request.text[:3] == "OK:":
-            each_recipient.set_success()
+            pass
         else:
-            error_free = False
-            each_recipient.set_error()
-
-        each_recipient.save()
-
-    if error_free:
-        message.set_success()
-    else:
-        message.set_error()
-
-    message.save()
-    return message.communication_status
+            raise ValidationError('SMS send failed for %s. '
+                                  'Recipient at failure was \'%s\'' % (self.message,
+                                                                       self.adapter_message['mobilenumber']))
 
 
-def _get_dispatcher(communication_type='EMail'):
-    import sys
-    self_module = sys.modules[__name__]
-
-    try:
-        return getattr(self_module, communication_dispatcher[communication_type])
-    except KeyError:
-        return None
-
-
-def send_communication(message_key="", *args, **kwargs):
-    if not message_key:
-        raise ValidationError("Message key cannot be empty")
-
-    try:
-        message = Payload.objects.get(communication_hash=message_key)
-    except ObjectDoesNotExist:
-        raise ValidationError("Message key '%s' does not exist" %(message_key))
-
-    message_api = _get_dispatcher(message.communication_type)
+def send_communication(communication_type="EMail",
+                       message_key="", *args, **kwargs):
+    this_module = modules[__name__]
+    api_full_name = _get_param('communication_dispatcher')[communication_type]
+    api_name = api_full_name.split('.')[-1]
+    message_api = getattr(this_module, api_name)
 
     if not message_api:
         raise ValidationError("No API has been defined for communication type '%s'"
-                              %(message.communication_type))
+                              % (communication_type))
 
-    if message.recipient_count() == 0:
-        raise ValidationError("No recipients staged for message key '%s'"
-                              %(message.communication_hash))
+    message_container = message_api(message_key=message_key)
+    message_status = message_container.send_message()
 
-    if not message.is_status_pending():
-        raise ValidationError("%s is not 'pending'. Restage a fresh message" % message)
+    if message_status != comm_settings.COMMUNICATION_STATUS[2][0]:
+        raise ValidationError("Message send for key '%s' does not report success. "
+                              "Review communication status inside payload"
+                              "for error details" % (message_key))
 
-    return message_api(message, *args, **kwargs)
-
-if __name__ == "__main__":
-    print(_get_dispatcher('SMS'))
+    return message_status
