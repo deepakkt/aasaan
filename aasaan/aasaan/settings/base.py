@@ -41,7 +41,6 @@ INSTALLED_APPS = (
 # apps built for this application
 INSTALLED_APPS += (
     'contacts',
-    'schedules',
     'AasaanUser',
     'materials',
     'communication',
