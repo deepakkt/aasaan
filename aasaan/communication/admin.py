@@ -6,7 +6,7 @@ from django_markdown.admin import MarkdownModelAdmin
 from django.forms import ModelForm, PasswordInput
 from django.core.exceptions import ValidationError
 
-from .api_refactor import send_communication
+from .api import send_communication
 
 
 
