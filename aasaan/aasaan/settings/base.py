@@ -10,20 +10,19 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 
 from .config import *
 from unipath import Path
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+
 BASE_DIR = Path(__file__).parent.parent.parent
 STATIC_PATH = os.path.join(BASE_DIR, 'static')
-#STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.7/howto/deployment/checklist/
 
 
-#see dev*.py for debug settings and allowed_hosts settings
+# see dev*.py for debug settings and allowed_hosts settings
 
 # Application definition
 
@@ -50,6 +49,7 @@ INSTALLED_APPS += (
 # third party apps
 INSTALLED_APPS += (
     'django_markdown',
+    'import_export',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -58,7 +58,6 @@ INSTALLED_APPS += (
 )
 
 SITE_ID = 1
-
 
 MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -106,7 +105,6 @@ ROOT_URLCONF = 'aasaan.urls'
 
 WSGI_APPLICATION = 'aasaan.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
@@ -126,7 +124,7 @@ DATABASES = {
         'HOST': DB_HOST,
         'PORT': DB_PORT,
         'TEST': {
-            'NAME' : DB_TEST
+            'NAME': DB_TEST
         }
     }
 }
@@ -144,7 +142,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
@@ -154,6 +151,6 @@ MEDIA_URL = '/media/'
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 STATICFILES_DIRS = (STATIC_PATH,)
 
-#django_markdown settings
+# django_markdown settings
 MARKDOWN_EDITOR_SKIN = 'simple'
 MARKDOWN_SET_NAME = 'markdown'
