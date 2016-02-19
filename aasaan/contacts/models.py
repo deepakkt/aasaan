@@ -157,7 +157,7 @@ class Contact(models.Model):
 
     class Meta:
         ordering = ['first_name', 'last_name']
-        verbose_name = 'PCC Contact'
+        verbose_name = 'IPC Contact'
 
 
 class ContactNote(models.Model):
@@ -256,7 +256,7 @@ class RoleGroup(models.Model):
         return self.role_name
 
     class Meta:
-        verbose_name = 'PCC Role Group'
+        verbose_name = 'IPC Role Group'
         ordering = ['role_name']
 
     def clean(self):
@@ -290,7 +290,7 @@ class Zone(models.Model):
         return self.zone_name
 
     class Meta:
-        verbose_name = 'PCC Zone'
+        verbose_name = 'IPC Zone'
         ordering = ['zone_name']
 
     def save(self, *args, **kwargs):
@@ -315,17 +315,27 @@ class Sector(models.Model):
         return "%s (%s)" %(self.sector_name, self.zone.zone_name)
 
 
+class PreCenterManager(models.Manager):
+    def get_queryset(self):
+        return super(PreCenterManager, self).get_queryset().filter(pre_center=False)
+
+
 class Center(models.Model):
     """Center definitions. All centers should be mapped to sectors and zones"""
     zone = models.ForeignKey(Zone)
     center_name = models.CharField(max_length=50)
+    pre_center = models.BooleanField(default=False)
+
+    objects = models.Manager()
+    main_centers = PreCenterManager()
 
     def __str__(self):
-        return "%s (%s)" % (self.center_name, self.zone.zone_name)
+        return "%s %s (%s)" % ((lambda: "(Pre)" if self.pre_center else "")(),
+                                 self.center_name, self.zone.zone_name)
 
     class Meta:
         ordering = ['center_name']
-        verbose_name = 'PCC Center'
+        verbose_name = 'IPC Center'
 
     def save(self, *args, **kwargs):
         self.center_name = self.center_name.title().strip()
@@ -355,7 +365,7 @@ class IndividualRole(models.Model):
 
     class Meta:
         ordering = ['role_name', 'role_level']
-        verbose_name = 'PCC Role'
+        verbose_name = 'IPC Role'
 
     def clean(self):
         try:
@@ -377,7 +387,7 @@ class IndividualContactRoleCenter(models.Model):
 
     class Meta:
         ordering = ['contact', 'role', 'center']
-        verbose_name = 'PCC center level contact role'
+        verbose_name = 'IPC center level contact role'
 
     def clean(self):
         if (self.role.get_role_level_display() != 'Center'):
@@ -404,7 +414,7 @@ class IndividualContactRoleZone(models.Model):
 
     class Meta:
         ordering = ['contact', 'role', 'zone']
-        verbose_name = 'PCC zone level contact role'
+        verbose_name = 'IPC zone level contact role'
 
     def clean(self):
         if (self.role.get_role_level_display() != 'Zone'):
@@ -427,7 +437,7 @@ class IndividualContactRoleSector(models.Model):
 
     class Meta:
         ordering = ['contact', 'role', 'sector']
-        verbose_name = 'PCC sector level contact role'
+        verbose_name = 'IPC sector level contact role'
 
     def clean(self):
         if (self.role.get_role_level_display() != 'Sector'):
