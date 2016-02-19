@@ -35,8 +35,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    'django.contrib.admindocs',
-    'import_export',)
+    'django.contrib.admindocs',)
 
 # apps built for this application
 INSTALLED_APPS += (
@@ -51,6 +50,7 @@ INSTALLED_APPS += (
 # third party apps
 INSTALLED_APPS += (
     'django_markdown',
+    'import_export',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
