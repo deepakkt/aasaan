@@ -331,8 +331,14 @@ class Center(models.Model):
     main_centers = PreCenterManager()
 
     def __str__(self):
-        return "%s %s (%s)" % ((lambda: "(Pre)" if self.pre_center else "")(),
-                                 self.center_name, self.zone.zone_name)
+        if self.pre_center:
+            try:
+                return "(Pre) %s [%s] (%s)" % (self.center_name, self.parent_center.center_name,
+                                               self.zone.zone_name)
+            except:
+                pass
+
+        return "%s (%s)" % (self.center_name, self.zone.zone_name)
 
     class Meta:
         ordering = ['center_name']
