@@ -38,6 +38,22 @@ class ContactRoleGroupInline2(admin.TabularInline):
 
 
 class CenterInline(admin.TabularInline):
+    def __init__(self, *args, **kwargs):
+        self.zone = None
+        super(CenterInline, self).__init__(*args, **kwargs)
+
+    # store zone being edited for filtering purpose in next section
+    def get_fields(self, request, obj=None):
+        self.zone = obj
+        return super(CenterInline, self).get_fields(request, obj)
+
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        # display only current zone centers under parent center
+        if db_field.name == 'parent_center':
+            kwargs["queryset"] = Center.objects.filter(zone=self.zone)
+
+        return super(CenterInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
     model = Center
     extra = 5
 

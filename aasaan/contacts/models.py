@@ -325,6 +325,7 @@ class Center(models.Model):
     zone = models.ForeignKey(Zone)
     center_name = models.CharField(max_length=50)
     pre_center = models.BooleanField(default=False)
+    parent_center = models.ForeignKey('self', null=True, blank=True)
 
     objects = models.Manager()
     main_centers = PreCenterManager()
@@ -336,6 +337,18 @@ class Center(models.Model):
     class Meta:
         ordering = ['center_name']
         verbose_name = 'IPC Center'
+
+    def clean(self):
+        if self.pre_center:
+            if not self.parent_center:
+                raise ValidationError('Pre-centers must have a parent center')
+
+            if self.parent_center.pre_center:
+                raise ValidationError('Parent center cannot be a pre-center')
+        else:
+            if self.parent_center:
+                raise ValidationError('Non pre-centers cannot have a parent center')
+
 
     def save(self, *args, **kwargs):
         self.center_name = self.center_name.title().strip()
