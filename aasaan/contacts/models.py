@@ -351,6 +351,9 @@ class Center(models.Model):
 
             if self.parent_center.pre_center:
                 raise ValidationError('Parent center cannot be a pre-center')
+
+            if Center.objects.filter(parent_center=self).exists():
+                raise ValidationError('This center is a parent center for one or more centers. Cannot make it a pre-center')
         else:
             if self.parent_center:
                 raise ValidationError('Non pre-centers cannot have a parent center')
