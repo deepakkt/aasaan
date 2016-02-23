@@ -1,8 +1,8 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.conf import settings
-
-import contacts.urls
+from ajax_select import urls as ajax_select_urls
+import contacts.urls, iconnect.urls
 
 urlpatterns = patterns('',
     # Examples:
@@ -13,6 +13,8 @@ urlpatterns = patterns('',
     url(r'^contacts/', include(contacts.urls, namespace='contacts')),
     url(r'^markdown/', include('django_markdown.urls')),
     url(r'^accounts/', include('allauth.urls')),
+    url(r'^comm/', include('iconnect.urls')),
+    url(r'^admin/lookups/', include(ajax_select_urls)),
 )
 
 

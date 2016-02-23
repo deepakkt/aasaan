@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+{% load django_markdown %}
+
+{% block title %}IPC{% endblock %}
+
+{% block branding %} <h1 id="site-name">aasaan</h1> {% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block extrahead %}{{ block.super }}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <h2>IPC Communication</h2>
+   <form action="{% url 'viewSummary' %}" method="post">{% csrf_token %}
+     {{ form.media }}
+    {{ form.as_p }}
+    <input type="submit" value="View Summary" />
+</form>
+{% endblock %}
+
+{% load admin_static %}{% load firstof from future %}<!DOCTYPE html>
+
