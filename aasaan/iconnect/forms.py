@@ -23,33 +23,33 @@ class CommunicationForm(forms.Form):
     reason = MarkdownFormField()
 
 
-class PricingDeviceForm(forms.Form):
-    device = ajax_select.fields.AutoCompleteSelectField(
-        ('contact'),
-        help_text=None,
-        required=False,
-    )
-
-    def __init__(self, *args, **kwargs):
-        super(PricingDeviceForm, self).__init__(*args, **kwargs)
-        self.fields['device'].widget.attrs.update({
-            'placeholder': "Add more devices",
-            'class': 'span12',
-        })
+# class PricingDeviceForm(forms.Form):
+#     device = ajax_select.fields.AutoCompleteSelectField(
+#         ('contact'),
+#         help_text=None,
+#         required=False,
+#     )
+#
+#     def __init__(self, *args, **kwargs):
+#         super(PricingDeviceForm, self).__init__(*args, **kwargs)
+#         self.fields['device'].widget.attrs.update({
+#             'placeholder': "Add more devices",
+#             'class': 'span12',
+#         })
 
 
 class Form2(forms.Form):
-    include_role_group = ajax_select.fields.AutoCompleteSelectMultipleField('cliche',
+    include_role_group = ajax_select.fields.AutoCompleteSelectMultipleField('ipc_roles',
                                                                             required=True,
                                                                             help_text="",
                                                                             label="IPC Role",
                                                                             )
-    include_contact_group = ajax_select.fields.AutoCompleteSelectMultipleField('cliche',
+    include_contact_group = ajax_select.fields.AutoCompleteSelectMultipleField('individual_role',
                                                                                required=True,
                                                                                help_text="",
                                                                                label="Contact Group",
                                                                                )
-    exclude_contacts = ajax_select.fields.AutoCompleteSelectMultipleField('cliche',
+    exclude_contacts = ajax_select.fields.AutoCompleteSelectMultipleField('contact',
                                                                           required=True,
                                                                           help_text="",
                                                                           label="Contacts to exclude",

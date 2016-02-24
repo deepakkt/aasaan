@@ -59,17 +59,6 @@ INSTALLED_APPS += (
     # 'allauth.socialaccount.providers.facebook',
 )
 
-AJAX_LOOKUP_CHANNELS = {
-    # simplest way, automatically construct a search channel by passing a dict
-    #'label': {'model': 'example.label', 'search_field': 'name'},
-
-    # Custom channels are specified with a tuple
-    # channel: ( module.where_lookup_is, ClassNameOfLookup )
-    'contact': ('iconnect.lookups', 'ContactLookup'),
-    #'group': ('example.lookups', 'GroupLookup'),
-    #'song': ('example.lookups', 'SongLookup'),
-}
-
 SITE_ID = 1
 
 

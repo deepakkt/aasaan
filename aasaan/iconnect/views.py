@@ -1,4 +1,4 @@
-from .forms import PricingDeviceForm, CommunicationForm, Form2, Form3, Form4
+from .forms import CommunicationForm, Form2, Form3, Form4
 from django.views.generic.edit import FormView, View
 from django.http import HttpResponse
 from .forms import ContactForm
@@ -30,6 +30,7 @@ class Form3View(View):
         item = request.POST.get('include_role_group')
         item = [int(x) for x in item.split('|') if x]
         myobjs = [Contact.objects.get(pk=x) for x in item]
+
         return render(request, 'iconnect/viewsummary.html')
 
 
