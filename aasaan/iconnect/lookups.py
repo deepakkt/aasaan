@@ -31,7 +31,7 @@ class IPCRolesLookup(LookupChannel):
     model = RoleGroup
 
     def get_query(self, q, request):
-        return IndividualRole.objects.filter(Q(role_name__icontains=q) | Q(role_name__istartswith=q)).order_by('role_name')
+        return RoleGroup.objects.filter(Q(role_name__icontains=q) | Q(role_name__istartswith=q)).order_by('role_name')
 
     def get_result(self, obj):
         """ result is the simple text that is the completion of what the person typed """
@@ -52,7 +52,7 @@ class IVRolesLookup(LookupChannel):
     model = IndividualRole
 
     def get_query(self, q, request):
-        return RoleGroup.objects.filter(Q(role_name__icontains=q) | Q(role_name__istartswith=q)).order_by('role_name')
+        return IndividualRole.objects.filter(Q(role_name__icontains=q) | Q(role_name__istartswith=q)).order_by('role_name')
 
     def get_result(self, obj):
         """ result is the simple text that is the completion of what the person typed """
