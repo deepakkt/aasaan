@@ -261,7 +261,7 @@ class RoleGroup(models.Model):
 
     def clean(self):
         try:
-            table_role_groups = Role.objects.get(role_name = self.role_name)
+            table_role_groups = RoleGroup.objects.get(role_name = self.role_name)
         except ObjectDoesNotExist:
             return
 
