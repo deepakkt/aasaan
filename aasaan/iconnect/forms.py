@@ -17,17 +17,17 @@ class MessageForm(forms.Form):
 
 
 class RecipientForm(forms.Form):
-    include_role_group = ajax_select.fields.AutoCompleteSelectMultipleField('ipc_roles',
+    role_group = ajax_select.fields.AutoCompleteSelectMultipleField('ipc_role_group',
                                                                             required=True,
                                                                             help_text="",
-                                                                            label="IPC Role",
+                                                                            label="IPC Role Group",
                                                                             )
-    include_contact_group = ajax_select.fields.AutoCompleteSelectMultipleField('individual_role',
+    roles = ajax_select.fields.AutoCompleteSelectMultipleField('ipc_role',
                                                                                required=True,
                                                                                help_text="",
-                                                                               label="Contact Group",
+                                                                               label="IPC Roles",
                                                                                )
-    exclude_contacts = ajax_select.fields.AutoCompleteSelectMultipleField('contact',
+    contacts = ajax_select.fields.AutoCompleteSelectMultipleField('contact',
                                                                           required=True,
                                                                           help_text="",
                                                                           label="Contacts to exclude",
@@ -39,10 +39,10 @@ class RecipientForm(forms.Form):
 
 
 class SummaryForm(forms.Form):
-    reason = forms.CharField(widget=forms.HiddenInput())
-    subject = forms.CharField(widget=forms.HiddenInput())
-    communication_type = forms.CharField(widget=forms.HiddenInput())
-    message = forms.CharField(widget=forms.HiddenInput())
-    include_role_group = forms.CharField(widget=forms.HiddenInput())
-    include_contact_group = forms.CharField(widget=forms.HiddenInput())
-    exclude_contacts = forms.CharField(widget=forms.HiddenInput())
+    reason = forms.CharField(widget=MarkdownWidget())
+    subject = forms.CharField(widget=MarkdownWidget())
+    communication_type = forms.CharField(widget=MarkdownWidget())
+    message = forms.CharField(widget=MarkdownWidget())
+    role_group = forms.CharField(widget=MarkdownWidget())
+    roles = forms.CharField(widget=MarkdownWidget())
+    contacts = forms.CharField(widget=MarkdownWidget())

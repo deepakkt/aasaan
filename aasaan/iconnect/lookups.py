@@ -26,7 +26,7 @@ class ContactLookup(LookupChannel):
         return "%s" % (escape(obj.first_name +' '+ obj.last_name))
 
 
-@ajax_select.register('ipc_roles')
+@ajax_select.register('ipc_role_group')
 class IPCRolesLookup(LookupChannel):
     model = RoleGroup
 
@@ -47,7 +47,7 @@ class IPCRolesLookup(LookupChannel):
         return "%s" % (escape(obj.role_name))
 
 
-@ajax_select.register('individual_role')
+@ajax_select.register('ipc_role')
 class IVRolesLookup(LookupChannel):
     model = IndividualRole
 
