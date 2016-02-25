@@ -17,6 +17,19 @@ class MessageForm(forms.Form):
 
 
 class RecipientForm(forms.Form):
+
+    zone = ajax_select.fields.AutoCompleteSelectMultipleField('zone',
+                                                                            required=True,
+                                                                            help_text="",
+                                                                            label="Zone",
+                                                                            )
+
+    center = ajax_select.fields.AutoCompleteSelectMultipleField('center',
+                                                                            required=True,
+                                                                            help_text="",
+                                                                            label="Center",
+                                                                            )
+
     role_group = ajax_select.fields.AutoCompleteSelectMultipleField('ipc_role_group',
                                                                             required=True,
                                                                             help_text="",
