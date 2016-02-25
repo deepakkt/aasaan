@@ -133,7 +133,7 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
     fieldsets = [
         ('Core Information', {'fields': ['first_name', 'last_name',
                                          'teacher_tno', 'date_of_birth',
-                                         'gender', 'status',
+                                         'gender', 'category', 'status',
                                          'cug_mobile', 'other_mobile_1',
                                          'whatsapp_number',
                                          'primary_email', 'profile_picture'
@@ -142,6 +142,7 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
                                               'id_card_type', 'id_card_number',
                                               'id_proof_type', 'id_proof_other',
                                               'id_proof_number',
+                                              'id_proof_scan',
                                               'pushbullet_token'
                                               ], 'classes': ['collapse']}),
         ('Remarks', {'fields': ['remarks']}),

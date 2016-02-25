@@ -2,16 +2,29 @@ from django.db import models
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.conf import settings
 from django.utils.text import slugify
+
+from datetime import date
 import os.path
+
+from .settings import GENDER_VALUES, STATUS_VALUES, ID_PROOF_VALUES,\
+                        ROLE_LEVEL_CHOICES, NOTE_TYPE_VALUES, \
+                        ADDRESS_TYPE_VALUES, CATEGORY_VALUES
 
 from django_markdown.models import MarkdownField
 
-from datetime import date
 
 def _generate_profile_path(instance, filename):
     image_extension = os.path.splitext(filename)[-1]
     profile_picture_name = slugify(instance.full_name + " profile picture") + image_extension
     return os.path.join('profile_pictures', profile_picture_name)
+
+def _generate_idproof_path(instance, filename):
+    image_extension = os.path.splitext(filename)[-1]
+    id_proof_name = slugify(instance.full_name + " - " +
+                            instance.id_proof_number +
+                            " - id proof") + image_extension
+    return os.path.join('id_proof_scans', id_proof_name)
+
 
 # Create your models here.
 class Contact(models.Model):
@@ -19,52 +32,25 @@ class Contact(models.Model):
     first_name = models.CharField("first Name", max_length=50)
     last_name = models.CharField("last Name", max_length=50)
     teacher_tno = models.CharField("teacher number", max_length=7, blank=True)
-
     date_of_birth = models.DateField("date of birth", null=True, blank=True)
-
-    GENDER_VALUES = (('M', 'Male'),
-                     ('F', 'Female'),
-                     ('TG', 'Transgender'))
-
     gender = models.CharField(max_length=2, choices=GENDER_VALUES)
-
-    STATUS_VALUES = (('STAFF', 'Staff'),
-                     ('INACTV', 'Inactive'),
-                     ('EXPD', 'Deceased'),
-                     ('FT', 'Full Time'),
-                     ('PT', 'Part Time'),
-                     ('VOL', 'Volunteer'))
-
-    status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True)
-
+    category = models.CharField(max_length=6, choices=CATEGORY_VALUES)
+    status = models.CharField(max_length=6, choices=STATUS_VALUES)
     cug_mobile = models.CharField("cUG phone number", max_length=15, blank=True)
     other_mobile_1 = models.CharField("alternate mobile 1", max_length=15, blank=True)
     other_mobile_2 = models.CharField("alternate mobile 2", max_length=15, blank=True)
     whatsapp_number = models.CharField('whatsapp number', max_length=15, blank=True)
-
     primary_email = models.EmailField("primary Email", max_length=50)
     secondary_email = models.EmailField("secondary Email", max_length=50, blank=True)
-
     pushbullet_token = models.CharField('pushbullet Token', max_length=64, blank=True)
-
     id_card_type = models.CharField("Ashram ID Card Type", max_length=10, blank=True)
     id_card_number = models.CharField("Ashram ID Card Number", max_length=20, blank=True)
-
-    ID_PROOF_VALUES = (('DL', 'Driving License'),
-                       ('PP', 'Passport'),
-                       ('RC', 'Ration Card'),
-                       ('VC', 'Voters ID'),
-                       ('AA', 'Aadhaar'),
-                       ('PC', 'PAN Card'),
-                       ('OT', 'Other Government Issued'))
-
     id_proof_type = models.CharField("govt ID Proof Type", max_length=2,
                                      choices=ID_PROOF_VALUES, blank=True)
     id_proof_number = models.CharField("govt ID Card Number", max_length=30, blank=True)
     id_proof_other = models.CharField("type of govt ID if other", max_length=30, blank=True)
-
+    id_proof_scan = models.ImageField(upload_to=_generate_idproof_path, blank=True)
     profile_picture = models.ImageField(upload_to=_generate_profile_path, blank=True)
-
     remarks = MarkdownField(max_length=500, blank=True)
 
     def profile_image(self):
@@ -82,7 +68,6 @@ class Contact(models.Model):
 
     profile_image.short_description = "Profile picture"
     profile_image.allow_tags = True
-
 
     def _get_full_name(self):
         "Returns full name of contact"
@@ -111,14 +96,38 @@ class Contact(models.Model):
             return self.full_name
 
     def clean(self):
-        if (not self.cug_mobile) and (not self.other_mobile_1):
+        def _validate_mobile():
+            def _validate_length(mobile, min_length=10):
+                print(' == >', mobile)
+                if mobile:
+                    if len(mobile) < min_length:
+                        return False
+                    else:
+                        return True
+                else:
+                    return True
+
+            return _validate_length(self.cug_mobile)  \
+                   and _validate_length(self.other_mobile_1) \
+                   and _validate_length(self.other_mobile_2)
+
+        if not self.primary_mobile:
             raise ValidationError("At least one mobile number needs to be entered")
+
+        if not _validate_mobile():
+            raise ValidationError('Mobile number must be at least 10 digits')
 
         if (self.id_proof_type == 'OT') and (not self.id_proof_other):
             raise ValidationError("Need ID proof type under 'Other' column")
 
         if (len(self.id_proof_type) > 0) and (not self.id_proof_number):
             raise ValidationError("ID Proof Number is missing")
+
+        if self.id_proof_number and not self.id_proof_type:
+            raise ValidationError("ID proof number provided without ID proof type")
+
+        if self.id_proof_scan and not self.id_proof_number:
+            raise ValidationError("ID proof scan provided without other ID details")
 
         if (self.teacher_tno):
             if (self.teacher_tno[0].upper() != 'T'):
@@ -163,16 +172,8 @@ class Contact(models.Model):
 class ContactNote(models.Model):
     """Notes about the contact"""
     contact = models.ForeignKey(Contact)
-
-    NOTE_TYPE_VALUES = (('SC', 'Status Change'),
-                        ('CN', 'Critical Note'),
-                        ('MN', 'Medical Note'),
-                        ('IN', 'Information Note'),)
-
     note_type = models.CharField(max_length=2, choices=NOTE_TYPE_VALUES)
-
     note = MarkdownField(max_length=500)
-
     note_timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -186,10 +187,6 @@ class ContactAddress(models.Model):
     """Addresses of contacts"""
 
     contact = models.ForeignKey(Contact)
-
-    ADDRESS_TYPE_VALUES = (('WO', 'Work'),
-                           ('HO', 'Home'))
-
     address_type = models.CharField("address Type", max_length=2, choices=ADDRESS_TYPE_VALUES)
 
     address_line_1 = models.CharField(max_length=100)
@@ -371,10 +368,6 @@ class IndividualRole(models.Model):
     or zone level
     """
     role_name = models.CharField(max_length=50, unique=True)
-
-    ROLE_LEVEL_CHOICES = (('ZO', 'Zone'),
-                          ('SC', 'Sector'),
-                          ('CE', 'Center'),)
     role_level = models.CharField(max_length=2, choices=ROLE_LEVEL_CHOICES)
     role_remarks = models.TextField(blank=True)
 
