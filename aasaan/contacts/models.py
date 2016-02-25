@@ -261,11 +261,11 @@ class RoleGroup(models.Model):
 
     def clean(self):
         try:
-            table_role_groups = RoleGroup.objects.get(role_name = self.role_name)
+            table_role_groups = RoleGroup.objects.get(role_name=self.role_name)
         except ObjectDoesNotExist:
             return
 
-        if table_role_groups:
+        if table_role_groups and not self.id:
             raise ValidationError('The role group already exists!')
 
 
