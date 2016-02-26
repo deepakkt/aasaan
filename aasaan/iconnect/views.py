@@ -1,7 +1,8 @@
 from .forms import MessageForm, RecipientForm, SummaryForm
 from django.views.generic.edit import FormView, View
 from django.shortcuts import render
-from contacts.models import Contact, RoleGroup, IndividualRole
+from contacts.models import Contact, RoleGroup, IndividualRole, Center, Zone, IndividualContactRoleZone, \
+    IndividualContactRoleCenter, ContactRoleGroup
 
 
 class MessageView(FormView):
@@ -23,11 +24,20 @@ class RecipientView(FormView):
 class SummaryView(View):
     def post(self, request, *args, **kwargs):
 
-        role_group = request.POST.get('role_group')
-        role_group = [int(x) for x in role_group.split('|') if x]
-        rgobjs = [RoleGroup.objects.get(pk=x) for x in role_group]
-        for i in rgobjs:
-            print(i.role_name)
+        zone = [int(x) for x in request.POST.get('zone').split('|') if x]
+        zcontacts = [x.contact for x in
+                     IndividualContactRoleZone.objects.filter(zone__in=Zone.objects.filter(pk__in=zone))]
+
+        center = [int(x) for x in request.POST.get('center').split('|') if x]
+        ccontacts = [x.contact for x in
+                     IndividualContactRoleCenter.objects.filter(center__in=Center.objects.filter(pk__in=center))]
+        print(ccontacts)
+
+        role_group = [int(x) for x in request.POST.get('role_group').split('|') if x]
+        print(role_group)
+        rcontacts = [x.contact for x in
+                     ContactRoleGroup.objects.filter(pk__in=role_group)]
+        print(rcontacts)
 
         roles = request.POST.get('roles')
         roles = [int(x) for x in roles.split('|') if x]
