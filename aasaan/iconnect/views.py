@@ -1,6 +1,7 @@
-from .forms import MessageForm, RecipientForm, SummaryForm
+from .forms import MessageForm, RecipientForm
 from django.views.generic.edit import FormView, View
 from django.shortcuts import render
+from itertools import chain
 from contacts.models import Contact, RoleGroup, IndividualRole, Center, Zone, IndividualContactRoleZone, \
     IndividualContactRoleCenter, ContactRoleGroup
 
@@ -8,7 +9,7 @@ from contacts.models import Contact, RoleGroup, IndividualRole, Center, Zone, In
 class MessageView(FormView):
     def get(self, request, *args, **kwargs):
         form = MessageForm(
-            initial={'reason': 'TO Organizer abt MSR', 'subject': 'Seating Pass', 'communication_type': '1',
+            initial={'reason': 'TO Organizer abt MSR', 'subject': 'Seating Pass', 'communication_type': 'Email',
                      'message': 'Seating Pass Over'})
         return render(request, 'iconnect/mailer.html', {'form': form})
 
@@ -24,38 +25,27 @@ class RecipientView(FormView):
 class SummaryView(View):
     def post(self, request, *args, **kwargs):
 
-        zone = [int(x) for x in request.POST.get('zone').split('|') if x]
-        zcontacts = [x.contact for x in
-                     IndividualContactRoleZone.objects.filter(zone__in=Zone.objects.filter(pk__in=zone))]
-
+        roles = [int(x) for x in request.POST.get('roles').split('|') if x]
         center = [int(x) for x in request.POST.get('center').split('|') if x]
-        ccontacts = [x.contact for x in
-                     IndividualContactRoleCenter.objects.filter(center__in=Center.objects.filter(pk__in=center))]
-        print(ccontacts)
-
+        zone = [int(x) for x in request.POST.get('zone').split('|') if x]
+        zone_contacts = Contact.objects.filter(individualcontactrolezone__zone__in=zone)
+        center_contacts = Contact.objects.filter(individualcontactrolecenter__center__in=center)
+        if roles:
+            if zone:
+                zone_contacts = zone_contacts.filter(individualcontactrolezone__role__in=roles)
+            if center:
+                center_contacts = center_contacts.filter(individualcontactrolecenter__role__in=roles)
         role_group = [int(x) for x in request.POST.get('role_group').split('|') if x]
-        print(role_group)
-        rcontacts = [x.contact for x in
-                     ContactRoleGroup.objects.filter(pk__in=role_group)]
-        print(rcontacts)
-
-        roles = request.POST.get('roles')
-        roles = [int(x) for x in roles.split('|') if x]
-        rolesobj = [IndividualRole.objects.get(pk=x) for x in roles]
-        for i in rolesobj:
-            print(i.role_name)
-
-        contacts = request.POST.get('contacts')
-        contacts = [int(x) for x in contacts.split('|') if x]
-        contactobjs = [Contact.objects.get(pk=x) for x in contacts]
-        for i in contactobjs:
-            print(i.first_name + ' ' + i.primary_email)
-
-        form = SummaryForm(
-            initial={'reason': request.POST.get('reason'), 'communication_type': request.POST.get('communication_type'),
+        rolegroup_contacts = Contact.objects.filter(contactrolegroup__role__in=role_group)
+        all_contacts = zone_contacts | center_contacts | rolegroup_contacts
+        all_contacts = all_contacts.distinct()
+        exclude_contacts = [int(x) for x in request.POST.get('contacts').split('|') if x]
+        exclude_contacts = Contact.objects.filter(pk__in=exclude_contacts)
+        context  = {'reason': request.POST.get('reason'), 'communication_type': request.POST.get('communication_type'),
                      'subject': request.POST.get('subject'), 'message': request.POST.get('message'),
-                     'role_group': role_group, 'roles': roles, 'contacts': contacts})
-        return render(request, 'iconnect/viewsummary.html', {'form': form})
+                     'role_group': role_group, 'roles': roles, 'all_contacts': all_contacts}
+
+        return render(request, 'iconnect/viewsummary.html', context)
 
 
 class ConfirmSendView(FormView):

@@ -12,12 +12,22 @@
 {% endblock %}
 
 {% block content %}
-    <h2>IPC Communication</h2>
-   <form action="{% url 'sendMessage' %}" method="post">{% csrf_token %}
-     {{ form.media }}
-    {{ form.as_p }}
-    <input type="submit" value="View Summary" />
-</form>
+<h1>Recipients {{ year }}</h1>
+ <p>Reason:{{ reason }}</p>
+
+<p>Communication Type:{{ communication_type }}</p>
+
+<p>Subject:{{ subject }}</p>
+
+<p>Message:{{ message }}</p>
+
+{% for article in all_contacts %}
+<p>{{ article.first_name }}</p>
+
+{% endfor %}
+<input type="button" value="Send" />
+<input type="button" value="Cancel" />
+<input type="button" value="Edit Message" />
 {% endblock %}
 
 {% load admin_static %}{% load firstof from future %}<!DOCTYPE html>
