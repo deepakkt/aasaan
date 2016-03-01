@@ -441,6 +441,10 @@ class IndividualContactRoleZone(models.Model):
         if ((self.zone, self.role) in zone_role_combos) and (not self.id):
             raise ValidationError("This role has already been mapped for this contact and zone")
 
+    def __str__(self):
+        return "%s - %s - %s" % (self.contact.full_name, self.zone.zone_name,
+                               self.role.role_name)
+
 
 class IndividualContactRoleSector(models.Model):
     """ Maps individual contacts to individual roles.
@@ -463,3 +467,7 @@ class IndividualContactRoleSector(models.Model):
 
         if ((self.sector, self.role) in sector_role_combos) and (not self.id):
             raise ValidationError("This role has already been mapped for this contact and sector")
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.contact.full_name, self.sector.sector_name,
+                               self.role.role_name)

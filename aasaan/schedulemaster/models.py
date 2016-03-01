@@ -24,10 +24,11 @@ class LanguageMaster(models.Model):
 
 class BatchMaster(models.Model):
     name = models.CharField(max_length=50)
+    batch_code = models.CharField(max_length=2, blank=True)
     description = MarkdownField(blank=True)
 
     def __str__(self):
-        return "%s" % self.name
+        return "%s (%s)" % (self.name, self.batch_code)
 
     class Meta:
         verbose_name = 'Batch Master'

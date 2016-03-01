@@ -44,6 +44,7 @@ INSTALLED_APPS += (
     'materials',
     'communication',
     'schedulemaster',
+    'gsync',
 )
 
 # third party apps
