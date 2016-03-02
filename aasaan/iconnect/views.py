@@ -1,9 +1,10 @@
-from .forms import MessageForm, RecipientForm
+from .forms import MessageForm, RecipientForm, SummaryForm
 from django.views.generic.edit import FormView, View
 from django.shortcuts import render
-from itertools import chain
+from communication.api import send_communication
 from contacts.models import Contact, RoleGroup, IndividualRole, Center, Zone, IndividualContactRoleZone, \
     IndividualContactRoleCenter, ContactRoleGroup
+from communication.models import Payload, PayloadDetail
 
 
 class MessageView(FormView):
@@ -22,7 +23,7 @@ class RecipientView(FormView):
         return render(request, 'iconnect/recipients.html', {'form': form})
 
 
-class SummaryView(View):
+class SummaryView(FormView):
     def post(self, request, *args, **kwargs):
 
         roles = [int(x) for x in request.POST.get('roles').split('|') if x]
@@ -40,14 +41,36 @@ class SummaryView(View):
         all_contacts = zone_contacts | center_contacts | rolegroup_contacts
         all_contacts = all_contacts.distinct()
         exclude_contacts = [int(x) for x in request.POST.get('contacts').split('|') if x]
-        exclude_contacts = Contact.objects.filter(pk__in=exclude_contacts)
-        context  = {'reason': request.POST.get('reason'), 'communication_type': request.POST.get('communication_type'),
-                     'subject': request.POST.get('subject'), 'message': request.POST.get('message'),
-                     'role_group': role_group, 'roles': roles, 'all_contacts': all_contacts}
+        all_contacts = all_contacts.exclude(pk__in=exclude_contacts)
 
-        return render(request, 'iconnect/viewsummary.html', context)
+        communication_type = request.POST.get('communication_type')
+        if communication_type == 'EMail':
+            recipients = all_contacts.values_list('primary_email', flat=True)
+        elif communication_type == 'SMS':
+            recipients = all_contacts.values_list('cug_mobile', flat=True)
+
+        payload = Payload()
+        payload.communication_title = request.POST.get('subject')
+        payload.communication_type = communication_type
+        payload.communication_notes = request.POST.get('reason')
+        payload.communication_message = request.POST.get('message')
+        payload.save()
+        for recipient in recipients:
+            payload_detail = PayloadDetail()
+            payload_detail.communication = payload
+            payload_detail.communication_recipient = recipient
+            payload_detail.save()
+        communication_hash = payload.communication_hash
+        contact_details = all_contacts.values_list('first_name', flat=True).order_by('first_name')
+        form = SummaryForm(
+            initial={'reason': request.POST.get('reason'), 'communication_type': request.POST.get('communication_type'),
+                     'subject': request.POST.get('subject'), 'message': request.POST.get('message'),
+                     'contacts': contact_details, 'communication_hash': communication_hash})
+        return render(request, 'iconnect/viewsummary.html', {'form': form})
 
 
 class ConfirmSendView(FormView):
     def post(self, request, *args, **kwargs):
+        communication_hash = request.POST.get('communication_hash')
+        send_communication(communication_hash)
         return render(request, 'iconnect/confirm.html')

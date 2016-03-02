@@ -9,25 +9,40 @@
 
 {% block extrahead %}{{ block.super }}
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script src="/static/bootstrap/css/bootstrap.css"></script>
+<script src="/static/bootstrap/css/bootstrap-theme.css"></script>
+<script src="/static/bootstrap/js/bootstrap.js"></script>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+
+$('#submit_form').click(function(){
+alert('Your message' + document.getElementById("context"));
+    if(for_is_valid()){
+       $('#summary_form').submit();
+    }
+    else{
+       alert('Your message');
+    }
+
+    var elem = document.getElementById("reason"); // Get text field
+    alert(elem)
+    <!--elem.value = "My default value"; // Change field-->
+});
+
+})
+
+</script>
 {% endblock %}
 
 {% block content %}
-<h1>Recipients {{ year }}</h1>
- <p>Reason:{{ reason }}</p>
-
-<p>Communication Type:{{ communication_type }}</p>
-
-<p>Subject:{{ subject }}</p>
-
-<p>Message:{{ message }}</p>
-
-{% for article in all_contacts %}
-<p>{{ article.first_name }}</p>
-
-{% endfor %}
-<input type="button" value="Send" />
-<input type="button" value="Cancel" />
-<input type="button" value="Edit Message" />
+    <h2>IPC Communication</h2>
+   <form class="form-horizontal" action="{% url 'sendMessage' %}" method="post">{% csrf_token %}
+     {{ form.media }}
+    {{ form.as_p }}
+    <input type="submit" value="Send Message" />
+</form>
 {% endblock %}
 
 {% load admin_static %}{% load firstof from future %}<!DOCTYPE html>

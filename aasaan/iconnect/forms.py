@@ -8,7 +8,7 @@ import ajax_select
 class MessageForm(forms.Form):
     subject = forms.CharField(max_length=500, widget=forms.TextInput(attrs={'size': '88'}))
     STATUS_CHOICES = (
-        ('Email', "Email"),
+        ('EMail', "EMail"),
         ('SMS', "SMS"),)
     communication_type = forms.ChoiceField(choices=STATUS_CHOICES, label="Communication Type", initial='',
                                            widget=forms.Select(), required=True)
@@ -49,3 +49,15 @@ class RecipientForm(forms.Form):
     subject = forms.CharField(widget=forms.HiddenInput())
     communication_type = forms.CharField(widget=forms.HiddenInput())
     message = forms.CharField(widget=forms.HiddenInput())
+
+class SummaryForm(forms.Form):
+
+    reason = forms.CharField(widget=forms.HiddenInput())
+    subject = forms.CharField(widget=forms.HiddenInput())
+    communication_type = forms.CharField(widget=forms.HiddenInput())
+    message = forms.CharField(widget=forms.HiddenInput())
+    communication_hash = forms.CharField(widget=forms.HiddenInput())
+    contacts = forms.CharField(widget=forms.HiddenInput())
+
+
+
