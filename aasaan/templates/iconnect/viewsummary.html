@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "iconnect/base_site.html" %}
 {% load django_markdown %}
 
 {% block title %}IPC{% endblock %}
@@ -9,39 +9,50 @@
 
 {% block extrahead %}{{ block.super }}
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-<script src="/static/bootstrap/css/bootstrap.css"></script>
-<script src="/static/bootstrap/css/bootstrap-theme.css"></script>
-<script src="/static/bootstrap/js/bootstrap.js"></script>
-
-<script type="text/javascript">
-
-$(document).ready(function(){
-
-$('#submit_form').click(function(){
-alert('Your message' + document.getElementById("context"));
-    if(for_is_valid()){
-       $('#summary_form').submit();
-    }
-    else{
-       alert('Your message');
-    }
-
-    var elem = document.getElementById("reason"); // Get text field
-    alert(elem)
-    <!--elem.value = "My default value"; // Change field-->
-});
-
-})
-
-</script>
 {% endblock %}
 
 {% block content %}
-    <h2>IPC Communication</h2>
-   <form class="form-horizontal" action="{% url 'sendMessage' %}" method="post">{% csrf_token %}
-     {{ form.media }}
+<h2>Summary</h2>
+<form action="{% url 'sendMessage' %}" method="post">{% csrf_token %}
+    {{ form.media }}
     {{ form.as_p }}
-    <input type="submit" value="Send Message" />
+    <div class="form-group row">
+        <label class="col-sm-2 form-control-label">Subject</label>
+
+        <div class="col-sm-10">
+            <p class="form-control-static">{{form.reason.value }}</p>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-sm-2 form-control-label">Cummunication Type</label>
+
+        <div class="col-sm-10">
+            <p class="form-control-static">{{form.communication_type.value }}</p>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-sm-2 form-control-label">Message</label>
+
+        <div class="col-sm-10">
+            <p class="form-control-static">{{form.message.value }}
+</p>
+        </div>
+    </div>
+
+    <div class="form-group row">
+        <label class="col-sm-2 form-control-label">Recipients</label>
+
+        <div class="col-sm-10">
+            <select multiple="" class="form-control" id="exampleSelect2">
+                {% if form.contacts.value %}
+                     <option>{{form.contacts.value}}</option>
+                {% endif %}
+            </select>
+        </div>
+    </div>
+
+    <input type="submit" value="Send Message"/>
 </form>
 {% endblock %}
 

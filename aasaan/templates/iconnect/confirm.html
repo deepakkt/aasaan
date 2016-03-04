@@ -12,11 +12,11 @@
 {% endblock %}
 
 {% block content %}
-    <h2>IPC Communication</h2>
-   <form action="{% url 'sendMessage' %}" method="post">{% csrf_token %}
+    <h4>Your Message has been sent</h4>
+   <form action="{% url 'addMessage' %}" method="post">{% csrf_token %}
      {{ form.media }}
-    {{ form.as_p }}
-    <input type="submit" value="View Summary" />
+    {{ form.as_p }}Click Add New Message to compose new Message
+    <input type="submit" value="Add New Message" />
 </form>
 {% endblock %}
 

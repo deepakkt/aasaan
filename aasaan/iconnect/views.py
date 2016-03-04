@@ -72,5 +72,12 @@ class SummaryView(FormView):
 class ConfirmSendView(FormView):
     def post(self, request, *args, **kwargs):
         communication_hash = request.POST.get('communication_hash')
-        send_communication(communication_hash)
-        return render(request, 'iconnect/confirm.html')
+        status = send_communication(communication_hash)
+        print('send_communication send_communication')
+        if(status=='Complete'):
+            return render(request, 'iconnect/confirm.html')
+
+        return render(request, 'iconnect/mailer.html', {'form': MessageForm(initial={'reason': 'TO Organizer abt MSR', 'subject': 'Seating Pass', 'communication_type': 'Email',
+                     'message': 'Seating Pass Over'})})
+
+
