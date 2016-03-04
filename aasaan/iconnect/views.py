@@ -48,7 +48,7 @@ class SummaryView(FormView):
             recipients = all_contacts.values_list('primary_email', flat=True)
         elif communication_type == 'SMS':
             recipients = all_contacts.values_list('cug_mobile', flat=True)
-
+        print()
         payload = Payload()
         payload.communication_title = request.POST.get('subject')
         payload.communication_type = communication_type
@@ -62,6 +62,7 @@ class SummaryView(FormView):
             payload_detail.save()
         communication_hash = payload.communication_hash
         contact_details = all_contacts.values_list('first_name', flat=True).order_by('first_name')
+        contact_details = str(contact_details).replace('[','').replace(']', '').replace("'",'')
         form = SummaryForm(
             initial={'reason': request.POST.get('reason'), 'communication_type': request.POST.get('communication_type'),
                      'subject': request.POST.get('subject'), 'message': request.POST.get('message'),

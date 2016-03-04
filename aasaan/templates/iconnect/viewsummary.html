@@ -9,6 +9,12 @@
 
 {% block extrahead %}{{ block.super }}
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script type="text/javascript">
+
+       var obj = jQuery.parseJSON( '[ "name": "John" ]' );
+        alert( obj.name === "John" );
+
+</script>
 {% endblock %}
 
 {% block content %}
