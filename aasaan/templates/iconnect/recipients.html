@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "iconnect/base_site.html" %}
 {% load django_markdown %}
 
 {% block title %}IPC{% endblock %}
@@ -12,10 +12,10 @@
 {% endblock %}
 
 {% block content %}
-    <h2>IPC Communication</h2>
+    <h2>Recipients</h2>
    <form action="{% url 'viewSummary' %}" method="post">{% csrf_token %}
      {{ form.media }}
-    {{ form.as_p }}
+{{ form.as_p }}
     <input type="submit" value="View Summary" />
 </form>
 {% endblock %}
