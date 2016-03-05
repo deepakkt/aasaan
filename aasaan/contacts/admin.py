@@ -125,7 +125,7 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
     list_display = ('full_name', 'primary_mobile', 'whatsapp_number',
                     'primary_email', 'teacher_tno', 'status', 'profile_image')
 
-    list_filter = ('status', 'gender')
+    list_filter = ('individualcontactrolezone__zone', 'individualcontactrolezone__role')
 
     search_fields = ('teacher_tno', 'first_name', 'last_name',
                      'cug_mobile', 'other_mobile_1')
