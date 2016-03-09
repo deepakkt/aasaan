@@ -46,7 +46,7 @@ class MaterialsAdmin(admin.ModelAdmin):
         return all_centers
 
     list_display = ('center_name', 'zone', 'item_count')
-
+    fields = ('center_name', 'zone')
     readonly_fields = ('zone', 'center_name')
 
     inlines = [CenterMaterialInline, CenterItemNotesInline]

@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.core.exceptions import ObjectDoesNotExist
 
 from contacts.models import Contact, IndividualRole
 from .models import LanguageMaster, ProgramCategory, ProgramMaster, \
@@ -45,8 +46,12 @@ class ProgramBatchAdmin(admin.TabularInline):
 class ProgramTeacherAdmin(admin.TabularInline):
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'teacher':
-            teacher_role = IndividualRole.objects.get(role_name='Teacher', role_level='ZO')
-            kwargs["queryset"] = Contact.objects.filter(individualcontactrolezone__role=teacher_role)
+            try:
+                teacher_role = IndividualRole.objects.get(role_name='Teacher', role_level='ZO')
+                kwargs["queryset"] = Contact.objects.filter(individualcontactrolezone__role=teacher_role)
+            except ObjectDoesNotExist:
+                kwargs["queryset"] = Contact.objects.none()
+
         return super(ProgramTeacherAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     model = ProgramTeacher

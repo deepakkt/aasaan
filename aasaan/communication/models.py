@@ -6,13 +6,14 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django_markdown.models import MarkdownField
 from .settings import COMMUNICATION_TYPES, COMMUNICATION_STATUS, \
-    COMMUNICATION_CONTEXTS
+    COMMUNICATION_CONTEXTS, RECIPIENT_VISIBILITY
 
 
 # Create your models here.
 class AbstractPayload(models.Model):
     communication_status = models.CharField(max_length=25, choices=COMMUNICATION_STATUS,
                                             default=COMMUNICATION_STATUS[0][0])
+    communication_status_message = MarkdownField(blank=True)
 
     def _set_status(self, status):
         self.communication_status = status
@@ -49,6 +50,11 @@ class Payload(AbstractPayload):
     communication_hash = models.CharField(max_length=100, blank=True)
     communication_notes = MarkdownField()
     communication_message = MarkdownField()
+
+    recipient_visibility = models.CharField("recipient visibility (applies only to email profiles)",
+                                            max_length=20, blank="",
+                                            choices=RECIPIENT_VISIBILITY,
+                                            default=RECIPIENT_VISIBILITY[0][0])
 
     def recipient_count(self):
         return PayloadDetail.objects.filter(communication=self).count()
@@ -90,7 +96,6 @@ class PayloadDetail(AbstractPayload):
     communication = models.ForeignKey(Payload, on_delete=models.CASCADE)
     communication_recipient = models.CharField(max_length=100)
     communication_send_time = models.DateTimeField(null=True)
-    communication_status_message = models.TextField(blank=True)
 
     def set_send_time(self):
         self.communication_send_time = datetime.now()
@@ -103,46 +108,39 @@ class PayloadDetail(AbstractPayload):
         ordering = ['communication', 'communication_recipient']
 
 
-class EmailSetting(models.Model):
-    RECIPIENT_VISIBILITY = (('BCC', 'All recipients in BCC'),
-                            ('TO/CC', 'First recipient in "To", others in CC'),
-                            ('TO/BCC', 'First recipient in "To", others in BCC'),
-                            ('Individual', 'Send individual email to all (Slower)'),)
-    recipient_visibility = models.CharField(max_length=10, choices=RECIPIENT_VISIBILITY,
-                                            default=RECIPIENT_VISIBILITY[0][0])
-
-    def __str__(self):
-        return "!!Do not delete this row -AND- do not add another row!!"
-
-
-class EmailProfile(models.Model):
-    profile_name = models.CharField(max_length=100)
-    display_name = models.CharField("name to display in the 'From' field", max_length=100)
-    user_name = models.CharField(max_length=100)
-    password = models.CharField(max_length=255)
-    smtp_server = models.CharField(max_length=100, default="smtp.gmail.com")
-    smtp_port = models.SmallIntegerField(default=587)
-    use_tls = models.BooleanField(default=True)
-    use_ssl = models.BooleanField(default=False)
+class CommunicationProfile(models.Model):
+    communication_type = models.CharField(max_length=25, choices=COMMUNICATION_TYPES,
+                                          default=COMMUNICATION_TYPES[0][0])
+    profile_name = models.CharField(max_length=255)
+    sender_name = models.CharField("sender name to use", max_length=100, blank=True)
+    sender_id = models.CharField("from email or ID to use", max_length=100, blank=True)
+    user_name = models.CharField("user name or API key", max_length=100)
+    password = models.CharField("password (if applicable)", max_length=255, blank=True)
+    smtp_server = models.CharField("SMTP server address (for email only)", max_length=100,
+                                   default="smtp.gmail.com")
+    smtp_port = models.SmallIntegerField("SMTP port (for email only)", default=587)
+    use_tls = models.BooleanField("TLS settings (email only)", default=True)
+    use_ssl = models.BooleanField("SSL settings (email only)", default=False)
     default = models.BooleanField("use this as default profile?", default=False)
     remarks = MarkdownField(blank=True)
 
     def __str__(self):
-        return self.profile_name
-
-    def clean(self):
-        if self.use_ssl and self.use_tls:
-            raise ValidationError('Both SSL and TLS cannot be true. Uncheck one of them')
+        return "%s (%s)" % (self.profile_name, self.communication_type)
 
     def save(self, *args, **kwargs):
         # if this profile is made default, mark others as not default
         if self.default:
-            for profile in EmailProfile.objects.all():
+            for profile in CommunicationProfile.objects.all():
                 if profile == self:
                     pass
                 else:
-                    if profile.default:
+                    if profile.default and profile.communication_type \
+                            == self.communication_type:
                         profile.default = False
                         profile.save()
 
-        super(EmailProfile, self).save(*args, **kwargs)
+        self.profile_name = self.profile_name.strip().title()
+        super(CommunicationProfile, self).save(*args, **kwargs)
+
+    class Meta:
+        unique_together = ['communication_type', 'profile_name']
