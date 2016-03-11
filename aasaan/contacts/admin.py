@@ -92,6 +92,44 @@ class ContactResource(resources.ModelResource):
                 }
 
 
+# Implement filter logic based on roles assigned for centers or zones
+# Zone => Role assigned directly to zone
+# Center => Role assigned to center which belongs to zone
+class ContactZoneFilter(admin.SimpleListFilter):
+    title = 'zones'
+    parameter_name = 'zones'
+
+    def lookups(self, request, model_admin):
+        zone_list = Zone.objects.all()
+
+        lookup_list = [(x.zone_name, x.zone_name) for x in zone_list]
+        return tuple(lookup_list)
+
+    def queryset(self, request, queryset):
+        if self.value():
+            contact_zones = queryset.filter(individualcontactrolezone__zone__zone_name=self.value())
+            contact_center_zones = queryset.filter(individualcontactrolecenter__center__zone__zone_name=self.value())
+            all_zones = contact_zones | contact_center_zones
+            return all_zones.distinct()
+
+
+# Similar to zone filter above, for roles
+class ContactRoleFilter(admin.SimpleListFilter):
+    title = 'roles'
+    parameter_name = 'roles'
+
+    def lookups(self, request, model_admin):
+        role_list = IndividualRole.objects.all().order_by('role_level', 'role_name')
+        lookup_list = [(x.role_name, str(x)) for x in role_list]
+        return tuple(lookup_list)
+
+    def queryset(self, request, queryset):
+        if self.value():
+            contact_role_zones = queryset.filter(individualcontactrolezone__role__role_name=self.value())
+            contact_role_centers = queryset.filter(individualcontactrolecenter__role__role_name=self.value())
+            all_roles = contact_role_centers | contact_role_zones
+            return all_roles.distinct()
+
 
 class ContactAdmin(ExportMixin, MarkdownModelAdmin):
     # filter contact records based on user permissions
@@ -125,7 +163,7 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
     list_display = ('full_name', 'primary_mobile', 'whatsapp_number',
                     'primary_email', 'teacher_tno', 'status', 'profile_image')
 
-    list_filter = ('individualcontactrolezone__zone', 'individualcontactrolezone__role')
+    list_filter = (ContactZoneFilter, ContactRoleFilter)
 
     search_fields = ('teacher_tno', 'first_name', 'last_name',
                      'cug_mobile', 'other_mobile_1')

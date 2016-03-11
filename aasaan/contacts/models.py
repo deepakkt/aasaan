@@ -98,7 +98,6 @@ class Contact(models.Model):
     def clean(self):
         def _validate_mobile():
             def _validate_length(mobile, min_length=10):
-                print(' == >', mobile)
                 if mobile:
                     if len(mobile) < min_length:
                         return False
@@ -405,14 +404,17 @@ class IndividualContactRoleCenter(models.Model):
         verbose_name = 'IPC center level contact role'
 
     def clean(self):
-        if (self.role.get_role_level_display() != 'Center'):
-            raise ValidationError("Only center level roles can be mapped to a center")
+        try:
+            if (self.role.get_role_level_display() != 'Center'):
+                raise ValidationError("Only center level roles can be mapped to a center")
 
-        existing_contact_roles = IndividualContactRoleCenter.objects.filter(contact=self.contact)
-        center_role_combos = [(item.center, item.role) for item in existing_contact_roles]
+            existing_contact_roles = IndividualContactRoleCenter.objects.filter(contact=self.contact)
+            center_role_combos = [(item.center, item.role) for item in existing_contact_roles]
 
-        if ((self.center, self.role) in center_role_combos) and (not self.id):
-            raise ValidationError("This role has already been mapped for this contact and center")
+            if ((self.center, self.role) in center_role_combos) and (not self.id):
+                raise ValidationError("This role has already been mapped for this contact and center")
+        except ObjectDoesNotExist:
+            raise ValidationError("Need to choose both role and center")
 
     def __str__(self):
         return "%s - %s - %s" % (self.contact.full_name, self.center.center_name,
@@ -432,14 +434,17 @@ class IndividualContactRoleZone(models.Model):
         verbose_name = 'IPC zone level contact role'
 
     def clean(self):
-        if (self.role.get_role_level_display() != 'Zone'):
-            raise ValidationError("Only zone level roles can be mapped to a zone")
+        try:
+            if (self.role.get_role_level_display() != 'Zone'):
+                raise ValidationError("Only zone level roles can be mapped to a zone")
 
-        existing_contact_roles = IndividualContactRoleZone.objects.filter(contact=self.contact)
-        zone_role_combos = [(item.zone, item.role) for item in existing_contact_roles]
+            existing_contact_roles = IndividualContactRoleZone.objects.filter(contact=self.contact)
+            zone_role_combos = [(item.zone, item.role) for item in existing_contact_roles]
 
-        if ((self.zone, self.role) in zone_role_combos) and (not self.id):
-            raise ValidationError("This role has already been mapped for this contact and zone")
+            if ((self.zone, self.role) in zone_role_combos) and (not self.id):
+                raise ValidationError("This role has already been mapped for this contact and zone")
+        except ObjectDoesNotExist:
+            raise ValidationError('Need to choose both role and zone')
 
     def __str__(self):
         return "%s - %s - %s" % (self.contact.full_name, self.zone.zone_name,
