@@ -100,10 +100,7 @@ class ContactZoneFilter(admin.SimpleListFilter):
     parameter_name = 'zones'
 
     def lookups(self, request, model_admin):
-        zone_list = Zone.objects.all()
-
-        lookup_list = [(x.zone_name, x.zone_name) for x in zone_list]
-        return tuple(lookup_list)
+        return tuple([(x.zone_name, x.zone_name) for x in Zone.objects.all()])
 
     def queryset(self, request, queryset):
         if self.value():

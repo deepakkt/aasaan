@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.core.exceptions import ObjectDoesNotExist
 
-from contacts.models import Contact, IndividualRole
+from contacts.models import Contact, IndividualRole, Zone
 from .models import LanguageMaster, ProgramCategory, ProgramMaster, \
     ProgramMasterCategory, ProgramSchedule, ProgramVenueAddress, ProgramScheduleNote, \
     ProgramTeacher, BatchMaster, ProgramBatch, ProgramScheduleCounts, \
@@ -78,6 +78,18 @@ class ProgramScheduleNoteAdmin(MarkdownInlineAdmin, admin.TabularInline):
     extra = 0
 
 
+class ProgramScheduleZoneFilter(admin.SimpleListFilter):
+    title = 'zones'
+    parameter_name = 'zones'
+
+    def lookups(self, request, model_admin):
+        return tuple([(x.zone_name, x.zone_name) for x in Zone.objects.all()])
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(center__zone__zone_name=self.value())
+
+
 class ProgramScheduleAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'program':
@@ -87,7 +99,7 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
     list_display = ['program_name', 'center', 'program_location', 'start_date',
                     'status']
 
-    list_filter = ['status']
+    list_filter = [ProgramScheduleZoneFilter, 'program']
 
     search_fields = ['center', 'program_location']
 
