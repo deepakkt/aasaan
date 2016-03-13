@@ -30,6 +30,8 @@ class SummaryView(FormView):
         center = [int(x) for x in request.POST.get('center').split('|') if x]
         zone = [int(x) for x in request.POST.get('zone').split('|') if x]
         zone_contacts = Contact.objects.filter(individualcontactrolezone__zone__in=zone)
+        center_zonal_contacts = Contact.objects.filter(individualcontactrolecenter__center__zone__in=zone)
+        zone_contacts = zone_contacts | center_zonal_contacts
         center_contacts = Contact.objects.filter(individualcontactrolecenter__center__in=center)
         if roles:
             if zone:
@@ -38,7 +40,7 @@ class SummaryView(FormView):
                 center_contacts = center_contacts.filter(individualcontactrolecenter__role__in=roles)
         role_group = [int(x) for x in request.POST.get('role_group').split('|') if x]
         rolegroup_contacts = Contact.objects.filter(contactrolegroup__role__in=role_group)
-        all_contacts = zone_contacts | center_contacts | rolegroup_contacts
+        all_contacts = zone_contacts | center_contacts | center_zonal_contacts | rolegroup_contacts
         all_contacts = all_contacts.distinct()
         exclude_contacts = [int(x) for x in request.POST.get('contacts').split('|') if x]
         all_contacts = all_contacts.exclude(pk__in=exclude_contacts)
@@ -62,7 +64,7 @@ class SummaryView(FormView):
             payload_detail.save()
         communication_hash = payload.communication_hash
         contact_details = all_contacts.values_list('first_name', flat=True).order_by('first_name')
-        contact_details = str(contact_details).replace('[','').replace(']', '').replace("'",'')
+        contact_details = str(contact_details).replace('[', '').replace(']', '').replace("'", '')
         form = SummaryForm(
             initial={'reason': request.POST.get('reason'), 'communication_type': request.POST.get('communication_type'),
                      'subject': request.POST.get('subject'), 'message': request.POST.get('message'),
@@ -72,13 +74,11 @@ class SummaryView(FormView):
 
 class ConfirmSendView(FormView):
     def post(self, request, *args, **kwargs):
-        communication_hash = request.POST.get('communication_hash')
-        status = send_communication(communication_hash)
-        print('send_communication send_communication')
-        if(status=='Complete'):
+        status = send_communication(communication_type=request.POST.get('communication_type'),
+                                    message_key=request.POST.get('communication_hash'))
+        if (status == 'Complete'):
             return render(request, 'iconnect/confirm.html')
 
-        return render(request, 'iconnect/mailer.html', {'form': MessageForm(initial={'reason': 'TO Organizer abt MSR', 'subject': 'Seating Pass', 'communication_type': 'Email',
+        return render(request, 'iconnect/mailer.html', {'form': MessageForm(
+            initial={'reason': 'TO Organizer abt MSR', 'subject': 'Seating Pass', 'communication_type': 'Email',
                      'message': 'Seating Pass Over'})})
-
-

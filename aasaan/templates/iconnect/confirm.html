@@ -13,7 +13,7 @@
 
 {% block content %}
     <h4>Your Message has been sent</h4>
-   <form action="{% url 'addMessage' %}" method="post">{% csrf_token %}
+   <form action="{% url 'addMessage' %}" method="get">{% csrf_token %}
      {{ form.media }}
     {{ form.as_p }}Click Add New Message to compose new Message
     <input type="submit" value="Add New Message" />
