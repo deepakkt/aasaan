@@ -44,6 +44,7 @@ INSTALLED_APPS += (
     'materials',
     'communication',
     'schedulemaster',
+    'iconnect',
     'gsync',
 )
 
@@ -55,6 +56,7 @@ INSTALLED_APPS += (
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'ajax_select',
     # 'allauth.socialaccount.providers.facebook',
 )
 
