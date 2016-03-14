@@ -14,6 +14,7 @@
        var obj = jQuery.parseJSON( '[ "name": "John" ]' );
         alert( obj.name === "John" );
 
+
 </script>
 {% endblock %}
 
@@ -38,11 +39,13 @@
     </div>
 
     <div class="form-group row">
-        <label class="col-sm-2 form-control-label">Message</label>
+        <div>
+            <label class="col-sm-2 form-control-label">Message</label>
 
-        <div class="col-sm-10">
-            <p class="form-control-static">{{form.message.value }}
-</p>
+            <div class="col-sm-10" align="top">
+                <p class="form-control-static">{{form.message.value}}
+                </p>
+            </div>
         </div>
     </div>
 
@@ -51,9 +54,9 @@
 
         <div class="col-sm-10">
             <select multiple="" class="form-control" id="exampleSelect2">
-                {% if form.contacts.value %}
-                     <option>{{form.contacts.value}}</option>
-                {% endif %}
+                {% for contact in contact_list %}
+                <option>{{contact}}</option>
+                {% endfor %}
             </select>
         </div>
     </div>

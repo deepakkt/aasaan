@@ -10,8 +10,8 @@ from communication.models import Payload, PayloadDetail
 class MessageView(FormView):
     def get(self, request, *args, **kwargs):
         form = MessageForm(
-            initial={'reason': 'TO Organizer abt MSR', 'subject': 'Seating Pass', 'communication_type': 'Email',
-                     'message': 'Seating Pass Over'})
+            initial={'reason': 'TESTING - IPC Communication system', 'subject': 'Test Message', 'communication_type': 'Email',
+                     'message': 'Namaskaram, IPC Communication system test message. Pranam'})
         return render(request, 'iconnect/mailer.html', {'form': form})
 
 
@@ -48,9 +48,11 @@ class SummaryView(FormView):
         communication_type = request.POST.get('communication_type')
         if communication_type == 'EMail':
             recipients = all_contacts.values_list('primary_email', flat=True)
+            contact_details = ['%s %s <%s>' %(x.first_name, x.last_name, x.primary_email) for x in all_contacts]
         elif communication_type == 'SMS':
             recipients = all_contacts.values_list('cug_mobile', flat=True)
-        print()
+            contact_details = ['%s %s (%s)' %(x.first_name, x.last_name, x.cug_mobile) for x in all_contacts]
+
         payload = Payload()
         payload.communication_title = request.POST.get('subject')
         payload.communication_type = communication_type
@@ -63,13 +65,14 @@ class SummaryView(FormView):
             payload_detail.communication_recipient = recipient
             payload_detail.save()
         communication_hash = payload.communication_hash
-        contact_details = all_contacts.values_list('first_name', flat=True).order_by('first_name')
-        contact_details = str(contact_details).replace('[', '').replace(']', '').replace("'", '')
+
+
         form = SummaryForm(
             initial={'reason': request.POST.get('reason'), 'communication_type': request.POST.get('communication_type'),
                      'subject': request.POST.get('subject'), 'message': request.POST.get('message'),
                      'contacts': contact_details, 'communication_hash': communication_hash})
-        return render(request, 'iconnect/viewsummary.html', {'form': form})
+        return render(request, 'iconnect/viewsummary.html', {'form': form,
+                                                             'contact_list': contact_details})
 
 
 class ConfirmSendView(FormView):
@@ -80,5 +83,5 @@ class ConfirmSendView(FormView):
             return render(request, 'iconnect/confirm.html')
 
         return render(request, 'iconnect/mailer.html', {'form': MessageForm(
-            initial={'reason': 'TO Organizer abt MSR', 'subject': 'Seating Pass', 'communication_type': 'Email',
-                     'message': 'Seating Pass Over'})})
+            initial={'reason': 'TEST - ', 'subject': 'Test Message', 'communication_type': 'Email',
+                     'message': 'Namaskaram, Testing IPC Communication system. Pranam'})})
