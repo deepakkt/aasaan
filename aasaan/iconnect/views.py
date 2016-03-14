@@ -47,11 +47,11 @@ class SummaryView(FormView):
 
         communication_type = request.POST.get('communication_type')
         if communication_type == 'EMail':
-            recipients = all_contacts.values_list('primary_email', flat=True)
-            contact_details = ['%s %s <%s>' %(x.first_name, x.last_name, x.primary_email) for x in all_contacts]
+            recipients = ['%s' %(x.primary_email if x.primary_email else x.secondary_email) for x in all_contacts]
+            contact_details = ['%s %s <%s>' %(x.first_name, x.last_name, x.primary_email if x.primary_email else x.secondary_email) for x in all_contacts]
         elif communication_type == 'SMS':
-            recipients = all_contacts.values_list('cug_mobile', flat=True)
-            contact_details = ['%s %s (%s)' %(x.first_name, x.last_name, x.cug_mobile) for x in all_contacts]
+            recipients = ['%s' %(x.cug_mobile if x.cug_mobile else x.other_mobile_1) for x in all_contacts]
+            contact_details = ['%s %s (%s)' %(x.first_name, x.last_name, x.cug_mobile if x.cug_mobile else x.other_mobile_1) for x in all_contacts]
 
         payload = Payload()
         payload.communication_title = request.POST.get('subject')
