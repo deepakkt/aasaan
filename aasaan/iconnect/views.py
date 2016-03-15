@@ -10,7 +10,8 @@ from communication.models import Payload, PayloadDetail
 class MessageView(FormView):
     def get(self, request, *args, **kwargs):
         form = MessageForm(
-            initial={'reason': 'TESTING - IPC Communication system', 'subject': 'Test Message', 'communication_type': 'Email',
+            initial={'reason': 'TESTING - IPC Communication system', 'subject': 'Test Message',
+                     'communication_type': 'Email',
                      'message': 'Namaskaram, IPC Communication system test message. Pranam'})
         return render(request, 'iconnect/mailer.html', {'form': form})
 
@@ -31,27 +32,31 @@ class SummaryView(FormView):
         zone = [int(x) for x in request.POST.get('zone').split('|') if x]
         zone_contacts = Contact.objects.filter(individualcontactrolezone__zone__in=zone)
         center_zonal_contacts = Contact.objects.filter(individualcontactrolecenter__center__zone__in=zone)
-        zone_contacts = zone_contacts | center_zonal_contacts
         center_contacts = Contact.objects.filter(individualcontactrolecenter__center__in=center)
         if roles:
             if zone:
                 zone_contacts = zone_contacts.filter(individualcontactrolezone__role__in=roles)
+                center_zonal_contacts = center_zonal_contacts.filter(individualcontactrolecenter__role__in=roles)
             if center:
                 center_contacts = center_contacts.filter(individualcontactrolecenter__role__in=roles)
         role_group = [int(x) for x in request.POST.get('role_group').split('|') if x]
         rolegroup_contacts = Contact.objects.filter(contactrolegroup__role__in=role_group)
-        all_contacts = zone_contacts | center_contacts | center_zonal_contacts | rolegroup_contacts
+        all_contacts = zone_contacts | center_contacts | rolegroup_contacts | center_zonal_contacts
         all_contacts = all_contacts.distinct()
         exclude_contacts = [int(x) for x in request.POST.get('contacts').split('|') if x]
         all_contacts = all_contacts.exclude(pk__in=exclude_contacts)
 
         communication_type = request.POST.get('communication_type')
         if communication_type == 'EMail':
-            recipients = ['%s' %(x.primary_email if x.primary_email else x.secondary_email) for x in all_contacts]
-            contact_details = ['%s %s <%s>' %(x.first_name, x.last_name, x.primary_email if x.primary_email else x.secondary_email) for x in all_contacts]
+            recipients = ['%s' % (x.primary_email if x.primary_email else x.secondary_email) for x in all_contacts]
+            contact_details = [
+                '%s %s <%s>' % (x.first_name, x.last_name, x.primary_email if x.primary_email else x.secondary_email)
+                for x in all_contacts]
         elif communication_type == 'SMS':
-            recipients = ['%s' %(x.cug_mobile if x.cug_mobile else x.other_mobile_1) for x in all_contacts]
-            contact_details = ['%s %s (%s)' %(x.first_name, x.last_name, x.cug_mobile if x.cug_mobile else x.other_mobile_1) for x in all_contacts]
+            recipients = ['%s' % (x.cug_mobile if x.cug_mobile else x.other_mobile_1) for x in all_contacts]
+            contact_details = [
+                '%s %s (%s)' % (x.first_name, x.last_name, x.cug_mobile if x.cug_mobile else x.other_mobile_1) for x in
+                all_contacts]
 
         payload = Payload()
         payload.communication_title = request.POST.get('subject')
@@ -65,7 +70,6 @@ class SummaryView(FormView):
             payload_detail.communication_recipient = recipient
             payload_detail.save()
         communication_hash = payload.communication_hash
-
 
         form = SummaryForm(
             initial={'reason': request.POST.get('reason'), 'communication_type': request.POST.get('communication_type'),
