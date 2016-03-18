@@ -13,7 +13,7 @@ DEBUG = False
 TEMPLATE_DEBUG = False
 
 # to be filled in during deployment
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["188.166.245.115", "aasaan.isha.in"]
 
 # deploy on gunicorn on linux boxes
 INSTALLED_APPS += (
