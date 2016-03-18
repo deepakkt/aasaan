@@ -7,7 +7,7 @@ from .base import *
 del STATIC_PATH
 STATIC_ROOT = "/var/www/static"
 MEDIA_ROOT = "/var/www/media"
-STATICFILES_DIRS = (STATIC_ROOT,)
+# STATICFILES_DIRS = (STATIC_ROOT,)
 
 DEBUG = False
 TEMPLATE_DEBUG = False
