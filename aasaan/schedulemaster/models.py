@@ -24,7 +24,7 @@ class LanguageMaster(models.Model):
 
 class BatchMaster(models.Model):
     name = models.CharField(max_length=50)
-    batch_code = models.CharField(max_length=2, blank=True)
+    batch_code = models.CharField(max_length=2)
     description = MarkdownField(blank=True)
 
     def __str__(self):
@@ -126,8 +126,7 @@ class ProgramSchedule(models.Model):
                               default=STATUS_VALUES[0][0])
 
     def __str__(self):
-        return "%s - %s - %s - %s" % (self.program, self.center, self.program_location,
-                                 self.start_date.isoformat())
+        return "%s - %s - %s" % (self.program, self.center, self.start_date.isoformat())
 
     def _sector_name(self):
         return Sector.objects.get(zone=self.zone_name)
@@ -144,6 +143,10 @@ class ProgramSchedule(models.Model):
     class Meta:
         verbose_name = 'Program Schedule'
         ordering = ['-start_date', 'center']
+
+    def clean(self):
+        if self.end_date < self.start_date:
+            raise ValidationError('End date cannot be before start date')
 
 
 class ProgramVenueAddress(models.Model):

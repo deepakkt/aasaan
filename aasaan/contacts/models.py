@@ -354,7 +354,6 @@ class Center(models.Model):
             if self.parent_center:
                 raise ValidationError('Non pre-centers cannot have a parent center')
 
-
     def save(self, *args, **kwargs):
         self.center_name = self.center_name.title().strip()
         super(Center, self).save(*args, **kwargs)
@@ -380,15 +379,6 @@ class IndividualRole(models.Model):
     class Meta:
         ordering = ['role_name', 'role_level']
         verbose_name = 'IPC Role'
-
-    def clean(self):
-        try:
-            table_roles = IndividualRole.objects.get(role_name = self.role_name.title().strip())
-        except ObjectDoesNotExist:
-            return
-
-        if table_roles:
-            raise ValidationError('The role already exists!')
 
 
 class IndividualContactRoleCenter(models.Model):
