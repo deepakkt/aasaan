@@ -98,13 +98,22 @@ class ProgramSchedule(models.Model):
     program = models.ForeignKey(ProgramMaster)
     center = models.ForeignKey(Center)
     program_location = models.CharField(max_length=100)
-    language = models.ForeignKey(LanguageMaster)
-    second_language = models.ForeignKey(LanguageMaster, null=True, blank=True,
-                                        related_name='second_language')
+
+    # don't change choice orders, will impact default value setting
+    GENDER_VALUES = (('BO', 'All'),
+                     ('M', 'Gents'),
+                     ('F', 'Ladies'),)
+
+    gender = models.CharField(max_length=2, choices=GENDER_VALUES,
+                              default=GENDER_VALUES[0][0])
+
+    primary_language = models.ForeignKey(LanguageMaster)
+
     start_date = models.DateField("start Date")
     end_date = models.DateField("end Date")
     donation_amount = models.IntegerField()
 
+    event_management_software = models.CharField(max_length=15, blank=True)
     event_management_code = models.CharField(verbose_name="code from event management software",
                                              max_length=15, blank=True)
 
@@ -126,7 +135,12 @@ class ProgramSchedule(models.Model):
                               default=STATUS_VALUES[0][0])
 
     def __str__(self):
-        return "%s - %s - %s" % (self.program, self.center, self.start_date.isoformat())
+        if self.gender != self.GENDER_VALUES[0][0]:
+            return "%s %s - %s - %s" % (self.program, self.get_gender_display(), self.center,
+                                        self.start_date.isoformat())
+        else:
+            return "%s - %s - %s" % (self.program, self.center,
+                                        self.start_date.isoformat())
 
     def _sector_name(self):
         return Sector.objects.get(zone=self.zone_name)
@@ -147,6 +161,14 @@ class ProgramSchedule(models.Model):
     def clean(self):
         if self.end_date < self.start_date:
             raise ValidationError('End date cannot be before start date')
+
+
+class ProgramAdditionalLanguages(models.Model):
+    program = models.ForeignKey(ProgramSchedule)
+    language = models.ForeignKey(LanguageMaster)
+
+    def __str__(self):
+        return "%s - %s" % (self.program, self.language)
 
 
 class ProgramVenueAddress(models.Model):
@@ -224,7 +246,8 @@ class ProgramTeacher(models.Model):
 
     TEACHER_VALUES = (('MT', 'Main Teacher'),
                       ('CT', 'Co-Teacher'),
-                      ('OT', 'Observation Teacher'))
+                      ('OT', 'Observation Teacher'),
+                      ('O', 'Other'))
 
     teacher_type = models.CharField(max_length=2, choices=TEACHER_VALUES,
                                     default=TEACHER_VALUES[0][0],
@@ -261,3 +284,15 @@ class ProgramScheduleCounts(models.Model):
 
     class Meta:
         verbose_name = 'program count'
+
+
+class ProgramAdditionalInformation(models.Model):
+    program = models.ForeignKey(ProgramSchedule)
+    key = models.CharField('title', max_length=50)
+    value = models.TextField('information')
+
+    def __str__(self):
+        return "%s - %s" % (self.program, self.key)
+
+    class Meta:
+        verbose_name = 'additional program information. (Do not use if not required)'

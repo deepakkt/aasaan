@@ -8,7 +8,8 @@ import os.path
 
 from .settings import GENDER_VALUES, STATUS_VALUES, ID_PROOF_VALUES,\
                         ROLE_LEVEL_CHOICES, NOTE_TYPE_VALUES, \
-                        ADDRESS_TYPE_VALUES, CATEGORY_VALUES
+                        ADDRESS_TYPE_VALUES, CATEGORY_VALUES, \
+                        CENTER_CATEGORY_VALUES
 
 from django_markdown.models import MarkdownField
 
@@ -320,6 +321,8 @@ class Center(models.Model):
     """Center definitions. All centers should be mapped to sectors and zones"""
     zone = models.ForeignKey(Zone)
     center_name = models.CharField(max_length=50)
+    center_category = models.CharField(max_length=1, choices=CENTER_CATEGORY_VALUES,
+                                       default=CENTER_CATEGORY_VALUES[0][0])
     pre_center = models.BooleanField(default=False)
     parent_center = models.ForeignKey('self', null=True, blank=True)
 

@@ -19,7 +19,7 @@ admin.AdminSite.site_title = "aasaan"
 
 class ContactNoteInline(MarkdownInlineAdmin, admin.TabularInline):
     model = ContactNote
-    extra = 1
+    extra = 0
 
 
 class ContactAddressInline(admin.StackedInline):

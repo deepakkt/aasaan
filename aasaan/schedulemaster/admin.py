@@ -5,7 +5,7 @@ from contacts.models import Contact, IndividualRole, Zone
 from .models import LanguageMaster, ProgramCategory, ProgramMaster, \
     ProgramMasterCategory, ProgramSchedule, ProgramVenueAddress, ProgramScheduleNote, \
     ProgramTeacher, BatchMaster, ProgramBatch, ProgramScheduleCounts, \
-    ProgramCountMaster
+    ProgramCountMaster, ProgramAdditionalLanguages, ProgramAdditionalInformation
 
 from django_markdown.admin import MarkdownModelAdmin, MarkdownInlineAdmin
 
@@ -78,6 +78,16 @@ class ProgramScheduleNoteAdmin(MarkdownInlineAdmin, admin.TabularInline):
     extra = 0
 
 
+class ProgramLanguageAdmin(admin.TabularInline):
+    model = ProgramAdditionalLanguages
+    extra = 0
+
+
+class ProgramAdditionalInformationAdmin(admin.TabularInline):
+    model = ProgramAdditionalInformation
+    extra = 0
+
+
 class ProgramScheduleZoneFilter(admin.SimpleListFilter):
     title = 'zones'
     parameter_name = 'zones'
@@ -97,15 +107,15 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
         return super(ProgramScheduleAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     list_display = ['program_name', 'center', 'program_location', 'start_date',
-                    'status']
+                    'gender']
 
     list_filter = [ProgramScheduleZoneFilter, 'program']
 
     search_fields = ['center', 'program_location']
 
-    inlines = [ProgramBatchAdmin, ProgramTeacherAdmin,
+    inlines = [ProgramLanguageAdmin, ProgramBatchAdmin, ProgramTeacherAdmin,
                ProgramScheduleCountsAdmin, ProgramVenueAdmin,
-               ProgramScheduleNoteAdmin]
+               ProgramScheduleNoteAdmin, ProgramAdditionalInformationAdmin]
 
 
 admin.site.register(LanguageMaster, LanguageMasterAdmin)

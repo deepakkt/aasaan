@@ -43,15 +43,20 @@ class CenterMaterial(models.Model):
     center = models.ForeignKey(Center)
     item = models.ForeignKey(ItemMaster)
     quantity = models.SmallIntegerField()
+    remarks = models.CharField(max_length=100, blank=True)
     STATUS_VALUES = (('ACTV', 'Active'),
                      ('DMGD', 'Damaged'),
                      ('LOST', 'Lost'),
                      ('LOAN', 'Loaned'),)
     status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True,
-                              default='ACTV')
+                              default=STATUS_VALUES[0][0])
 
     def __str__(self):
         return "%s - %s (%d)" % (self.center, self.item, self.quantity)
+
+    class Meta:
+        verbose_name = "item"
+        verbose_name_plural = "items"
 
     def clean(self):
         if self.id:

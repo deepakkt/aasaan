@@ -34,5 +34,6 @@ NOTE_TYPE_VALUES = (('SC', 'Status Change'),
 ADDRESS_TYPE_VALUES = (('WO', 'Work'),
                        ('HO', 'Home'))
 
-
-
+CENTER_CATEGORY_VALUES = (('A', 'A Center'),
+                          ('B', 'B Center'),
+                          ('C', 'C Center'),)
