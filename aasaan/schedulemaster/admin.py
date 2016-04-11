@@ -40,7 +40,7 @@ class ProgramMasterAdmin(MarkdownModelAdmin):
 
 class ProgramBatchAdmin(admin.TabularInline):
     model = ProgramBatch
-    extra = 1
+    extra = 2
 
 
 class ProgramTeacherAdmin(admin.TabularInline):
@@ -109,6 +109,7 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
     list_display = ['program_name', 'center', 'program_location', 'start_date',
                     'gender']
 
+
     list_filter = [ProgramScheduleZoneFilter, 'program']
 
     search_fields = ['center', 'program_location']
@@ -116,6 +117,9 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
     inlines = [ProgramLanguageAdmin, ProgramBatchAdmin, ProgramTeacherAdmin,
                ProgramScheduleCountsAdmin, ProgramVenueAdmin,
                ProgramScheduleNoteAdmin, ProgramAdditionalInformationAdmin]
+
+    class Media:
+        js = ('/static/schedulemaster/js/new_schedule_default_batches.js',)
 
 
 admin.site.register(LanguageMaster, LanguageMasterAdmin)
