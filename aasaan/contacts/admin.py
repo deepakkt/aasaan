@@ -165,6 +165,8 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
     search_fields = ('teacher_tno', 'first_name', 'last_name',
                      'cug_mobile', 'other_mobile_1')
 
+    save_on_top = True
+
     fieldsets = [
         ('Core Information', {'fields': ['first_name', 'last_name',
                                          'teacher_tno', 'date_of_birth',
@@ -178,9 +180,9 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
                                               'id_proof_type', 'id_proof_other',
                                               'id_proof_number',
                                               'id_proof_scan',
-                                              'pushbullet_token'
+                                              'pushbullet_token',
+                                              'remarks',
                                               ], 'classes': ['collapse']}),
-        ('Remarks', {'fields': ['remarks']}),
     ]
 
     readonly_fields = ('profile_image',)

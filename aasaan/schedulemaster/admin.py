@@ -40,7 +40,7 @@ class ProgramMasterAdmin(MarkdownModelAdmin):
 
 class ProgramBatchAdmin(admin.TabularInline):
     model = ProgramBatch
-    extra = 2
+    extra = 0
 
 
 class ProgramTeacherAdmin(admin.TabularInline):
@@ -106,13 +106,15 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
             kwargs["queryset"] = ProgramMaster.active_objects.all()
         return super(ProgramScheduleAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-    list_display = ['program_name', 'center', 'program_location', 'start_date',
+    list_display = ['program_name', 'center', 'end_date', 'start_date',
                     'gender']
 
 
     list_filter = [ProgramScheduleZoneFilter, 'program']
 
-    search_fields = ['center', 'program_location']
+    search_fields = ['center__center_name', 'program_location']
+
+    save_on_top = True
 
     inlines = [ProgramLanguageAdmin, ProgramBatchAdmin, ProgramTeacherAdmin,
                ProgramScheduleCountsAdmin, ProgramVenueAdmin,
