@@ -134,7 +134,7 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
         qs = super(ContactAdmin, self).get_queryset(request)
 
         # give entire set if user is a superuser irrespective of zone and center assignments
-        if request.user.is_superuser:
+        if (request.user.is_superuser) or ('view-all' in [x.name for x in request.user.groups.all()]):
             return qs
 
         # get all centers this user belongs to

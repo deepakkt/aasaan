@@ -106,7 +106,33 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
             kwargs["queryset"] = ProgramMaster.active_objects.all()
         return super(ProgramScheduleAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-    list_display = ['program_name', 'center', 'end_date', 'start_date',
+    # filter schedule records based on user permissions
+    def get_queryset(self, request):
+        qs = super(ProgramScheduleAdmin, self).get_queryset(request)
+
+        # give entire set if user is a superuser irrespective of zone and center assignments
+        if (request.user.is_superuser) or ('view-all' in [x.name for x in request.user.groups.all()]):
+            return qs
+
+        # get all centers this user belongs to
+        user_centers = [x.center for x in request.user.aasaanusercenter_set.all()]
+        user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
+
+        # get all schedules for user's centers
+        center_schedules = ProgramSchedule.objects.filter(center__in=user_centers)
+
+        # user may belong to a zone that contains this center's schedules. pull those too
+        center_zonal_schedules = ProgramSchedule.objects.filter(center__zone__in=user_zones)
+
+        # merge all of them
+        all_schedules = center_schedules | center_zonal_schedules
+        # and de-dupe them!
+        all_schedules = all_schedules.distinct()
+
+        return all_schedules
+
+
+    list_display = ['program_name', 'center', 'start_date', 'end_date',
                     'gender']
 
 
