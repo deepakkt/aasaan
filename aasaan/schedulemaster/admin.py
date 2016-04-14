@@ -142,6 +142,8 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
 
     save_on_top = True
 
+    list_per_page = 30
+
     inlines = [ProgramLanguageAdmin, ProgramBatchAdmin, ProgramTeacherAdmin,
                ProgramScheduleCountsAdmin, ProgramVenueAdmin,
                ProgramScheduleNoteAdmin, ProgramAdditionalInformationAdmin]

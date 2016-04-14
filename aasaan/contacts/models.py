@@ -27,6 +27,11 @@ def _generate_idproof_path(instance, filename):
     return os.path.join('id_proof_scans', id_proof_name)
 
 
+def _word_clean(word_to_clean):
+    word_list = [eachword.upper() if eachword.upper() == eachword else eachword.title() for eachword in word_to_clean.split()]
+    return ' '.join(word_list).strip()
+
+
 # Create your models here.
 class Contact(models.Model):
     """Main contact model"""
@@ -149,8 +154,8 @@ class Contact(models.Model):
             old_status = Contact.objects.get(pk=self.id).get_status_display()
             new_status = self.get_status_display()
 
-        self.first_name = self.first_name.strip().capitalize()
-        self.last_name = self.last_name.strip().capitalize()
+        self.first_name = _word_clean(self.first_name)
+        self.last_name = _word_clean(self.last_name)
 
         super(Contact, self).save(*args, **kwargs)
 
@@ -291,8 +296,7 @@ class Zone(models.Model):
         ordering = ['zone_name']
 
     def save(self, *args, **kwargs):
-        zone_word_list = [eachword.upper() if eachword.upper() == eachword else eachword.title() for eachword in self.zone_name.split()]
-        self.zone_name = ' '.join(zone_word_list).strip()
+        self.zone_name = _word_clean(self.zone_name)
 
         super(Zone, self).save(*args, **kwargs)
 
@@ -358,7 +362,7 @@ class Center(models.Model):
                 raise ValidationError('Non pre-centers cannot have a parent center')
 
     def save(self, *args, **kwargs):
-        self.center_name = self.center_name.title().strip()
+        self.center_name = _word_clean(self.center_name)
         super(Center, self).save(*args, **kwargs)
 
 
@@ -376,7 +380,7 @@ class IndividualRole(models.Model):
         return "%s (%s)" %(self.role_name, self.get_role_level_display())
 
     def save(self, *args, **kwargs):
-        self.role_name = self.role_name.title().strip()
+        self.role_name = _word_clean(self.role_name)
         super(IndividualRole, self).save(*args, **kwargs)
 
     class Meta:

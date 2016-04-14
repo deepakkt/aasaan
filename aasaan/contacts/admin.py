@@ -167,6 +167,8 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
 
     save_on_top = True
 
+    list_per_page = 30
+
     fieldsets = [
         ('Core Information', {'fields': ['first_name', 'last_name',
                                          'teacher_tno', 'date_of_birth',

@@ -8,3 +8,6 @@ class ListContactView(ListView):
     model = Contact
     template_name = 'contacts/contacts_list.html'
 
+
+
+

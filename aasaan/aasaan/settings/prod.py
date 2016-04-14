@@ -12,6 +12,20 @@ MEDIA_ROOT = "/var/www/aasaan/media"
 DEBUG = False
 TEMPLATE_DEBUG = False
 
+# setup a simple cache mechanism with memcached and pylibmc
+# ensure server has dependencies setup
+# install memcached server and library
+# $ sudo apt-get install memcached libmemcached-dev
+
+# install pylibmc
+# $ pip install pylibmc
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
+}
+
 # to be filled in during deployment
 ALLOWED_HOSTS = ["188.166.245.115",
                  "52.72.197.233",
