@@ -4,7 +4,7 @@ from django.conf import settings
 from django.utils.text import slugify
 
 from datetime import date
-import os.path
+import os, os.path
 
 from .settings import GENDER_VALUES, STATUS_VALUES, ID_PROOF_VALUES,\
                         ROLE_LEVEL_CHOICES, NOTE_TYPE_VALUES, \
@@ -12,6 +12,8 @@ from .settings import GENDER_VALUES, STATUS_VALUES, ID_PROOF_VALUES,\
                         CENTER_CATEGORY_VALUES
 
 from django_markdown.models import MarkdownField
+
+from PIL import Image
 
 
 def _generate_profile_path(instance, filename):
@@ -59,6 +61,29 @@ class Contact(models.Model):
     profile_picture = models.ImageField(upload_to=_generate_profile_path, blank=True)
     remarks = MarkdownField(max_length=500, blank=True)
 
+    def __init__(self, *args, **kwargs):
+        super(Contact, self).__init__(*args, **kwargs)
+
+        # setup a function to give expanded status values
+        # instead of the short code stored in database
+        self.__display_func = lambda x: 'get_' + x + '_display'
+
+        # store old values of following fields to track changes
+        self.old_field_list = ['__old_' + x.name for x in self._meta.fields]
+        self.field_list = [x.name for x in self._meta.fields]
+
+        self.__reset_changed_values()
+
+    # set __old_* fields to current model fields
+    # use it for first time init or after comparisons for
+    # changes and actions are all done
+    def __reset_changed_values(self):
+        for each_field in self.field_list:
+            try:
+                setattr(self, '__old_' + each_field, getattr(self, self.__display_func(each_field))())
+            except AttributeError:
+                setattr(self, '__old_' + each_field, getattr(self, each_field))
+
     def profile_image(self):
         image_style = 'style="width:50px; height:50px"'
         if self.profile_picture != "":
@@ -74,6 +99,19 @@ class Contact(models.Model):
 
     profile_image.short_description = "Profile picture"
     profile_image.allow_tags = True
+
+    def profile_image_display(self):
+        image_style = 'style="width:240px; height:300px"'
+        if self.profile_picture != "":
+            image_url = "%s/%s" %(settings.MEDIA_URL, self.profile_picture)
+            image_html = '<img src="%s" %s/>' % (image_url, image_style)
+            image_hyperlink = '<a href="%s">%s</a>' %(image_url, image_html)
+            return image_hyperlink
+        else:
+            return "<strong>No profile picture available</strong>"
+
+    profile_image_display.short_description = "Profile picture"
+    profile_image_display.allow_tags = True
 
     def _get_full_name(self):
         "Returns full name of contact"
@@ -100,6 +138,22 @@ class Contact(models.Model):
             return "%s (%s)" % (self.full_name, self.teacher_tno)
         else:
             return self.full_name
+
+    # return a dictionary of changed fields alone
+    # along with a tuple of old versus new values
+    def __changed_fields(self):
+        changed_fields = {}
+        for old_field, new_field in zip(self.old_field_list, self.field_list):
+            try:
+                new_field_value = getattr(self, self.__display_func(new_field))()
+            except AttributeError:
+                new_field_value = getattr(self, new_field)
+            old_field_value = getattr(self, old_field)
+
+            if new_field_value != getattr(self, old_field):
+                changed_fields[new_field] = (old_field_value,
+                                             new_field_value)
+        return changed_fields
 
     def clean(self):
         def _validate_mobile():
@@ -141,33 +195,67 @@ class Contact(models.Model):
             try:
                 teacher_no_int = int(self.teacher_tno[1:])
             except ValueError:
-                raise ValidationError("Teacher number must be in Tnnnn format")
+                raise ValidationError("Teacher number must be in Tnnnn format. Example T1234 or T0567")
 
     def save(self, *args, **kwargs):
+        # get a map of field changes
+        changed_fields = self.__changed_fields()
+
         self.teacher_tno = self.teacher_tno.rstrip().capitalize()
 
-        #Check if status is being changed. Need to log note if so
-        if not self.id:
-            new_entry = True
-        else:
-            new_entry = False
-            old_status = Contact.objects.get(pk=self.id).get_status_display()
-            new_status = self.get_status_display()
+        # Check if status is being changed. Need to log note if so
+        new_entry = False if self.id else True
 
         self.first_name = _word_clean(self.first_name)
         self.last_name = _word_clean(self.last_name)
 
         super(Contact, self).save(*args, **kwargs)
 
-        #Create and save status change note if it has changed
+        # Create and save status change note if it has changed
         if not new_entry:
-            if (old_status != new_status) and (old_status != ""):
+            if 'status' in changed_fields or 'category' in changed_fields:
                 status_change_note = ContactNote()
                 status_change_note.contact = self
                 status_change_note.note_type = 'SC'
-                status_change_note.note = "Automatic Log: Status of %s changed from '%s' to '%s'" % \
-                                          (self.full_name, old_status, new_status)
+                status_change_note.note = ""
+
+                if 'status' in changed_fields:
+                    status_change_note.note += "\nAutomatic Log: Status of %s changed from '%s' to '%s'\n" % \
+                                              (self.full_name, changed_fields['status'][0],
+                                               changed_fields['status'][-1])
+
+                if 'category' in changed_fields:
+                    status_change_note.note += "\nAutomatic Log: Category of %s changed from '%s' to '%s'\n" % \
+                                              (self.full_name, changed_fields['category'][0],
+                                               changed_fields['category'][-1])
+
                 status_change_note.save()
+
+        # profile picture / id card scan has been updated. clean up old one and
+        # resize the new one
+        if 'profile_picture' in changed_fields:
+            old_picture_file = changed_fields['profile_picture'][0]
+            if old_picture_file:
+                old_picture_file.file.close()
+                os.remove(old_picture_file.file.name)
+
+            if self.profile_picture:
+                profile_image = Image.open(self.profile_picture.file.name)
+                resized_image = profile_image.resize((480, 640))
+                resized_image.save(self.profile_picture.file.name)
+
+        if 'id_proof_scan' in changed_fields:
+            old_picture_file = changed_fields['id_proof_scan'][0]
+            if old_picture_file:
+                old_picture_file.file.close()
+                os.remove(old_picture_file.file.name)
+
+            if self.id_proof_scan:
+                id_proof_image = Image.open(self.id_proof_scan.file.name)
+                resized_image = id_proof_image.resize((640, 480))
+                resized_image.save(self.id_proof_scan.file.name)
+
+        self.__reset_changed_values()
 
     class Meta:
         ordering = ['first_name', 'last_name']
@@ -375,6 +463,7 @@ class IndividualRole(models.Model):
     role_name = models.CharField(max_length=50, unique=True)
     role_level = models.CharField(max_length=2, choices=ROLE_LEVEL_CHOICES)
     role_remarks = models.TextField(blank=True)
+    admin_role = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s (%s)" %(self.role_name, self.get_role_level_display())

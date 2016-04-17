@@ -13,6 +13,26 @@ from unipath import Path
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 
+# important note: to facilitate keeping settings in configuration as well, all
+# sensitive settings like secret key, server and db passwords are factored
+# into a separate config.py file.
+#
+# This base.py imports all config.py variables in the import above. What the
+# config.py file must contain in minimum:
+#
+# SECRET_KEY variable set
+# DB_NAME,
+# DB_USER,
+# DB_PASSWORD,
+# DB_HOST,
+# DB_PORT,
+# DB_TEST
+#
+# Put any other sensitive items. Remember to keep config.py in .gitignore
+#
+
+
+
 BASE_DIR = Path(__file__).parent.parent.parent
 STATIC_PATH = os.path.join(BASE_DIR, 'static')
 # STATIC_ROOT = os.path.join(BASE_DIR, 'static')

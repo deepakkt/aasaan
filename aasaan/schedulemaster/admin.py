@@ -75,6 +75,7 @@ class ProgramVenueAdmin(admin.StackedInline):
 
 class ProgramScheduleNoteAdmin(MarkdownInlineAdmin, admin.TabularInline):
     model = ProgramScheduleNote
+    fields = ('note',)
     extra = 0
 
 
@@ -101,10 +102,23 @@ class ProgramScheduleZoneFilter(admin.SimpleListFilter):
 
 
 class ProgramScheduleAdmin(admin.ModelAdmin):
+    def __init__(self, *args, **kwargs):
+        self._base_obj = None
+        super(ProgramScheduleAdmin, self).__init__(*args, **kwargs)
+
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'program':
             kwargs["queryset"] = ProgramMaster.active_objects.all()
         return super(ProgramScheduleAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def save_model(self, request, obj, form, change):
+        self._base_obj = obj
+        super(ProgramScheduleAdmin, self).save_model(request, obj, form, change)
+
+    def save_related(self, request, form, formsets, change):
+        teachers_before = [x.teacher for x in self._base_obj.programteacher_set.all()]
+        super(ProgramScheduleAdmin, self).save_related(request, form, formsets, change)
+        teachers_after = [x.teacher for x in self._base_obj.programteacher_set.all()]
 
     # filter schedule records based on user permissions
     def get_queryset(self, request):
@@ -131,10 +145,8 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
 
         return all_schedules
 
-
     list_display = ['program_name', 'center', 'start_date', 'end_date',
-                    'gender']
-
+                    'gender', 'primary_language']
 
     list_filter = [ProgramScheduleZoneFilter, 'program']
 
@@ -149,7 +161,8 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
                ProgramScheduleNoteAdmin, ProgramAdditionalInformationAdmin]
 
     class Media:
-        js = ('/static/schedulemaster/js/new_schedule_default_batches.js',)
+        js = ('/static/schedulemaster/js/new_schedule_default_batches.js',
+              '/static/aasaan/js/disable_notes.js',)
 
 
 admin.site.register(LanguageMaster, LanguageMasterAdmin)

@@ -235,8 +235,13 @@ class ProgramVenueAddress(models.Model):
 class ProgramScheduleNote(models.Model):
     program = models.ForeignKey(ProgramSchedule)
     note = MarkdownField()
+    note_timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "%s - %s" % (self.program, self.note)
 
     class Meta:
+        ordering = ['-note_timestamp']
         verbose_name = 'program note'
         verbose_name_plural = 'notes about program'
 
@@ -255,6 +260,9 @@ class ProgramTeacher(models.Model):
                                     blank=True)
 
     teacher = models.ForeignKey(Contact)
+
+    def __str__(self):
+        return '%s - %s' % (self.program, self.teacher)
 
     class Meta:
         verbose_name = 'teacher for class'
