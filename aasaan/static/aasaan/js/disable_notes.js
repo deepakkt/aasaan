@@ -10,7 +10,8 @@ aasaan.disable_notes = function () {
         // console.log(aasaan.base_form.elements[i].id);
         if (aasaan.base_form.elements[i].type === "select-one" || aasaan.base_form.elements[i].type === "textarea") {
             if ((aasaan.base_form.elements[i].id.endsWith('note_type')) || (aasaan.base_form.elements[i].id.endsWith('-note'))) {
-                if (!aasaan.base_form.elements[i].id.contains('__prefix__')) {
+                // originally written with endsWith below but it's not yet supported in chrome!
+                if (aasaan.base_form.elements[i].id.indexOf('__prefix__') === -1) {
                     aasaan.base_form.elements[i].disabled = true;
                 }
             }
@@ -23,7 +24,7 @@ aasaan.enable_notes = function () {
         // console.log(aasaan.base_form.elements[i].id);
         if (aasaan.base_form.elements[i].type === "select-one" || aasaan.base_form.elements[i].type === "textarea") {
             if ((aasaan.base_form.elements[i].id.endsWith('note_type')) || (aasaan.base_form.elements[i].id.endsWith('-note'))) {
-                if (!aasaan.base_form.elements[i].id.contains('__prefix__')) {
+                if (aasaan.base_form.elements[i].id.indexOf('__prefix__') === -1) {
                     aasaan.base_form.elements[i].disabled = false;
                 }
             }
