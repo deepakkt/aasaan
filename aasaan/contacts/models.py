@@ -48,7 +48,7 @@ class Contact(models.Model):
     other_mobile_1 = models.CharField("alternate mobile 1", max_length=15, blank=True)
     other_mobile_2 = models.CharField("alternate mobile 2", max_length=15, blank=True)
     whatsapp_number = models.CharField('whatsapp number', max_length=15, blank=True)
-    primary_email = models.EmailField("primary Email", max_length=50)
+    primary_email = models.EmailField("primary Email", max_length=50, unique=True)
     secondary_email = models.EmailField("secondary Email", max_length=50, blank=True)
     pushbullet_token = models.CharField('pushbullet Token', max_length=64, blank=True)
     id_card_type = models.CharField("Ashram ID Card Type", max_length=10, blank=True)
@@ -265,7 +265,8 @@ class Contact(models.Model):
 class ContactNote(models.Model):
     """Notes about the contact"""
     contact = models.ForeignKey(Contact)
-    note_type = models.CharField(max_length=2, choices=NOTE_TYPE_VALUES)
+    note_type = models.CharField(max_length=2, choices=NOTE_TYPE_VALUES,
+                                 default=NOTE_TYPE_VALUES[0][0])
     note = MarkdownField(max_length=500)
     note_timestamp = models.DateTimeField(auto_now_add=True)
 

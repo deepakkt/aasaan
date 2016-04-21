@@ -162,7 +162,7 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
 
     class Media:
         js = ('/static/schedulemaster/js/new_schedule_default_batches.js',
-              '/static/aasaan/js/disable_notes.js',)
+              '/static/aasaan/js/disable_notes_v2.js',)
 
 
 admin.site.register(LanguageMaster, LanguageMasterAdmin)

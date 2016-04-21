@@ -209,7 +209,7 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
     resource_class = ContactResource
 
     class Media:
-        js = ('/static/aasaan/js/disable_notes.js',)
+        js = ('/static/aasaan/js/disable_notes_v2.js',)
 
 
 class RoleGroupAdmin(admin.ModelAdmin):
