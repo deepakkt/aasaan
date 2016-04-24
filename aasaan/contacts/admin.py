@@ -59,12 +59,34 @@ class CenterInline(admin.TabularInline):
 
 
 class IndividualContactRoleCenterInline(admin.TabularInline):
+    def __init__(self, *args, **kwargs):
+        super(IndividualContactRoleCenterInline, self).__init__(*args, **kwargs)
+        self.parent_contact = None
+
+    def get_fields(self, request, obj=None):
+        self.parent_contact = obj
+        return super(IndividualContactRoleCenterInline, self).get_fields(request, obj)
+
+
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'role':
             if request.user.is_superuser:
                 kwargs["queryset"] = IndividualRole.objects.filter(role_level='CE')
             else:
                 kwargs["queryset"] = IndividualRole.objects.filter(role_level='CE', admin_role=False)
+
+        if db_field.name == 'center':
+            if (request.user.is_superuser) or ('view-all' in [x.name for x in request.user.groups.all()]):
+                pass
+            else:
+                user_zones = [x.zone.id for x in request.user.aasaanuserzone_set.all()]
+                user_zone_centers = [x.id for x in Center.objects.filter(zone__pk__in=user_zones)]
+                user_centers = [x.center.id for x in request.user.aasaanusercenter_set.all()] + \
+                    [x.center.id for x in self.parent_contact.individualcontactrolecenter_set.all()] + \
+                    user_zone_centers
+                user_centers = list(set(user_centers))
+                kwargs["queryset"] = Center.objects.filter(pk__in=user_centers)
+
         return super(IndividualContactRoleCenterInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     model = IndividualContactRoleCenter
@@ -72,12 +94,30 @@ class IndividualContactRoleCenterInline(admin.TabularInline):
 
 
 class IndividualContactRoleZoneInline(admin.TabularInline):
+    def __init__(self, *args, **kwargs):
+        super(IndividualContactRoleZoneInline, self).__init__(*args, **kwargs)
+        self.parent_contact = None
+
+    def get_fields(self, request, obj=None):
+        self.parent_contact = obj
+        return super(IndividualContactRoleZoneInline, self).get_fields(request, obj)
+
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'role':
             if request.user.is_superuser:
                 kwargs["queryset"] = IndividualRole.objects.filter(role_level='ZO')
             else:
                 kwargs["queryset"] = IndividualRole.objects.filter(role_level='ZO', admin_role=False)
+
+        if db_field.name == 'zone':
+            if (request.user.is_superuser) or ('view-all' in [x.name for x in request.user.groups.all()]):
+                pass
+            else:
+                user_zones = [x.zone.id for x in request.user.aasaanuserzone_set.all()] + \
+                        [x.zone.id for x in self.parent_contact.individualcontactrolezone_set.all()]
+                user_zones = list(set(user_zones))
+                kwargs["queryset"] = Zone.objects.filter(pk__in=user_zones)
+
         return super(IndividualContactRoleZoneInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     model = IndividualContactRoleZone

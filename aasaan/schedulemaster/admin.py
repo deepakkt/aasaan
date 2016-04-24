@@ -101,6 +101,35 @@ class ProgramScheduleZoneFilter(admin.SimpleListFilter):
             return queryset.filter(center__zone__zone_name=self.value())
 
 
+class ProgramScheduleProgramFilter(admin.SimpleListFilter):
+    title = 'program'
+    parameter_name = 'program'
+
+    def lookups(self, request, model_admin):
+        base_queryset = ProgramMaster.objects.all()
+        base_queryset = base_queryset if request.user.is_superuser else base_queryset.filter(admin=False)
+        return tuple([(x.name, x.name) for x in base_queryset])
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(program__name=self.value())
+
+
+class ProgramScheduleHiddenFilter(admin.SimpleListFilter):
+    title = 'program visibility'
+    parameter_name = 'hidden'
+
+    def lookups(self, request, model_admin):
+        if request.user.is_superuser:
+            return (('hidden', 'Hidden Programs'),)
+        else:
+            return (('', ''),)
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(hidden=True)
+
+
 class ProgramScheduleAdmin(admin.ModelAdmin):
     def __init__(self, *args, **kwargs):
         self._base_obj = None
@@ -126,7 +155,7 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
 
         # give entire set if user is a superuser irrespective of zone and center assignments
         if (request.user.is_superuser) or ('view-all' in [x.name for x in request.user.groups.all()]):
-            return qs
+            return qs if request.user.is_superuser else qs.filter(program__admin=False)
 
         # get all centers this user belongs to
         user_centers = [x.center for x in request.user.aasaanusercenter_set.all()]
@@ -143,12 +172,13 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
         # and de-dupe them!
         all_schedules = all_schedules.distinct()
 
-        return all_schedules
+        return all_schedules.filter(hidden=False).filter(program__admin=False)
 
     list_display = ['program_name', 'center', 'start_date', 'end_date',
                     'gender', 'primary_language']
 
-    list_filter = [ProgramScheduleZoneFilter, 'program']
+    list_filter = [ProgramScheduleZoneFilter, ProgramScheduleProgramFilter,
+                   ProgramScheduleHiddenFilter]
 
     search_fields = ['center__center_name', 'program_location']
 
@@ -160,10 +190,33 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
                ProgramScheduleCountsAdmin, ProgramVenueAdmin,
                ProgramScheduleNoteAdmin, ProgramAdditionalInformationAdmin]
 
+    actions = ['mark_hidden', 'mark_unhidden']
+
     class Media:
         js = ('/static/schedulemaster/js/new_schedule_default_batches.js',
               '/static/aasaan/js/disable_notes_v2.js',)
 
+    def mark_hidden(self, request, queryset):
+        if not request.user.is_superuser:
+            self.message_user(request, 'You do not have permission to mark programs hidden')
+            return
+
+        rows_updated = queryset.update(hidden=True)
+
+        self.message_user(request, 'Done! Number of programs marked hidden: %s' %(rows_updated))
+        return
+    mark_hidden.short_description = "Mark programs hidden"
+
+    def mark_unhidden(self, request, queryset):
+        if not request.user.is_superuser:
+            self.message_user(request, 'You do not have permission to unhide programs')
+            return
+
+        rows_updated = queryset.update(hidden=False)
+
+        self.message_user(request, 'Done! Number of programs unhidden: %s' %(rows_updated))
+        return
+    mark_unhidden.short_description = "Mark programs unhidden"
 
 admin.site.register(LanguageMaster, LanguageMasterAdmin)
 admin.site.register(BatchMaster, BatchMasterAdmin)

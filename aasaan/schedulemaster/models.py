@@ -52,6 +52,7 @@ class ProgramCategory(models.Model):
 class ProgramMaster(models.Model):
     name = models.CharField(max_length=50)
     active = models.BooleanField(default=True)
+    admin = models.BooleanField(default=False)
 
     objects = models.Manager()
     active_objects = ActiveManager()
@@ -112,6 +113,8 @@ class ProgramSchedule(models.Model):
     start_date = models.DateField("start Date")
     end_date = models.DateField("end Date")
     donation_amount = models.IntegerField()
+
+    hidden = models.BooleanField(default=False)
 
     event_management_software = models.CharField(max_length=15, blank=True)
     event_management_code = models.CharField(verbose_name="code from event management software",
