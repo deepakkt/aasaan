@@ -82,8 +82,9 @@ class IndividualContactRoleCenterInline(admin.TabularInline):
                 user_zones = [x.zone.id for x in request.user.aasaanuserzone_set.all()]
                 user_zone_centers = [x.id for x in Center.objects.filter(zone__pk__in=user_zones)]
                 user_centers = [x.center.id for x in request.user.aasaanusercenter_set.all()] + \
-                    [x.center.id for x in self.parent_contact.individualcontactrolecenter_set.all()] + \
                     user_zone_centers
+                if self.parent_contact:
+                    user_centers += [x.center.id for x in self.parent_contact.individualcontactrolecenter_set.all()]
                 user_centers = list(set(user_centers))
                 kwargs["queryset"] = Center.objects.filter(pk__in=user_centers)
 
@@ -113,8 +114,9 @@ class IndividualContactRoleZoneInline(admin.TabularInline):
             if (request.user.is_superuser) or ('view-all' in [x.name for x in request.user.groups.all()]):
                 pass
             else:
-                user_zones = [x.zone.id for x in request.user.aasaanuserzone_set.all()] + \
-                        [x.zone.id for x in self.parent_contact.individualcontactrolezone_set.all()]
+                user_zones = [x.zone.id for x in request.user.aasaanuserzone_set.all()]
+                if self.parent_contact:
+                    user_zones += [x.zone.id for x in self.parent_contact.individualcontactrolezone_set.all()]
                 user_zones = list(set(user_zones))
                 kwargs["queryset"] = Zone.objects.filter(pk__in=user_zones)
 
