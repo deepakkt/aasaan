@@ -13,4 +13,5 @@ class Command(BaseCommand):
     help = "Sync schedules. See gsync.settings for definitions"
 
     def handle(self, *args, **options):
+        sync.sync_schedules()
         sync.sync_contacts()
