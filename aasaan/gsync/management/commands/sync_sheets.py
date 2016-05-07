@@ -6,11 +6,11 @@ All definitions are given in gsync.settings
 """
 
 from django.core.management.base import BaseCommand
-from gsync import sync
+from gsync.sync import sync_v2 as sync
 
 
 class Command(BaseCommand):
     help = "Sync schedules. See gsync.settings for definitions"
 
     def handle(self, *args, **options):
-        sync.sync_all()
+        sync.sync_contacts()

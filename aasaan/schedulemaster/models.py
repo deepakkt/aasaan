@@ -188,6 +188,17 @@ class ProgramVenueAddress(models.Model):
     contact_number = models.CharField("contact number for this address", max_length=15, blank=True)
     contact_email = models.EmailField("email for this address", max_length=100, blank=True)
 
+    @property
+    def address(self):
+        base_list = [self.venue_name,
+                     self.address_line_1,
+                     self.address_line_2,
+                     self.address_line_3,
+                     self.city,
+                     self.postal_code,
+                     self.country]
+        return "\n".join([x for x in base_list if x])
+
     def __str__(self):
         return "%s - venue for program" % self.program
 

@@ -11,13 +11,13 @@ from .settings import DEFAULT_SHEET_KEY, \
 
 
 def getcolumnnumber(colname="A"):
-    # Creates a dictionary that maps characters to their column number values
-    # Example, "A" maps to 1
-    charmap = dict([(chr(x), x-64) for x in range(65, 65+26)])
-
     # We can hard code 26, but fixing it here might
     # make it easier to port this function later
     base=26
+
+    # Creates a dictionary that maps characters to their column number values
+    # Example, "A" maps to 1
+    charmap = dict([(chr(x), x-64) for x in range(65, 65+base)])
 
     # Capitalize and convert the column names to a list
     # we reverse it to take advantage of default python ordinal positions
@@ -39,7 +39,7 @@ def getcolumn(colnum=1):
                23: 'W',  24: 'X',  25: 'Y',  26: 'Z'}
 
     # recursive call to self until we exhaust all quotients
-    if colnum < 27:
+    if colnum < (base + 1):
         return cellmap[colnum]
     else:
         return getcolumn(colnum // base) + cellmap[colnum % base]
@@ -84,6 +84,9 @@ def update_cell(worksheet, cell_id="A1", value=""):
 
 
 def update_row(worksheet, start_row=1, start_col=1, values_list=()):
+    if not values_list:
+        return
+
     range_start = getcolumn(start_col) + str(start_row)
     range_end = getcolumn(start_col + len(values_list) - 1) + str(start_row)
     cell_list = worksheet.range(range_start + ":" + range_end)
@@ -96,23 +99,3 @@ def update_row(worksheet, start_row=1, start_col=1, values_list=()):
 
 def update_header_row(worksheet, start_row=1, start_col=1, values_list=DEFAULT_SYNC_ROWS):
     update_row(worksheet, start_row, start_col, values_list)
-
-
-# run through a list of filters which will either modify or eliminate
-# rows from the result set
-def morph_values(filters, values_list):
-    if not values_list:
-        return []
-
-    if not filters:
-        return values_list
-
-    values = values_list[:]
-
-    for each_filter in filters:
-        values = each_filter(values)
-
-        if not values:
-            return []
-
-    return values
