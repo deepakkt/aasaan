@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.core.exceptions import ObjectDoesNotExist
 
-from contacts.models import Contact, IndividualRole, Zone
+from contacts.models import Contact, IndividualRole, Zone, Center
 from .models import LanguageMaster, ProgramCategory, ProgramMaster, \
     ProgramMasterCategory, ProgramSchedule, ProgramVenueAddress, ProgramScheduleNote, \
     ProgramTeacher, BatchMaster, ProgramBatch, ProgramScheduleCounts, \
@@ -104,6 +104,9 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'program':
             kwargs["queryset"] = ProgramMaster.active_objects.all()
+        if not request.user.is_superuser and db_field.name == 'center':
+            user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
+            kwargs["queryset"] = Center.objects.filter(zone__in=user_zones)
         return super(ProgramScheduleAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     # filter schedule records based on user permissions
