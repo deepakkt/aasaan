@@ -26,10 +26,11 @@ ROLE_LEVEL_CHOICES = (('ZO', 'Zone'),
                       ('SC', 'Sector'),
                       ('CE', 'Center'),)
 
-NOTE_TYPE_VALUES = (('SC', 'Status Change'),
+NOTE_TYPE_VALUES = (('IN', 'Information Note'),
+                    ('SC', 'Status Change'),
                     ('CN', 'Critical Note'),
                     ('MN', 'Medical Note'),
-                    ('IN', 'Information Note'),)
+                    )
 
 ADDRESS_TYPE_VALUES = (('WO', 'Work'),
                        ('HO', 'Home'))

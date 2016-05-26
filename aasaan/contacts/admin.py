@@ -59,9 +59,35 @@ class CenterInline(admin.TabularInline):
 
 
 class IndividualContactRoleCenterInline(admin.TabularInline):
+    def __init__(self, *args, **kwargs):
+        super(IndividualContactRoleCenterInline, self).__init__(*args, **kwargs)
+        self.parent_contact = None
+
+    def get_fields(self, request, obj=None):
+        self.parent_contact = obj
+        return super(IndividualContactRoleCenterInline, self).get_fields(request, obj)
+
+
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'role':
-            kwargs["queryset"] = IndividualRole.objects.filter(role_level='CE')
+            if request.user.is_superuser:
+                kwargs["queryset"] = IndividualRole.objects.filter(role_level='CE')
+            else:
+                kwargs["queryset"] = IndividualRole.objects.filter(role_level='CE', admin_role=False)
+
+        if db_field.name == 'center':
+            if (request.user.is_superuser) or ('view-all' in [x.name for x in request.user.groups.all()]):
+                pass
+            else:
+                user_zones = [x.zone.id for x in request.user.aasaanuserzone_set.all()]
+                user_zone_centers = [x.id for x in Center.objects.filter(zone__pk__in=user_zones)]
+                user_centers = [x.center.id for x in request.user.aasaanusercenter_set.all()] + \
+                    user_zone_centers
+                if self.parent_contact:
+                    user_centers += [x.center.id for x in self.parent_contact.individualcontactrolecenter_set.all()]
+                user_centers = list(set(user_centers))
+                kwargs["queryset"] = Center.objects.filter(pk__in=user_centers)
+
         return super(IndividualContactRoleCenterInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     model = IndividualContactRoleCenter
@@ -69,9 +95,31 @@ class IndividualContactRoleCenterInline(admin.TabularInline):
 
 
 class IndividualContactRoleZoneInline(admin.TabularInline):
+    def __init__(self, *args, **kwargs):
+        super(IndividualContactRoleZoneInline, self).__init__(*args, **kwargs)
+        self.parent_contact = None
+
+    def get_fields(self, request, obj=None):
+        self.parent_contact = obj
+        return super(IndividualContactRoleZoneInline, self).get_fields(request, obj)
+
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'role':
-            kwargs["queryset"] = IndividualRole.objects.filter(role_level='ZO')
+            if request.user.is_superuser:
+                kwargs["queryset"] = IndividualRole.objects.filter(role_level='ZO')
+            else:
+                kwargs["queryset"] = IndividualRole.objects.filter(role_level='ZO', admin_role=False)
+
+        if db_field.name == 'zone':
+            if (request.user.is_superuser) or ('view-all' in [x.name for x in request.user.groups.all()]):
+                pass
+            else:
+                user_zones = [x.zone.id for x in request.user.aasaanuserzone_set.all()]
+                if self.parent_contact:
+                    user_zones += [x.zone.id for x in self.parent_contact.individualcontactrolezone_set.all()]
+                user_zones = list(set(user_zones))
+                kwargs["queryset"] = Zone.objects.filter(pk__in=user_zones)
+
         return super(IndividualContactRoleZoneInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     model = IndividualContactRoleZone
@@ -117,7 +165,11 @@ class ContactRoleFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         role_list = IndividualRole.objects.all().order_by('role_level', 'role_name')
-        lookup_list = [(x.role_name, str(x)) for x in role_list]
+        if request.user.is_superuser:
+            lookup_list = [(x.role_name, str(x)) for x in role_list]
+        else:
+            lookup_list = [(x.role_name, str(x)) for x in role_list if not x.admin_role]
+
         return tuple(lookup_list)
 
     def queryset(self, request, queryset):
@@ -170,7 +222,7 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
     list_per_page = 30
 
     fieldsets = [
-        ('Core Information', {'fields': ['first_name', 'last_name',
+        ('Core Information', {'fields': ['profile_image_display', 'first_name', 'last_name',
                                          'teacher_tno', 'date_of_birth',
                                          'gender', 'category', 'status',
                                          'cug_mobile', 'other_mobile_1',
@@ -187,7 +239,7 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
                                               ], 'classes': ['collapse']}),
     ]
 
-    readonly_fields = ('profile_image',)
+    readonly_fields = ('profile_image', 'profile_image_display',)
 
     inlines = [ContactAddressInline,
                IndividualContactRoleZoneInline,
@@ -197,6 +249,9 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
     formats = [base_formats.XLS,]
     to_encoding = 'utf-8'
     resource_class = ContactResource
+
+    class Media:
+        js = ('/static/aasaan/js/disable_notes_v2.js',)
 
 
 class RoleGroupAdmin(admin.ModelAdmin):
