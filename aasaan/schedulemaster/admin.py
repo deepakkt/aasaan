@@ -140,7 +140,11 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
             kwargs["queryset"] = ProgramMaster.active_objects.all()
         if not request.user.is_superuser and db_field.name == 'center':
             user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
-            kwargs["queryset"] = Center.objects.filter(zone__in=user_zones)
+            user_zone_centers = [x.id for x in Center.objects.filter(zone__in=user_zones)]
+            user_centers = [x.center.id for x in request.user.aasaanusercenter_set.all()] +\
+                user_zone_centers
+            user_centers = list(set(user_centers))
+            kwargs["queryset"] = Center.objects.filter(pk__in=user_centers)
         return super(ProgramScheduleAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     def save_model(self, request, obj, form, change):
