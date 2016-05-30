@@ -161,21 +161,28 @@ class ScheduleSync(SheetSync):
     filters = [schedule_filter.ScheduleSync]
 
     def get_programschedule_queryset(self):
-        return ProgramSchedule.objects.all().order_by('center__zone', 'program', '-start_date', 'center')
+        return ProgramSchedule.objects.all().order_by('center__zone', '-start_date', 'center', 'program')
 
     def translate_programschedule(self, instance):
         _worksheet_row = 0
+
+        months = ['Ignore', 'January', 'February', 'March',
+                  'April', 'May', 'June', 'July', 'August',
+                  'September', 'October', 'November', 'December']
 
         # generate program timings in the format of M-N-E
         timing_codes = '-'.join([x.batch.batch_code for x in instance.programbatch_set.all()])
         # get all venues for this program
         schedule_venue = instance.programvenueaddress_set.all()
 
+        _date_fmt = lambda x: "-".join([str(x.day), str(months[x.month][:3]),
+                                        str(x.year)])
+
         # build a value list
         schedule_values = [_worksheet_row,
                            instance.center.zone.zone_name,
-                           instance.start_date.isoformat(),
-                           instance.end_date.isoformat(),
+                           _date_fmt(instance.start_date),
+                           _date_fmt(instance.end_date),
                            instance.center.center_name,
                            instance.program.name,
                            timing_codes,
