@@ -66,6 +66,7 @@ INSTALLED_APPS += (
     'schedulemaster',
     'iconnect',
     'gsync',
+    'brochures',
 )
 
 # third party apps
