@@ -149,11 +149,6 @@ class StockPoint(models.Model):
         verbose_name = 'Materials in Stock Point'
         ordering = ['stock_point']
 
-        # def stock_point__zone(self):
-        #     sp = StockPointMaster.objects.filter(stockpoint=self)
-        #
-        #     return sp['zone']
-
 
 class Brochures(models.Model):
     item = models.ForeignKey(BrochureMaster)
@@ -193,32 +188,36 @@ class BrochureSetItem(models.Model):
     item = models.ForeignKey(BrochureMaster)
     quantity = models.SmallIntegerField()
 
+    def as_dict(self):
+        return "%s" % (self.item)
+
 
 class BrochuresTransfer(models.Model):
     TRANSFER_TYPE_VALUES = (('PSP', 'Printer to Stock Point'),
                             ('SPSH', 'Stock Point to Schedule'),
                             ('SCSP', 'Schedule to Stock Point'),
                             ('STPT', 'Stock Point to Stock Point'),
-                            ('GUST', 'Stock Point to Guest'),
-                            )
+                            ('GUST', 'Stock Point to Guest'),)
     transfer_type = models.CharField(max_length=6, choices=TRANSFER_TYPE_VALUES, blank=True,
                                      default='STPT')
     source_printer = models.CharField(max_length=100, blank=True, null=True)
     source_stock_point = models.ForeignKey(StockPointMaster, blank=True, null=True)
-    destination_stock_point = models.ForeignKey(StockPointMaster, related_name='destination_sp', blank=True, null=True)
     source_program_schedule = models.ForeignKey(ProgramSchedule, blank=True, null=True)
+    destination_stock_point = models.ForeignKey(StockPointMaster, related_name='destination_sp', blank=True, null=True)
     destination_program_schedule = models.ForeignKey(ProgramSchedule, related_name='destination_sch', blank=True,
                                                      null=True)
-    brochure_set = models.ForeignKey(BrochureSet, blank=True, null=True)
     guest_name = models.CharField(max_length=100, blank=True, null=True)
     guest_phone = models.CharField(max_length=15, blank=True, null=True)
     guest_email = models.EmailField(max_length=50, blank=True, null=True)
+    brochure_set = models.ForeignKey(BrochureSet, blank=True, null=True)
+    save_new = models.BooleanField(default=True)
     transfer_date = models.DateField(auto_now_add=True)
 
-    STATUS_VALUES = (('IT', 'In Transit'),
+    STATUS_VALUES = (('NEW', 'Transfer Initiated'),
+                     ('IT', 'In Transit'),
                      ('DD', 'Delivered'),
-                     ('LOST', 'Lost/Damaged'),
-                     )
+                     ('TC', 'Cancelled'),
+                     ('LOST', 'Lost/Damaged'),)
     status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True,
                               default=STATUS_VALUES[0][0])
 
@@ -250,6 +249,9 @@ class BrochuresTransfer(models.Model):
             if not self.guest_name:
                 raise ValidationError("Please enter Guest name")
 
+    def save(self, *args, **kwargs):
+        super(BrochuresTransfer, self).save(*args, **kwargs)
+
     class Meta:
         verbose_name = "Brochures Transfer"
         verbose_name_plural = "Brochures Transfers"
@@ -278,7 +280,7 @@ class BrochuresShipment(models.Model):
     remarks = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
-        return "%s, %s" % self.sent_from, self.sent_to
+        return "%s - %s" % (self.sent_from, self.sent_to)
 
     class Meta:
         verbose_name = 'Brochure Shipment'
