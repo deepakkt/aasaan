@@ -9,69 +9,63 @@ var aasaan = window.aasaan || {};
 
     $(function() {
         var selectField = $('#id_transfer_type');
+        if (!$('#id_save_new').is(':checked')){
+            $('.field-brochure_set').hide()
+            document.getElementsByClassName('add-row')[0].style.display = 'none';
+            $("#id_transfer_type").prop("disabled", true);
+        }
 
         function toggleVerified(value) {
             if(value == 'PSP') {
-                $('#id_source_printer').closest("div").parent('div').show()
-                $('#id_source_stock_point').closest("div").parent('div').parent('div').hide()
-                $('#id_destination_stock_point').closest("div").parent('div').parent('div').show()
-                $('#id_source_program_schedule').closest("div").parent('div').parent('div').hide()
-                $('#id_destination_program_schedule').closest("div").parent('div').parent('div').hide()
-                $('#id_guest_name').closest("div").parent('div').hide()
-                $('#id_guest_phone').closest("div").parent('div').hide()
-                $('#id_guest_email').closest("div").parent('div').hide()
+                $('.field-source_printer').show()
+                $('.field-source_stock_point').hide()
+                $('.field-destination_stock_point').show()
+                $('.field-source_program_schedule').hide()
+                $('.field-destination_program_schedule').hide()
+                $('.field-guest_name').hide()
+                $('.field-guest_phone').hide()
+                $('.field-guest_email').hide()
             }
             else if(value == 'SPSH') {
-                $('#id_source_printer').closest("div").parent('div').hide()
-                $('#id_source_stock_point').closest("div").parent('div').parent('div').show()
-                $('#id_destination_stock_point').closest("div").parent('div').parent('div').hide()
-                $('#id_source_program_schedule').closest("div").parent('div').parent('div').hide()
-                $('#id_destination_program_schedule').closest("div").parent('div').parent('div').show()
-                $('#id_guest_name').closest("div").parent('div').hide()
-                $('#id_guest_phone').closest("div").parent('div').hide()
-                $('#id_guest_email').closest("div").parent('div').hide()
+                $('.field-source_printer').hide()
+                $('.field-source_stock_point').show()
+                $('.field-destination_stock_point').hide()
+                $('.field-source_program_schedule').hide()
+                $('.field-destination_program_schedule').show()
+                $('.field-guest_name').hide()
+                $('.field-guest_phone').hide()
+                $('.field-guest_email').hide()
             }
             else if(value == 'SCSP') {
-                $('#id_source_printer').closest("div").parent('div').hide()
-                $('#id_source_stock_point').closest("div").parent('div').parent('div').hide()
-                $('#id_destination_stock_point').closest("div").parent('div').parent('div').show()
-                $('#id_source_program_schedule').closest("div").parent('div').parent('div').show()
-                $('#id_destination_program_schedule').closest("div").parent('div').parent('div').hide()
-                $('#id_guest_name').closest("div").parent('div').hide()
-                $('#id_guest_phone').closest("div").parent('div').hide()
-                $('#id_guest_email').closest("div").parent('div').hide()
+                $('.field-source_printer').hide()
+                $('.field-source_stock_point').hide()
+                $('.field-destination_stock_point').show()
+                $('.field-source_program_schedule').show()
+                $('.field-destination_program_schedule').hide()
+                $('.field-guest_name').hide()
+                $('.field-guest_phone').hide()
+                $('.field-guest_email').hide()
             }
             else if(value == 'STPT') {
-                $('#id_source_printer').closest("div").parent('div').hide()
-                $('#id_source_stock_point').closest("div").parent('div').parent('div').show()
-                $('#id_destination_stock_point').closest("div").parent('div').parent('div').show()
-                $('#id_source_program_schedule').closest("div").parent('div').parent('div').hide()
-                $('#id_destination_program_schedule').closest("div").parent('div').parent('div').hide()
-                $('#id_guest_name').closest("div").parent('div').hide()
-                $('#id_guest_phone').closest("div").parent('div').hide()
-                $('#id_guest_email').closest("div").parent('div').hide()
+                $('.field-source_printer').hide()
+                $('.field-source_stock_point').show()
+                $('.field-destination_stock_point').show()
+                $('.field-source_program_schedule').hide()
+                $('.field-destination_program_schedule').hide()
+                $('.field-guest_name').hide()
+                $('.field-guest_phone').hide()
+                $('.field-guest_email').hide()
             }
             else if(value == 'GUST') {
-                $('#id_source_printer').closest("div").parent('div').hide()
-                $('#id_source_stock_point').closest("div").parent('div').parent('div').show()
-                $('#id_destination_stock_point').closest("div").parent('div').parent('div').hide()
-                $('#id_source_program_schedule').closest("div").parent('div').parent('div').hide()
-                $('#id_destination_program_schedule').closest("div").parent('div').parent('div').hide()
-                $('#id_guest_name').closest("div").parent('div').show()
-                $('#id_guest_phone').closest("div").parent('div').show()
-                $('#id_guest_email').closest("div").parent('div').show()
+                $('.field-source_printer').hide()
+                $('.field-source_stock_point').show()
+                $('.field-destination_stock_point').hide()
+                $('.field-source_program_schedule').hide()
+                $('.field-destination_program_schedule').hide()
+                $('.field-guest_name').show()
+                $('.field-guest_phone').show()
+                $('.field-guest_email').show()
             }
-            else{
-                $('#id_source_stock_point').closest("div").parent('div').parent('div').hide()
-                $('#id_source_printer').closest("div").parent('div').hide()
-                $('#id_destination_stock_point').closest("div").parent('div').parent('div').hide()
-                $('#id_source_program_schedule').closest("div").parent('div').parent('div').hide()
-                $('#id_destination_program_schedule').closest("div").parent('div').parent('div').hide()
-                $('#id_guest_name').closest("div").parent('div').hide()
-                $('#id_guest_phone').closest("div").parent('div').hide()
-                $('#id_guest_email').closest("div").parent('div').hide()
-            }
-
         }
 
         // show/hide on load based on pervious value of selectField

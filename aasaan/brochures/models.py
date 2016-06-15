@@ -170,6 +170,20 @@ class Brochures(models.Model):
         verbose_name_plural = "brochures"
 
 
+class StockPointNote(models.Model):
+    stock_point = models.ForeignKey(StockPoint)
+    note = MarkdownField()
+    note_timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "%s - %s" % (self.stock_point, self.note)
+
+    class Meta:
+        ordering = ['-note_timestamp']
+        verbose_name = 'Stock Point & Materials note'
+        verbose_name_plural = 'notes about Stock Point & Materials'
+
+
 class BrochureSet(models.Model):
     name = models.CharField(max_length=50)
     remarks = models.CharField(max_length=100, blank=True)
@@ -200,6 +214,15 @@ class BrochuresTransfer(models.Model):
                             ('GUST', 'Stock Point to Guest'),)
     transfer_type = models.CharField(max_length=6, choices=TRANSFER_TYPE_VALUES, blank=True,
                                      default='STPT')
+    STATUS_VALUES = (('NEW', 'Transfer Initiated'),
+                     ('IT', 'In Transit'),
+                     ('DD', 'Delivered'),
+                     ('TC', 'Cancelled'),
+                     ('LOST', 'Lost/Damaged'),)
+    status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True,
+                              default=STATUS_VALUES[0][0])
+    brochure_set = models.ForeignKey(BrochureSet, blank=True, null=True)
+
     source_printer = models.CharField(max_length=100, blank=True, null=True)
     source_stock_point = models.ForeignKey(StockPointMaster, blank=True, null=True)
     source_program_schedule = models.ForeignKey(ProgramSchedule, blank=True, null=True)
@@ -209,17 +232,8 @@ class BrochuresTransfer(models.Model):
     guest_name = models.CharField(max_length=100, blank=True, null=True)
     guest_phone = models.CharField(max_length=15, blank=True, null=True)
     guest_email = models.EmailField(max_length=50, blank=True, null=True)
-    brochure_set = models.ForeignKey(BrochureSet, blank=True, null=True)
     save_new = models.BooleanField(default=True)
     transfer_date = models.DateField(auto_now_add=True)
-
-    STATUS_VALUES = (('NEW', 'Transfer Initiated'),
-                     ('IT', 'In Transit'),
-                     ('DD', 'Delivered'),
-                     ('TC', 'Cancelled'),
-                     ('LOST', 'Lost/Damaged'),)
-    status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True,
-                              default=STATUS_VALUES[0][0])
 
     def __str__(self):
         return "%s (%s)" % (self.transfer_type, self.source_printer)
@@ -250,17 +264,53 @@ class BrochuresTransfer(models.Model):
                 raise ValidationError("Please enter Guest name")
 
     def save(self, *args, **kwargs):
+        if not self.id:
+            new_entry = True
+        else:
+            new_entry = False
+            old_status = BrochuresTransfer.objects.get(pk=self.id).get_status_display()
+            new_status = self.get_status_display()
         super(BrochuresTransfer, self).save(*args, **kwargs)
+        transfer_note = BroucherTransferNote()
+        transfer_note.brochure_transfer = self
+        if not new_entry:
+            if (old_status != new_status) and (old_status != ""):
+                new_entry = False if self.id else True
+                transfer_note.note = "Automatic Log: Status of %s changed from '%s' to '%s'" % \
+                                     (self.transfer_type, old_status, new_status)
+                transfer_note.save()
+        else:
+            transfer_note.note = "Automatic Log: New transfer created with status '%s'" % \
+                                 (self.get_status_display())
+            transfer_note.save()
 
     class Meta:
         verbose_name = "Brochures Transfer"
         verbose_name_plural = "Brochures Transfers"
 
 
+class BroucherTransferNote(models.Model):
+    brochure_transfer = models.ForeignKey(BrochuresTransfer)
+    note = MarkdownField()
+    note_timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "%s - %s" % (self.brochure_transfer, self.note)
+
+    class Meta:
+        ordering = ['-note_timestamp']
+        verbose_name = 'brochure transfer note'
+        verbose_name_plural = 'notes about brochure transfer'
+
+
 class BrochuresTransferItem(models.Model):
     brochures = models.ForeignKey(BrochureMaster)
     brochures_transfer = models.ForeignKey(BrochuresTransfer)
-    quantity = models.SmallIntegerField()
+    sent_quantity = models.SmallIntegerField()
+    received_quantity = models.SmallIntegerField(null=True, blank=True)
+
+    def __str__(self):
+        return "%s" % self.brochures
 
 
 class BrochuresShipment(models.Model):

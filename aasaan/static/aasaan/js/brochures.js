@@ -8,6 +8,6 @@ var aasaan = window.aasaan || {};
 
 (function($) {
     $(document).ready(function($) {
-         $(".submit-row").hide()
+//         $(".submit-row").hide()
     });
 })(django.jQuery);
