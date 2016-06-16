@@ -8,6 +8,7 @@ from django_markdown.admin import MarkdownInlineAdmin
 
 class BrochuresInline(admin.TabularInline):
     list_display = ('item', 'quantity', 'status')
+    fields = ('item', 'quantity', 'status')
     model = Brochures
     extra = 1
     can_delete = False
@@ -223,3 +224,5 @@ admin.site.register(StockPointMaster, StockPointMasterAdmin)
 admin.site.register(StockPoint, BrochuresAdmin)
 admin.site.register(BrochuresTransfer, BrochuresTransferAdmin)
 admin.site.register(BrochureSet, BrochuresSetAdmin)
+
+

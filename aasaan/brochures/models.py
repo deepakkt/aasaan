@@ -46,7 +46,7 @@ def _brochure_image_path(instance, filename):
 class BrochureMaster(models.Model):
     name = models.CharField(max_length=50)
     version = models.CharField(max_length=10, blank=True)
-    language = models.ForeignKey(LanguageMaster)
+    language = models.ForeignKey(LanguageMaster, default=1)
     active = models.BooleanField(default=True)
     brochure_image = models.ImageField(upload_to=_brochure_image_path, blank=True)
     description = MarkdownField(blank=True)
@@ -163,7 +163,7 @@ class Brochures(models.Model):
                               default=STATUS_VALUES[0][0])
 
     def __str__(self):
-        return "%s (%d)" % (self.item, self.quantity)
+        return ""
 
     class Meta:
         verbose_name = "brochure"
