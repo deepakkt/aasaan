@@ -284,6 +284,30 @@ class BrochuresTransfer(models.Model):
                                  (self.get_status_display())
             transfer_note.save()
 
+    def source(self):
+        if self.transfer_type == 'PSP':
+            return self.source_printer
+        elif self.transfer_type == 'SPSH':
+            return self.source_stock_point
+        elif self.transfer_type == 'SCSP':
+            return self.source_program_schedule.__str__()[:35]
+        elif self.transfer_type == 'STPT':
+            return self.source_stock_point
+        elif self.transfer_type == 'GUST':
+            return self.source_stock_point
+
+    def destination(self):
+        if self.transfer_type == 'PSP':
+            return self.destination_stock_point
+        elif self.transfer_type == 'SPSH':
+            return self.destination_program_schedule.__str__()[:35]
+        elif self.transfer_type == 'SCSP':
+            return self.destination_stock_point
+        elif self.transfer_type == 'STPT':
+            return self.destination_stock_point
+        elif self.transfer_type == 'GUST':
+            return  self.guest_name
+
     class Meta:
         verbose_name = "Brochures Transfer"
         verbose_name_plural = "Brochures Transfers"
@@ -310,7 +334,7 @@ class BrochuresTransferItem(models.Model):
     received_quantity = models.SmallIntegerField(null=True, blank=True)
 
     def __str__(self):
-        return "%s" % self.brochures
+        return ""
 
 
 class BrochuresShipment(models.Model):

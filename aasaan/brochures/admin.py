@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from .models import Brochures, BrochureMaster, StockPointMaster, StockPoint, BrochuresTransfer, BrochuresTransferItem, \
     StockPointAddress, BrochuresShipment, BrochureSet, BrochureSetItem, BroucherTransferNote, StockPointNote
+from contacts.models import Zone
 from django_markdown.admin import MarkdownInlineAdmin
 
 
@@ -38,6 +39,7 @@ class BrochuresTransferItemInline(admin.TabularInline):
     model = BrochuresTransferItem
     extra = 0
     can_delete = False
+    fields = ('brochures', 'sent_quantity', 'received_quantity')
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
@@ -95,17 +97,34 @@ class BrochuresAdmin(admin.ModelAdmin):
         return False
 
 
+class ZoneFilter(admin.SimpleListFilter):
+    title = 'zones'
+    parameter_name = 'zones'
+
+    def lookups(self, request, model_admin):
+        return tuple([(x.zone_name, x.zone_name) for x in Zone.objects.all()])
+
+    def queryset(self, request, queryset):
+        if self.value():
+            zone = Zone.objects.filter(zone_name=self.value())
+            src_sp_brochures = BrochuresTransfer.objects.filter(source_stock_point__zone__in=zone)
+            dest_sp_brochures = BrochuresTransfer.objects.filter(destination_stock_point__zone__in=zone)
+            src_sch_brochures = BrochuresTransfer.objects.filter(source_program_schedule__center__zone__in=zone)
+            dest_sch_brochures = BrochuresTransfer.objects.filter(destination_program_schedule__center__zone__in=zone)
+            brochure_trans_all = src_sp_brochures | dest_sp_brochures | dest_sch_brochures | src_sch_brochures
+            return brochure_trans_all
+
+
 class BrochuresTransferAdmin(admin.ModelAdmin):
     def __init__(self, *args, **kwargs):
-        self._base_obj = None
+        self.transfer_id = None
         super(BrochuresTransferAdmin, self).__init__(*args, **kwargs)
 
     inlines = [BrochuresTransferItemInline, BrochuresShipmentInline, BroucherTransferNoteInline]
-    list_filter = ('source_stock_point__zone',)
+    list_filter = (ZoneFilter, 'status')
     list_display = (
-        'transfer_type', 'source_stock_point', 'destination_stock_point', 'transfer_date', 'status')
+        'transfer_type', 'source', 'destination', 'transfer_date', 'status')
     save_on_top = True
-
 
     fieldsets = [
         ('', {'fields': ('transfer_type', 'status', 'brochure_set', 'source_printer', 'source_stock_point',
@@ -117,13 +136,6 @@ class BrochuresTransferAdmin(admin.ModelAdmin):
 
     class Media:
         js = ('/static/aasaan/js/brochures_transfer.js',)
-
-    def get_readonly_fields(self, request, obj=None):
-        if obj:  # editing an existing object
-            return self.readonly_fields + (
-                'source_stock_point', 'source_program_schedule', 'source_printer', 'brochure_set',
-                'destination_stock_point', 'destination_program_schedule', 'guest_name', 'guest_phone', 'guest_email')
-        return self.readonly_fields,
 
     def get_queryset(self, request):
         qs = super(BrochuresTransferAdmin, self).get_queryset(request)
@@ -141,10 +153,11 @@ class BrochuresTransferAdmin(admin.ModelAdmin):
         return brochure_trans_all
 
     def save_model(self, request, obj, form, change):
-        self._base_obj = obj
+        self.transfer_id = obj.id
+        super(BrochuresTransferAdmin, self).save_model(request, obj, form, change)
 
     def save_related(self, request, form, formsets, change):
-        if form.instance.id is None:
+        if self.transfer_id is None:
             if form.instance.status == 'DD' or form.instance.status == 'TC':
                 for formset in formsets:
                     for fs in formset:
@@ -187,8 +200,6 @@ class BrochuresTransferAdmin(admin.ModelAdmin):
                             except ObjectDoesNotExist:
                                 raise ValidationError('Not enough Quantity')
             form.instance.save_new = False
-
-        super(BrochuresTransferAdmin, self).save_model(request, self._base_obj, form, change)
         super(BrochuresTransferAdmin, self).save_related(request, form, formsets, change)
 
 

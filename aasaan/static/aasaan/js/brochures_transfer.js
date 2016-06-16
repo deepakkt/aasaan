@@ -13,6 +13,14 @@ var aasaan = window.aasaan || {};
             $('.field-brochure_set').hide()
             document.getElementsByClassName('add-row')[0].style.display = 'none';
             $("#id_transfer_type").prop("disabled", true);
+            $("#id_source_stock_point").prop("disabled", true);
+            $("#id_destination_stock_point").prop("disabled", true);
+            $("#id_source_program_schedule").prop("disabled", true);
+            $("#id_destination_program_schedule").prop("disabled", true);
+            $("#id_guest_name").prop("readonly", true);
+            $("#id_guest_phone").prop("readonly", true);
+            $("#id_guest_email").prop("readonly", true);
+
         }
 
         function toggleVerified(value) {
