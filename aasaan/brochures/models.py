@@ -190,7 +190,7 @@ class BrochureSet(models.Model):
     program = models.ForeignKey(ProgramMaster, blank=True, null=True)
 
     def __str__(self):
-        return "%s" % (self.name)
+        return "%s" % self.name
 
     class Meta:
         verbose_name = "Brochure Set"
@@ -201,9 +201,6 @@ class BrochureSetItem(models.Model):
     brochure_set = models.ForeignKey(BrochureSet)
     item = models.ForeignKey(BrochureMaster)
     quantity = models.SmallIntegerField()
-
-    def as_dict(self):
-        return "%s" % (self.item)
 
 
 class BrochuresTransfer(models.Model):
@@ -236,7 +233,7 @@ class BrochuresTransfer(models.Model):
     transfer_date = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return "%s (%s)" % (self.transfer_type, self.source_printer)
+        return "%s, %s - %s" % (self.get_transfer_type_display(), self.source(), self.destination())
 
     def clean(self):
         if self.transfer_type == 'PSP':
@@ -287,26 +284,18 @@ class BrochuresTransfer(models.Model):
     def source(self):
         if self.transfer_type == 'PSP':
             return self.source_printer
-        elif self.transfer_type == 'SPSH':
-            return self.source_stock_point
         elif self.transfer_type == 'SCSP':
             return self.source_program_schedule.__str__()[:35]
-        elif self.transfer_type == 'STPT':
-            return self.source_stock_point
-        elif self.transfer_type == 'GUST':
+        else:
             return self.source_stock_point
 
     def destination(self):
-        if self.transfer_type == 'PSP':
-            return self.destination_stock_point
-        elif self.transfer_type == 'SPSH':
+        if self.transfer_type == 'SPSH':
             return self.destination_program_schedule.__str__()[:35]
-        elif self.transfer_type == 'SCSP':
-            return self.destination_stock_point
-        elif self.transfer_type == 'STPT':
-            return self.destination_stock_point
         elif self.transfer_type == 'GUST':
-            return  self.guest_name
+            return self.guest_name
+        else:
+            return self.destination_stock_point
 
     class Meta:
         verbose_name = "Brochures Transfer"

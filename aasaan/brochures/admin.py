@@ -154,6 +154,7 @@ class BrochuresTransferAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         self.transfer_id = obj.id
+        form.instance.save_new = False
         super(BrochuresTransferAdmin, self).save_model(request, obj, form, change)
 
     def save_related(self, request, form, formsets, change):
@@ -199,7 +200,6 @@ class BrochuresTransferAdmin(admin.ModelAdmin):
                                     brochure.save()
                             except ObjectDoesNotExist:
                                 raise ValidationError('Not enough Quantity')
-            form.instance.save_new = False
         super(BrochuresTransferAdmin, self).save_related(request, form, formsets, change)
 
 
