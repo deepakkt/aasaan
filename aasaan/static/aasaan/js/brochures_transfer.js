@@ -7,20 +7,34 @@ var aasaan = window.aasaan || {};
 
 (function($) {
 
+    $(document).on("submit", "form", function (e) {
+        $("#id_transfer_type").prop("disabled", false);
+        $("#id_source_stock_point").prop("disabled", false);
+        $("#id_destination_stock_point").prop("disabled", false);
+        $("#id_source_program_schedule").prop("disabled", false);
+        $("#id_destination_program_schedule").prop("disabled", false);
+        $('#id_status').prop("disabled", false);
+    });
+
     $(function() {
         var selectField = $('#id_transfer_type');
-        if (!$('#id_save_new').is(':checked')){
+        if ($('#id_transaction_status').val()=='OLD'){
             $('.field-brochure_set').hide()
-            document.getElementsByClassName('add-row')[0].style.display = 'none';
             $("#id_transfer_type").prop("disabled", true);
             $("#id_source_stock_point").prop("disabled", true);
             $("#id_destination_stock_point").prop("disabled", true);
             $("#id_source_program_schedule").prop("disabled", true);
             $("#id_destination_program_schedule").prop("disabled", true);
+            $("#id_source_printer").prop("readonly", true);
             $("#id_guest_name").prop("readonly", true);
             $("#id_guest_phone").prop("readonly", true);
             $("#id_guest_email").prop("readonly", true);
-
+            var status = $('#id_status').val()
+            if(status=='DD' || status=='TC' || status=='LOST'){
+                $('#id_status').prop("disabled", true);
+                $('.vIntegerField').attr("readonly", true)
+            }
+            $('.add-row').hide()
         }
 
         function toggleVerified(value) {

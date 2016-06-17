@@ -7,21 +7,29 @@ from django.core.exceptions import ValidationError
 from django.conf import settings
 import os, os.path
 from PIL import Image
+import datetime
 
 
-# Create your models here.
+class ActiveManager(models.Manager):
+    def get_queryset(self):
+        return super(ActiveManager, self).get_queryset().filter(active=True)
+
+
 class StockPointMaster(models.Model):
     name = models.CharField(max_length=50)
     zone = models.ForeignKey(Zone)
     active = models.BooleanField(default=True)
     description = MarkdownField(blank=True)
 
+    objects = models.Manager()
+    active_objects = ActiveManager()
+
     def __str__(self):
-        return "%s" % self.name
+        return "%s - %s" % (self.name, self.zone)
 
     class Meta:
         verbose_name = 'Stock Point Master'
-        ordering = ['name']
+        ordering = ['zone', 'name']
 
 
 class StockPointAddress(models.Model):
@@ -50,6 +58,9 @@ class BrochureMaster(models.Model):
     active = models.BooleanField(default=True)
     brochure_image = models.ImageField(upload_to=_brochure_image_path, blank=True)
     description = MarkdownField(blank=True)
+
+    objects = models.Manager()
+    active_objects = ActiveManager()
 
     def __init__(self, *args, **kwargs):
         super(BrochureMaster, self).__init__(*args, **kwargs)
@@ -132,7 +143,7 @@ class BrochureMaster(models.Model):
 
             if self.brochure_image:
                 brochure_img = Image.open(self.brochure_image.file.name)
-                resized_image = brochure_img.resize((720, 526))
+                resized_image = brochure_img.resize((595, 842))
                 resized_image.save(self.brochure_image.file.name)
         self.__reset_changed_values()
 
@@ -142,17 +153,15 @@ class BrochureMaster(models.Model):
         unique_together = ('name', 'version', 'language')
 
 
-class StockPoint(models.Model):
-    stock_point = models.ForeignKey(StockPointMaster)
-
+class StockPoint(StockPointMaster):
     class Meta:
         verbose_name = 'Materials in Stock Point'
-        ordering = ['stock_point']
+        proxy = True
 
 
 class Brochures(models.Model):
     item = models.ForeignKey(BrochureMaster)
-    stock_point = models.ForeignKey(StockPoint)
+    stock_point = models.ForeignKey(StockPointMaster)
     quantity = models.SmallIntegerField()
     remarks = models.CharField(max_length=100, blank=True)
     STATUS_VALUES = (('ACTV', 'Active'),
@@ -203,7 +212,7 @@ class BrochureSetItem(models.Model):
     quantity = models.SmallIntegerField()
 
 
-class BrochuresTransfer(models.Model):
+class BrochuresTransaction(models.Model):
     TRANSFER_TYPE_VALUES = (('PSP', 'Printer to Stock Point'),
                             ('SPSH', 'Stock Point to Schedule'),
                             ('SCSP', 'Schedule to Stock Point'),
@@ -229,8 +238,8 @@ class BrochuresTransfer(models.Model):
     guest_name = models.CharField(max_length=100, blank=True, null=True)
     guest_phone = models.CharField(max_length=15, blank=True, null=True)
     guest_email = models.EmailField(max_length=50, blank=True, null=True)
-    save_new = models.BooleanField(default=True)
-    transfer_date = models.DateField(auto_now_add=True)
+    transaction_status = models.CharField(max_length=15, blank=True, null=True, default='NEW')
+    transaction_date = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return "%s, %s - %s" % (self.get_transfer_type_display(), self.source(), self.destination())
@@ -265,20 +274,21 @@ class BrochuresTransfer(models.Model):
             new_entry = True
         else:
             new_entry = False
-            old_status = BrochuresTransfer.objects.get(pk=self.id).get_status_display()
+            old_status = BrochuresTransaction.objects.get(pk=self.id).get_status_display()
             new_status = self.get_status_display()
-        super(BrochuresTransfer, self).save(*args, **kwargs)
+        self.transaction_status = 'OLD'
+        super(BrochuresTransaction, self).save(*args, **kwargs)
         transfer_note = BroucherTransferNote()
         transfer_note.brochure_transfer = self
+        now = datetime.datetime.now()
         if not new_entry:
             if (old_status != new_status) and (old_status != ""):
-                new_entry = False if self.id else True
-                transfer_note.note = "Automatic Log: Status of %s changed from '%s' to '%s'" % \
-                                     (self.transfer_type, old_status, new_status)
+                transfer_note.note = "Automatic Log: Status of %s changed from '%s' to '%s' at '%s'" % \
+                                     (self.transfer_type, old_status, new_status, now)
                 transfer_note.save()
         else:
-            transfer_note.note = "Automatic Log: New transfer created with status '%s'" % \
-                                 (self.get_status_display())
+            transfer_note.note = "Automatic Log: New transfer created with status '%s' at '%s'" % \
+                                 (self.get_status_display(), now)
             transfer_note.save()
 
     def source(self):
@@ -297,13 +307,14 @@ class BrochuresTransfer(models.Model):
         else:
             return self.destination_stock_point
 
-    class Meta:
-        verbose_name = "Brochures Transfer"
-        verbose_name_plural = "Brochures Transfers"
+
+class Meta:
+    verbose_name = "Brochures Transfer"
+    verbose_name_plural = "Brochures Transfers"
 
 
 class BroucherTransferNote(models.Model):
-    brochure_transfer = models.ForeignKey(BrochuresTransfer)
+    brochure_transfer = models.ForeignKey(BrochuresTransaction)
     note = MarkdownField()
     note_timestamp = models.DateTimeField(auto_now_add=True)
 
@@ -316,9 +327,9 @@ class BroucherTransferNote(models.Model):
         verbose_name_plural = 'notes about brochure transfer'
 
 
-class BrochuresTransferItem(models.Model):
+class BrochuresTransactionItem(models.Model):
     brochures = models.ForeignKey(BrochureMaster)
-    brochures_transfer = models.ForeignKey(BrochuresTransfer)
+    brochures_transfer = models.ForeignKey(BrochuresTransaction)
     sent_quantity = models.SmallIntegerField()
     received_quantity = models.SmallIntegerField(null=True, blank=True)
 
@@ -327,7 +338,7 @@ class BrochuresTransferItem(models.Model):
 
 
 class BrochuresShipment(models.Model):
-    brochures_transfer = models.ForeignKey(BrochuresTransfer)
+    brochures_transfer = models.ForeignKey(BrochuresTransaction)
     sent_from = models.CharField(max_length=50, blank=True)
     sent_to = models.CharField(max_length=50, blank=True)
     sent_date = models.DateField(blank=True)

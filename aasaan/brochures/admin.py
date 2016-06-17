@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
-from .models import Brochures, BrochureMaster, StockPointMaster, StockPoint, BrochuresTransfer, BrochuresTransferItem, \
+from .models import Brochures, BrochureMaster, StockPointMaster, StockPoint, BrochuresTransaction, BrochuresTransactionItem, \
     StockPointAddress, BrochuresShipment, BrochureSet, BrochureSetItem, BroucherTransferNote, StockPointNote
 from contacts.models import Zone
 from django_markdown.admin import MarkdownInlineAdmin
@@ -12,6 +12,13 @@ class BrochuresInline(admin.TabularInline):
     model = Brochures
     extra = 1
     can_delete = False
+
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'stock_point':
+            kwargs["queryset"] = StockPointMaster.active_objects.all()
+        if db_field.name == 'item':
+            kwargs["queryset"] = BrochureMaster.active_objects.all()
+        return super(BrochuresTransactionAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     def has_add_permission(self, request):
         return False
@@ -29,6 +36,11 @@ class BrochureSetItemInline(admin.TabularInline):
     model = BrochureSetItem
     extra = 1
 
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'item':
+            kwargs["queryset"] = BrochureMaster.active_objects.all()
+        return super(BrochureSetItemInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 class StockPointAddressInline(admin.StackedInline):
     model = StockPointAddress
@@ -36,16 +48,24 @@ class StockPointAddressInline(admin.StackedInline):
     max_num = 1
 
 
-class BrochuresTransferItemInline(admin.TabularInline):
-    model = BrochuresTransferItem
+class BrochuresTransactionItemInline(admin.TabularInline):
+    model = BrochuresTransactionItem
     extra = 0
     can_delete = False
     fields = ('brochures', 'sent_quantity', 'received_quantity')
 
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'brochures':
+            kwargs["queryset"] = BrochureMaster.active_objects.all()
+        return super(BrochuresTransactionItemInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
     def get_readonly_fields(self, request, obj=None):
-        if obj:
-            return self.readonly_fields + (
-                'brochures', 'sent_quantity')
+
+        if obj and (obj.status == 'TC' or obj.status == 'DD' or obj.status == 'LOST'):
+            return self.readonly_fields + ('brochures', 'sent_quantity')#, 'received_quantity')
+        elif obj:
+            return self.readonly_fields + ('brochures', 'sent_quantity')
+
         return self.readonly_fields,
 
     def has_add_permission(self, request, obj=None):
@@ -74,7 +94,7 @@ class BrochuresShipmentInline(admin.StackedInline):
 
 class BroucherTransferNoteInline(MarkdownInlineAdmin, admin.TabularInline):
     model = BroucherTransferNote
-    extra = 0
+    extra = 1
     can_delete = False
 
 
@@ -85,12 +105,9 @@ class StockPointNoteInline(MarkdownInlineAdmin, admin.TabularInline):
 
 
 class BrochuresAdmin(admin.ModelAdmin):
-    list_display = ('stock_point',)
-    fields = ('stock_point',)
     inlines = [BrochuresInline, StockPointNoteInline]
     list_per_page = 30
-    readonly_fields = ('stock_point',)
-
+    list_filter = ('zone',)
     class Media:
         js = ('/static/aasaan/js/brochures.js',)
 
@@ -108,92 +125,71 @@ class ZoneFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         if self.value():
             zone = Zone.objects.filter(zone_name=self.value())
-            src_sp_brochures = BrochuresTransfer.objects.filter(source_stock_point__zone__in=zone)
-            dest_sp_brochures = BrochuresTransfer.objects.filter(destination_stock_point__zone__in=zone)
-            src_sch_brochures = BrochuresTransfer.objects.filter(source_program_schedule__center__zone__in=zone)
-            dest_sch_brochures = BrochuresTransfer.objects.filter(destination_program_schedule__center__zone__in=zone)
+            src_sp_brochures = BrochuresTransaction.objects.filter(source_stock_point__zone__in=zone)
+            dest_sp_brochures = BrochuresTransaction.objects.filter(destination_stock_point__zone__in=zone)
+            src_sch_brochures = BrochuresTransaction.objects.filter(source_program_schedule__center__zone__in=zone)
+            dest_sch_brochures = BrochuresTransaction.objects.filter(destination_program_schedule__center__zone__in=zone)
             brochure_trans_all = src_sp_brochures | dest_sp_brochures | dest_sch_brochures | src_sch_brochures
             return brochure_trans_all
 
 
-class BrochuresTransferAdmin(admin.ModelAdmin):
+class BrochuresTransactionAdmin(admin.ModelAdmin):
+
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'source_stock_point' or db_field.name == 'destination_stock_point':
+            kwargs["queryset"] = StockPointMaster.active_objects.all()
+        return super(BrochuresTransactionAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
     def __init__(self, *args, **kwargs):
         self.transfer_id = None
-        super(BrochuresTransferAdmin, self).__init__(*args, **kwargs)
+        super(BrochuresTransactionAdmin, self).__init__(*args, **kwargs)
 
-    inlines = [BrochuresTransferItemInline, BrochuresShipmentInline, BroucherTransferNoteInline]
+    inlines = [BrochuresTransactionItemInline, BrochuresShipmentInline, BroucherTransferNoteInline]
     list_filter = (ZoneFilter, 'status')
     list_display = (
-        'transfer_type', 'source', 'destination', 'transfer_date', 'status')
+        'transfer_type', 'source', 'destination', 'transaction_date', 'status')
     save_on_top = True
 
     fieldsets = [
         ('', {'fields': ('transfer_type', 'status', 'brochure_set', 'source_printer', 'source_stock_point',
-                      'source_program_schedule', 'destination_stock_point', 'destination_program_schedule',
-                      'guest_name', 'guest_phone', 'guest_email'), }),
+                         'source_program_schedule', 'destination_stock_point', 'destination_program_schedule',
+                         'guest_name', 'guest_phone', 'guest_email'), }),
         ('Hidden Fields',
-         {'fields': [('save_new',)], 'classes': ['hidden']}),
+         {'fields': [('transaction_status',)], 'classes': ['hidden']}),
     ]
 
     class Media:
         js = ('/static/aasaan/js/brochures_transfer.js',)
 
     def get_queryset(self, request):
-        qs = super(BrochuresTransferAdmin, self).get_queryset(request)
+        qs = super(BrochuresTransactionAdmin, self).get_queryset(request)
 
         # give entire set if user is a superuser irrespective of zone
         if request.user.is_superuser:
             return qs
 
         user_zones = [x.zone.id for x in request.user.aasaanuserzone_set.all()]
-        src_sp_brochures = BrochuresTransfer.objects.filter(source_stock_point__zone__in=user_zones)
-        dest_sp_brochures = BrochuresTransfer.objects.filter(destination_stock_point__zone__in=user_zones)
-        src_sch_brochures = BrochuresTransfer.objects.filter(source_program_schedule__center__zone__in=user_zones)
-        dest_sch_brochures = BrochuresTransfer.objects.filter(destination_program_schedule__center__zone__in=user_zones)
+        src_sp_brochures = BrochuresTransaction.objects.filter(source_stock_point__zone__in=user_zones)
+        dest_sp_brochures = BrochuresTransaction.objects.filter(destination_stock_point__zone__in=user_zones)
+        src_sch_brochures = BrochuresTransaction.objects.filter(source_program_schedule__center__zone__in=user_zones)
+        dest_sch_brochures = BrochuresTransaction.objects.filter(destination_program_schedule__center__zone__in=user_zones)
         brochure_trans_all = src_sp_brochures | dest_sp_brochures | dest_sch_brochures | src_sch_brochures
         return brochure_trans_all
 
     def save_model(self, request, obj, form, change):
         self.transfer_id = obj.id
-        form.instance.save_new = False
-        super(BrochuresTransferAdmin, self).save_model(request, obj, form, change)
+        super(BrochuresTransactionAdmin, self).save_model(request, obj, form, change)
 
     def save_related(self, request, form, formsets, change):
         if self.transfer_id is None:
-            if form.instance.status == 'DD' or form.instance.status == 'TC':
+            if (form.instance.status == 'NEW' or form.instance.status == 'IT' or form.instance.status == 'DD') and (form.instance.transfer_type == 'SPSH' or
+                                                          form.instance.transfer_type == 'STPT' or form.instance.transfer_type == 'GUST'):
                 for formset in formsets:
                     for fs in formset:
-                        if isinstance(fs.instance, BrochuresTransferItem) and fs.cleaned_data:
-                            if form.instance.status == 'DD':
-                                try:
-                                    stock_point = StockPoint.objects.get(
-                                        stock_point=form.instance.destination_stock_point)
-                                except ObjectDoesNotExist:
-                                    stock_point = StockPoint()
-                                    stock_point.stock_point = form.instance.destination_stock_point
-                                    stock_point.save()
-                            else:
-                                stock_point = StockPoint.objects.get(stock_point=form.instance.source_stock_point)
-                            if fs.instance.brochures:
-                                try:
-                                    brochure = Brochures.objects.get(stock_point=stock_point,
-                                                                     item=fs.instance.brochures)
-                                    brochure.quantity = brochure.quantity + fs.instance.sent_quantity
-                                except Brochures.DoesNotExist:
-                                    brochure = Brochures()
-                                    brochure.stock_point = stock_point
-                                    brochure.item = fs.instance.brochures
-                                    brochure.quantity = fs.instance.sent_quantity
-                                brochure.save()
-            elif form.instance.status == 'NEW' and (
-                                form.instance.transfer_type == 'SPSH' or form.instance.transfer_type == 'STPT'
-                    or form.instance.transfer_type == 'GUST'):
-                for formset in formsets:
-                    for fs in formset:
-                        if isinstance(fs.instance, BrochuresTransferItem) and fs.cleaned_data:
-                            stock_point = StockPoint.objects.get(stock_point=form.instance.source_stock_point)
+                        if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
                             try:
-                                brochure = Brochures.objects.get(stock_point=stock_point, item=fs.instance.brochures)
+                                brochure = Brochures.objects.get(stock_point=form.instance.source_stock_point,
+                                                                 item=fs.instance.brochures)
                                 if not brochure.quantity >= fs.instance.sent_quantity:
                                     raise ValidationError('Not enough Quantity')
                                 else:
@@ -201,7 +197,27 @@ class BrochuresTransferAdmin(admin.ModelAdmin):
                                     brochure.save()
                             except ObjectDoesNotExist:
                                 raise ValidationError('Not enough Quantity')
-        super(BrochuresTransferAdmin, self).save_related(request, form, formsets, change)
+        if form.instance.status == 'DD' or form.instance.status == 'TC':
+            for formset in formsets:
+                for fs in formset:
+                    if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
+                        if fs.instance.brochures:
+                            if form.instance.status == 'TC':
+                                stock_point = form.instance.source_stock_point
+                            else:
+                                stock_point = form.instance.destination_stock_point
+                            try:
+                                brochure = Brochures.objects.get(stock_point=stock_point,
+                                                                 item=fs.instance.brochures)
+                                brochure.quantity = brochure.quantity + fs.instance.sent_quantity
+                            except Brochures.DoesNotExist:
+                                brochure = Brochures()
+                                brochure.stock_point = stock_point
+                                brochure.item = fs.instance.brochures
+                                brochure.quantity = fs.instance.sent_quantity
+                            brochure.save()
+
+        super(BrochuresTransactionAdmin, self).save_related(request, form, formsets, change)
 
 
 class StockPointMasterAdmin(admin.ModelAdmin):
@@ -222,7 +238,5 @@ class BrochuresSetAdmin(admin.ModelAdmin):
 admin.site.register(BrochureMaster, BrochureMasterAdmin)
 admin.site.register(StockPointMaster, StockPointMasterAdmin)
 admin.site.register(StockPoint, BrochuresAdmin)
-admin.site.register(BrochuresTransfer, BrochuresTransferAdmin)
+admin.site.register(BrochuresTransaction, BrochuresTransactionAdmin)
 admin.site.register(BrochureSet, BrochuresSetAdmin)
-
-
