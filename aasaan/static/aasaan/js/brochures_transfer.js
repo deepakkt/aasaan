@@ -17,9 +17,10 @@ var aasaan = window.aasaan || {};
     });
 
     $(function() {
+        var received_quantity_innerHTML = $('.field-received_quantity').html()
         var selectField = $('#id_transfer_type');
         if ($('#id_transaction_status').val()=='OLD'){
-            $('.field-brochure_set').hide()
+            $('.form-row field-brochure_set').hide()
             $("#id_transfer_type").prop("disabled", true);
             $("#id_source_stock_point").prop("disabled", true);
             $("#id_destination_stock_point").prop("disabled", true);
@@ -38,7 +39,25 @@ var aasaan = window.aasaan || {};
         }
 
         function toggleVerified(value) {
-            if(value == 'PSP') {
+
+            if(value == 'ABSP' || value == 'BLSP') {
+                $('.field-source_printer').hide()
+                $('.field-source_stock_point').show()
+                $('.field-destination_stock_point').hide()
+                $('.field-source_program_schedule').hide()
+                $('.field-destination_program_schedule').hide()
+                $('.field-guest_name').hide()
+                $('.field-guest_phone').hide()
+                $('.field-guest_email').hide()
+                $('.field-brochure_set').hide()
+                $('.field-status').hide()
+                $('label[for="'+$('#id_source_stock_point').attr('id')+'"]').text('Stock Point:');
+                $("#brochuresshipment_set-group").hide()
+                if ($('#id_transaction_status').val()=='NEW'){
+                    $('.field-received_quantity').html('')
+                }
+            }
+            else if(value == 'PRSP') {
                 $('.field-source_printer').show()
                 $('.field-source_stock_point').hide()
                 $('.field-destination_stock_point').show()
@@ -47,8 +66,15 @@ var aasaan = window.aasaan || {};
                 $('.field-guest_name').hide()
                 $('.field-guest_phone').hide()
                 $('.field-guest_email').hide()
+                $('.field-brochure_set').show()
+                $('.field-status').show()
+                $('label[for="'+$('#id_source_stock_point').attr('id')+'"]').text('Source stock Point:');
+                $("#brochuresshipment_set-group").show()
+                if ($('#id_transaction_status').val()=='NEW'){
+                    $('.field-received_quantity').html(received_quantity_innerHTML)
+                }
             }
-            else if(value == 'SPSH') {
+            else if(value == 'SPSC') {
                 $('.field-source_printer').hide()
                 $('.field-source_stock_point').show()
                 $('.field-destination_stock_point').hide()
@@ -57,6 +83,14 @@ var aasaan = window.aasaan || {};
                 $('.field-guest_name').hide()
                 $('.field-guest_phone').hide()
                 $('.field-guest_email').hide()
+                $('.field-brochure_set').show()
+                $('.field-status').show()
+                $('label[for="'+$('#id_source_stock_point').attr('id')+'"]').text('Source stock Point:');
+                $("#brochuresshipment_set-group").show()
+                if ($('#id_transaction_status').val()=='NEW'){
+                    $('.field-received_quantity').html(received_quantity_innerHTML)
+                }
+
             }
             else if(value == 'SCSP') {
                 $('.field-source_printer').hide()
@@ -67,8 +101,15 @@ var aasaan = window.aasaan || {};
                 $('.field-guest_name').hide()
                 $('.field-guest_phone').hide()
                 $('.field-guest_email').hide()
+                $('.field-brochure_set').show()
+                $('.field-status').show()
+                $('label[for="'+$('#id_source_stock_point').attr('id')+'"]').text('Source stock Point:');
+                $("#brochuresshipment_set-group").show()
+                if ($('#id_transaction_status').val()=='NEW'){
+                    $('.field-received_quantity').html(received_quantity_innerHTML)
+                }
             }
-            else if(value == 'STPT') {
+            else if(value == 'SPSP') {
                 $('.field-source_printer').hide()
                 $('.field-source_stock_point').show()
                 $('.field-destination_stock_point').show()
@@ -77,8 +118,15 @@ var aasaan = window.aasaan || {};
                 $('.field-guest_name').hide()
                 $('.field-guest_phone').hide()
                 $('.field-guest_email').hide()
+                $('.field-brochure_set').show()
+                $('.field-status').show()
+                $('label[for="'+$('#id_source_stock_point').attr('id')+'"]').text('Source stock Point:');
+                $("#brochuresshipment_set-group").show()
+                if ($('#id_transaction_status').val()=='NEW'){
+                    $('.field-received_quantity').html(received_quantity_innerHTML)
+                }
             }
-            else if(value == 'GUST') {
+            else if(value == 'SPGT') {
                 $('.field-source_printer').hide()
                 $('.field-source_stock_point').show()
                 $('.field-destination_stock_point').hide()
@@ -87,6 +135,18 @@ var aasaan = window.aasaan || {};
                 $('.field-guest_name').show()
                 $('.field-guest_phone').show()
                 $('.field-guest_email').show()
+                $('.field-brochure_set').show()
+                $('.field-status').show()
+                $('label[for="'+$('#id_source_stock_point').attr('id')+'"]').text('Source stock Point:');
+                $("#brochuresshipment_set-group").show()
+                if ($('#id_transaction_status').val()=='NEW'){
+                    $('.field-received_quantity').html(received_quantity_innerHTML)
+                }
+            }
+
+            if ($('#id_transaction_status').val()=='OLD'){
+
+                $('.field-brochure_set').hide()
             }
         }
 

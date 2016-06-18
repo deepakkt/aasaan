@@ -3,6 +3,8 @@ from django.contrib import admin
 from django.conf import settings
 from ajax_select import urls as ajax_select_urls
 import contacts.urls, iconnect.urls
+from brochures.views import HybridDetailView
+from brochures.models import BrochureSetItem
 
 urlpatterns = patterns('',
     # Examples:
@@ -16,6 +18,7 @@ urlpatterns = patterns('',
     url(r'^accounts/', include('allauth.urls')),
     url(r'^comm/', include('iconnect.urls')),
     url(r'^admin/lookups/', include(ajax_select_urls)),
+    url(r'^brochuremaster/(?P<pk>\d)$', HybridDetailView.as_view(model=BrochureSetItem)),
 )
 
 

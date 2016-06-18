@@ -213,18 +213,21 @@ class BrochureSetItem(models.Model):
 
 
 class BrochuresTransaction(models.Model):
-    TRANSFER_TYPE_VALUES = (('PSP', 'Printer to Stock Point'),
-                            ('SPSH', 'Stock Point to Schedule'),
+    TRANSFER_TYPE_VALUES = (('ABSP', 'Add Brochures to Stock Point'),
+                            ('BLSP', 'Brochures Lost/Damaged in a Stock Point'),
+                            ('PRSP', 'Printer to Stock Point'),
+                            ('SPSC', 'Stock Point to Schedule'),
                             ('SCSP', 'Schedule to Stock Point'),
-                            ('STPT', 'Stock Point to Stock Point'),
-                            ('GUST', 'Stock Point to Guest'),)
-    transfer_type = models.CharField(max_length=6, choices=TRANSFER_TYPE_VALUES, blank=True,
-                                     default='STPT')
+                            ('SPSP', 'Stock Point to Stock Point'),
+                            ('SPGT', 'Stock Point to Guest'),)
+    transfer_type = models.CharField('transaction type', max_length=6, choices=TRANSFER_TYPE_VALUES, blank=True,
+                                     default='SPSP')
     STATUS_VALUES = (('NEW', 'Transfer Initiated'),
                      ('IT', 'In Transit'),
                      ('DD', 'Delivered'),
                      ('TC', 'Cancelled'),
-                     ('LOST', 'Lost/Damaged'),)
+                     ('LOST', 'Lost/Damaged'),
+                     ('CLS', 'Closed'),)
     status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True,
                               default=STATUS_VALUES[0][0])
     brochure_set = models.ForeignKey(BrochureSet, blank=True, null=True)
@@ -245,12 +248,18 @@ class BrochuresTransaction(models.Model):
         return "%s, %s - %s" % (self.get_transfer_type_display(), self.source(), self.destination())
 
     def clean(self):
-        if self.transfer_type == 'PSP':
+        if not self.transfer_type=='ABSP' and not self.transfer_type=='BLSP':
+            if not self.id and self.status=='DD' or self.status=='TC' or self.status=='LOST' or self.status=='CLS':
+                raise ValidationError("New entry can not be created with %s status" % self.get_status_display())
+        if self.transfer_type=='ABSP' or self.transfer_type=='BLSP':
+            if not self.source_stock_point:
+                raise ValidationError("Please enter stock point")
+        if self.transfer_type == 'PRSP':
             if not self.source_printer:
                 raise ValidationError("Please enter source printer")
             if not self.destination_stock_point:
                 raise ValidationError("Please enter destination stock point")
-        if self.transfer_type == 'SPSH':
+        if self.transfer_type == 'SPSC':
             if not self.source_stock_point:
                 raise ValidationError("Please enter source stock point")
             if not self.destination_program_schedule:
@@ -260,10 +269,10 @@ class BrochuresTransaction(models.Model):
                 raise ValidationError("Please enter source Program Schedule")
             if not self.destination_stock_point:
                 raise ValidationError("Please enter destination stock point")
-        if self.transfer_type == 'STPT':
+        if self.transfer_type == 'SPSP':
             if not self.destination_stock_point or not self.source_stock_point:
                 raise ValidationError("Source and destination stock points needs to be selected.")
-        if self.transfer_type == 'GUST':
+        if self.transfer_type == 'SPGT':
             if not self.source_stock_point:
                 raise ValidationError("Please enter source stock point")
             if not self.guest_name:
@@ -272,6 +281,8 @@ class BrochuresTransaction(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             new_entry = True
+            if self.transfer_type=='ABSP' or self.transfer_type=='BLSP':
+                self.status = 'CLS'
         else:
             new_entry = False
             old_status = BrochuresTransaction.objects.get(pk=self.id).get_status_display()
@@ -292,7 +303,7 @@ class BrochuresTransaction(models.Model):
             transfer_note.save()
 
     def source(self):
-        if self.transfer_type == 'PSP':
+        if self.transfer_type == 'PRSP':
             return self.source_printer
         elif self.transfer_type == 'SCSP':
             return self.source_program_schedule.__str__()[:35]
@@ -300,9 +311,11 @@ class BrochuresTransaction(models.Model):
             return self.source_stock_point
 
     def destination(self):
-        if self.transfer_type == 'SPSH':
+        if self.transfer_type == 'ABSP' or self.transfer_type == 'BLSP':
+            return 'Not Applicable'
+        elif self.transfer_type == 'SPSC':
             return self.destination_program_schedule.__str__()[:35]
-        elif self.transfer_type == 'GUST':
+        elif self.transfer_type == 'SPGT':
             return self.guest_name
         else:
             return self.destination_stock_point
@@ -330,7 +343,7 @@ class BroucherTransferNote(models.Model):
 class BrochuresTransactionItem(models.Model):
     brochures = models.ForeignKey(BrochureMaster)
     brochures_transfer = models.ForeignKey(BrochuresTransaction)
-    sent_quantity = models.SmallIntegerField()
+    sent_quantity = models.SmallIntegerField('quantity')
     received_quantity = models.SmallIntegerField(null=True, blank=True)
 
     def __str__(self):
