@@ -4,7 +4,8 @@
 // not tested on multi-form settings!
 
 var aasaan = window.aasaan || {};
-var brochure_list;
+var brochure_list = {};
+var custom_error = false;
 
 (function($) {
 
@@ -15,6 +16,53 @@ var brochure_list;
         $("#id_source_program_schedule").prop("disabled", false);
         $("#id_destination_program_schedule").prop("disabled", false);
         $('#id_status').prop("disabled", false);
+        var selectField = $('#id_transfer_type');
+        if(selectField.val( ) == 'SPSP'){
+            if($("#id_source_stock_point").val()==''){
+                return addErrorMessage('Source stock point can not be empty')
+            }
+            if($("#id_destination_stock_point").val()==''){
+                return addErrorMessage('Destination stock point can not be empty')
+            }
+            if($("#id_source_stock_point").val()==$("#id_destination_stock_point").val()){
+               return addErrorMessage('Source stock point and destination stock point can not be same.')
+            }
+        }
+        if(parseInt($('#id_brochurestransactionitem_set-TOTAL_FORMS').val())==0){
+            return addErrorMessage('Please add brochures and quantity.')
+        }
+        if(selectField.val( ) == 'SPSC' || selectField.val( ) == 'SPSP' || selectField.val( ) == 'SPGT'){
+            var item_array = [];
+            var no_of_item = parseInt($('#id_brochurestransactionitem_set-TOTAL_FORMS').val())
+            for (var i=0; i<no_of_item; i++){
+                var f_brochure = $('.field-brochures').children().children()[i*3]
+                var quantity = $('.field-sent_quantity').children()[i]
+                var key = $(f_brochure).val()
+                var qty = $(quantity).val()
+                if(qty=='' || key==''){
+                    return addErrorMessage('Brochures and quantity can not be empty')
+                }
+                if(item_array.length>0 && $.inArray(parseInt(key), item_array)>=0){
+                    return addErrorMessage('Selected '+$(f_brochure.selectedOptions).text() +' multiple times')
+                }
+                item_array.push(parseInt(key))
+                if(parseInt(qty) > parseInt(brochure_list[key])){
+                    return addErrorMessage('Selected '+$(f_brochure.selectedOptions).text() +' quantity in the source stock point is not available.')
+                }
+            }
+        }
+
+        function addErrorMessage(message) {
+            removeErrorMessage();
+            $($('.submit-row')[0]).after('<p class="errornote">Please correct the error below. </p> <ul class="errorlist nonfield"><li>'+message+'</li></ul>');
+            custom_error = true
+            return false;
+        }
+
+        function removeErrorMessage() {
+            $(".errorlist").remove();
+            $(".errornote").remove();
+        }
     });
 
     $(function() {
@@ -155,7 +203,7 @@ var brochure_list;
             $($('.field-sent_quantity').children()[0]).val('')
             $($('.field-received_quantity').children()[0]).val('')
             var addRow = $(".add-row", "#brochurestransactionitem_set-group");
-            var transset = $.parseJSON( transset )
+            var transset = $.parseJSON(transset)
             var i = 0;
             $.each(transset , function( key, value ) {
                 addRow.children().children().trigger("click");
@@ -167,12 +215,21 @@ var brochure_list;
             });
         }
 
+        function removeErrorMessage() {
+            $(".errorlist").remove();
+            $(".errornote").remove();
+        }
+
         // show/hide on load based on pervious value of selectField
         toggleVerified(selectField.val());
 
         // show/hide on change
         selectField.change(function() {
             toggleVerified($(this).val());
+            if(custom_error){
+                removeErrorMessage();
+                custom_error = false
+            }
         });
 
         $("#id_source_stock_point").change(function() {
@@ -185,7 +242,10 @@ var brochure_list;
                 contentType: 'application/json; charset=utf-8',
                 cache: false,
                 success: function(data) {
-                    brochure_list = data
+                    var blist = $.parseJSON(data)
+                    $.each(blist, function(key, value){
+                        brochure_list[value[0]] = value[1];
+                     });
                 }
             });
 
@@ -203,6 +263,10 @@ var brochure_list;
                     cache: false,
                     success: function(data) {
                         createBrochureSet(data)
+                        if(custom_error){
+                            removeErrorMessage();
+                            custom_error = false
+                        }
                     }
                 });
             }
@@ -212,7 +276,6 @@ var brochure_list;
                 $($('.field-sent_quantity').children()[0]).val('')
                 $($('.field-received_quantity').children()[0]).val('')
             }
-
         });
     });
 }
