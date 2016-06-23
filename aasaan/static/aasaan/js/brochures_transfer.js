@@ -4,6 +4,7 @@
 // not tested on multi-form settings!
 
 var aasaan = window.aasaan || {};
+var brochure_list;
 
 (function($) {
 
@@ -90,7 +91,6 @@ var aasaan = window.aasaan || {};
                 if ($('#id_transaction_status').val()=='NEW'){
                     $('.field-received_quantity').html(received_quantity_innerHTML)
                 }
-
             }
             else if(value == 'SCSP') {
                 $('.field-source_printer').hide()
@@ -145,9 +145,26 @@ var aasaan = window.aasaan || {};
             }
 
             if ($('#id_transaction_status').val()=='OLD'){
-
                 $('.field-brochure_set').hide()
             }
+        }
+
+        function createBrochureSet(transset) {
+            $('.inline-deletelink').trigger("click");
+            $($('.field-brochures').children().children()[0]).val('')
+            $($('.field-sent_quantity').children()[0]).val('')
+            $($('.field-received_quantity').children()[0]).val('')
+            var addRow = $(".add-row", "#brochurestransactionitem_set-group");
+            var transset = $.parseJSON( transset )
+            var i = 0;
+            $.each(transset , function( key, value ) {
+                addRow.children().children().trigger("click");
+                var f_brochure = $('.field-brochures').children().children()[i*3]
+                var f_sent_quantity = $('.field-sent_quantity').children()[i]
+                $(f_brochure).val(value[0])
+                $(f_sent_quantity).val(value[1])
+                i++;
+            });
         }
 
         // show/hide on load based on pervious value of selectField
@@ -156,6 +173,46 @@ var aasaan = window.aasaan || {};
         // show/hide on change
         selectField.change(function() {
             toggleVerified($(this).val());
+        });
+
+        $("#id_source_stock_point").change(function() {
+            $.ajax({
+                type: 'GET',
+                url: '/admin/brochures/get_brochure_list/',
+                data: {
+                        'source_stock_point': $(this).val()
+                        },
+                contentType: 'application/json; charset=utf-8',
+                cache: false,
+                success: function(data) {
+                    brochure_list = data
+                }
+            });
+
+        });
+
+        $("#id_brochure_set").change(function() {
+            if ($(this).val()!=''){
+                $.ajax({
+                    type: 'GET',
+                    url: '/admin/brochures/get_brochure_set',
+                    data: {
+                            'brochure_set': $(this).val()
+                            },
+                    contentType: 'application/json; charset=utf-8',
+                    cache: false,
+                    success: function(data) {
+                        createBrochureSet(data)
+                    }
+                });
+            }
+            else{
+                $('.inline-deletelink').trigger("click");
+                $($('.field-brochures').children().children()[0]).val('')
+                $($('.field-sent_quantity').children()[0]).val('')
+                $($('.field-received_quantity').children()[0]).val('')
+            }
+
         });
     });
 }
