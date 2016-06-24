@@ -19,7 +19,6 @@ class StockPointMaster(models.Model):
     name = models.CharField(max_length=50)
     zone = models.ForeignKey(Zone)
     active = models.BooleanField(default=True)
-    description = MarkdownField(blank=True)
 
     objects = models.Manager()
     active_objects = ActiveManager()
@@ -162,7 +161,7 @@ class StockPoint(StockPointMaster):
 class Brochures(models.Model):
     item = models.ForeignKey(BrochureMaster)
     stock_point = models.ForeignKey(StockPointMaster)
-    quantity = models.SmallIntegerField()
+    quantity = models.IntegerField()
     remarks = models.CharField(max_length=100, blank=True)
     STATUS_VALUES = (('ACTV', 'Active'),
                      ('DMGD', 'Damaged'),
@@ -209,7 +208,7 @@ class BrochureSet(models.Model):
 class BrochureSetItem(models.Model):
     brochure_set = models.ForeignKey(BrochureSet)
     item = models.ForeignKey(BrochureMaster)
-    quantity = models.SmallIntegerField()
+    quantity = models.IntegerField()
 
 
 class BrochuresTransaction(models.Model):
@@ -343,8 +342,8 @@ class BroucherTransferNote(models.Model):
 class BrochuresTransactionItem(models.Model):
     brochures = models.ForeignKey(BrochureMaster)
     brochures_transfer = models.ForeignKey(BrochuresTransaction)
-    sent_quantity = models.SmallIntegerField('quantity')
-    received_quantity = models.SmallIntegerField(null=True, blank=True)
+    sent_quantity = models.IntegerField('quantity')
+    received_quantity = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return ""

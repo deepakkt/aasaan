@@ -60,15 +60,6 @@ class BrochuresTransactionItemInline(admin.TabularInline):
             kwargs["queryset"] = BrochureMaster.active_objects.all()
         return super(BrochuresTransactionItemInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-    def get_readonly_fields(self, request, obj=None):
-
-        if obj and (obj.status == 'TC' or obj.status == 'DD' or obj.status == 'LOST'):
-            return self.readonly_fields + ('brochures', 'sent_quantity')  # , 'received_quantity')
-        elif obj:
-            return self.readonly_fields + ('brochures', 'sent_quantity')
-
-        return self.readonly_fields,
-
     def has_add_permission(self, request, obj=None):
         if obj:
             return False
@@ -106,6 +97,7 @@ class StockPointNoteInline(MarkdownInlineAdmin, admin.TabularInline):
 
 
 class BrochuresAdmin(admin.ModelAdmin):
+    fields = ('name', 'zone')
     inlines = [BrochuresInline, StockPointNoteInline]
     list_per_page = 30
     list_filter = ('zone',)
