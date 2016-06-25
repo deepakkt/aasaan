@@ -1,10 +1,10 @@
+from contacts.models import Zone
 from django.contrib import admin
-from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django_markdown.admin import MarkdownInlineAdmin
+
 from .models import Brochures, BrochureMaster, StockPointMaster, StockPoint, BrochuresTransaction, \
     BrochuresTransactionItem, \
     StockPointAddress, BrochuresShipment, BrochureSet, BrochureSetItem, BroucherTransferNote, StockPointNote
-from contacts.models import Zone
-from django_markdown.admin import MarkdownInlineAdmin
 
 
 class BrochuresInline(admin.TabularInline):
@@ -198,34 +198,20 @@ class BrochuresTransactionAdmin(admin.ModelAdmin):
                 for formset in formsets:
                     for fs in formset:
                         if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
-                            try:
-                                brochure = Brochures.objects.get(stock_point=form.instance.source_stock_point,
-                                                                 item=fs.instance.brochures)
-                                if brochure.quantity >= fs.instance.sent_quantity:
-                                    brochure.quantity = brochure.quantity - fs.instance.sent_quantity
-                                    brochure.save()
-                                else:
-                                    raise ValidationError(
-                                        'Brochures quantity in the stock point is less than given brochures quantity to mark as lost ot damaged')
-                            except Brochures.DoesNotExist:
-                                raise ValidationError(
-                                    'There is no Brochures in the stock point. Can not mark lost or damaged.')
+                            brochure = Brochures.objects.get(stock_point=form.instance.source_stock_point,
+                                                             item=fs.instance.brochures)
+                            brochure.quantity = brochure.quantity - fs.instance.sent_quantity
+                            brochure.save()
             elif (form.instance.status == 'NEW' or form.instance.status == 'IT' or form.instance.status == 'DD') and (
-                                form.instance.transfer_type == 'SPSH' or
-                                form.instance.transfer_type == 'STPT' or form.instance.transfer_type == 'GUST'):
+                                form.instance.transfer_type == 'SPSC' or
+                                form.instance.transfer_type == 'SPSP' or form.instance.transfer_type == 'SPGT'):
                 for formset in formsets:
                     for fs in formset:
                         if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
-                            try:
-                                brochure = Brochures.objects.get(stock_point=form.instance.source_stock_point,
-                                                                 item=fs.instance.brochures)
-                                if not brochure.quantity >= fs.instance.sent_quantity:
-                                    raise ValidationError('Not enough Quantity')
-                                else:
-                                    brochure.quantity = brochure.quantity - fs.instance.sent_quantity
-                                    brochure.save()
-                            except ObjectDoesNotExist:
-                                raise ValidationError('Not enough Quantity')
+                            brochure = Brochures.objects.get(stock_point=form.instance.source_stock_point,
+                                                             item=fs.instance.brochures)
+                            brochure.quantity = brochure.quantity - fs.instance.sent_quantity
+                            brochure.save()
         if form.instance.status == 'DD' or form.instance.status == 'TC':
             for formset in formsets:
                 for fs in formset:
@@ -241,7 +227,9 @@ class BrochuresTransactionAdmin(admin.ModelAdmin):
                                 if form.instance.status == 'DD':
                                     if fs.instance.received_quantity < fs.instance.sent_quantity:
                                         brochure.quantity = brochure.quantity + fs.instance.received_quantity
-                                        transfer_note = transfer_note + brochure.item.__str__() + 'sent quantity is ' + str(fs.instance.sent_quantity) + ' but received only ' + str(fs.instance.received_quantity)
+                                        transfer_note = transfer_note + brochure.item.__str__() + 'sent quantity is ' + str(
+                                            fs.instance.sent_quantity) + ' but received only ' + str(
+                                            fs.instance.received_quantity)
                                         is_note = True
                                     else:
                                         brochure.quantity = brochure.quantity + fs.instance.sent_quantity

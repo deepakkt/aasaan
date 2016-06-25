@@ -11,5 +11,7 @@ var aasaan = window.aasaan || {};
 //         $(".submit-row").hide()
         $("#id_name").prop("readonly", true);
         $("#id_zone").prop("disabled", true);
+        $('.change-related').hide()
+        $('.add-related').hide()
     });
 })(django.jQuery);

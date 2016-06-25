@@ -219,7 +219,7 @@ class BrochuresTransaction(models.Model):
                             ('SCSP', 'Schedule to Stock Point'),
                             ('SPSP', 'Stock Point to Stock Point'),
                             ('SPGT', 'Stock Point to Guest'),)
-    transfer_type = models.CharField('transaction type', max_length=6, choices=TRANSFER_TYPE_VALUES, blank=True,
+    transfer_type = models.CharField('transaction type', max_length=6, choices=TRANSFER_TYPE_VALUES, blank=False,
                                      default='SPSP')
     STATUS_VALUES = (('NEW', 'Transfer Initiated'),
                      ('IT', 'In Transit'),
@@ -227,7 +227,7 @@ class BrochuresTransaction(models.Model):
                      ('TC', 'Cancelled'),
                      ('LOST', 'Lost/Damaged'),
                      ('CLS', 'Closed'),)
-    status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=True,
+    status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=False,
                               default=STATUS_VALUES[0][0])
     brochure_set = models.ForeignKey(BrochureSet, blank=True, null=True)
 
@@ -248,7 +248,7 @@ class BrochuresTransaction(models.Model):
 
     def clean(self):
         if not self.transfer_type=='ABSP' and not self.transfer_type=='BLSP':
-            if not self.id and self.status=='DD' or self.status=='TC' or self.status=='LOST' or self.status=='CLS':
+            if not self.id and (self.status=='TC' or self.status=='LOST' or self.status=='CLS'):
                 raise ValidationError("New entry can not be created with %s status" % self.get_status_display())
         if self.transfer_type=='ABSP' or self.transfer_type=='BLSP':
             if not self.source_stock_point:
