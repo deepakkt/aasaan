@@ -286,7 +286,10 @@ class BrochuresTransaction(models.Model):
             new_entry = False
             old_status = BrochuresTransaction.objects.get(pk=self.id).get_status_display()
             new_status = self.get_status_display()
-        self.transaction_status = 'OLD'
+        if self.status == 'DD' or self.status == 'TC':
+            self.transaction_status = 'CLOSED'
+        else:
+            self.transaction_status = 'OLD'
         super(BrochuresTransaction, self).save(*args, **kwargs)
         transfer_note = BroucherTransferNote()
         transfer_note.brochure_transfer = self

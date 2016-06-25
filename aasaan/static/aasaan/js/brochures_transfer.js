@@ -213,7 +213,7 @@ var custom_error = false;
                 $("#brochuresshipment_set-group").show()
             }
             //necessary here since in toggle it may show up.
-            if ($('#id_transaction_status').val()=='OLD'){
+            if ($('#id_transaction_status').val()!='NEW'){
                 $('.field-brochure_set').hide()
             }
         }

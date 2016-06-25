@@ -202,6 +202,7 @@ class BrochuresTransactionAdmin(admin.ModelAdmin):
                                                              item=fs.instance.brochures)
                             brochure.quantity = brochure.quantity - fs.instance.sent_quantity
                             brochure.save()
+            #subtract the quantity from source stock point
             elif (form.instance.status == 'NEW' or form.instance.status == 'IT' or form.instance.status == 'DD') and (
                                 form.instance.transfer_type == 'SPSC' or
                                 form.instance.transfer_type == 'SPSP' or form.instance.transfer_type == 'SPGT'):
@@ -212,7 +213,7 @@ class BrochuresTransactionAdmin(admin.ModelAdmin):
                                                              item=fs.instance.brochures)
                             brochure.quantity = brochure.quantity - fs.instance.sent_quantity
                             brochure.save()
-        if form.instance.status == 'DD' or form.instance.status == 'TC':
+        if form.instance.transaction_status != 'CLOSED' and (form.instance.status == 'DD' or form.instance.status == 'TC'):
             for formset in formsets:
                 for fs in formset:
                     if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
