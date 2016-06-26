@@ -8,8 +8,9 @@ from contacts.models import IndividualContactRoleCenter, IndividualContactRoleZo
 from .sheets_api import open_workbook, delete_worksheets, update_header_row, \
     update_cell, update_row, authenticate
 
-from .settings import schedule_sync_rows, contact_sync_rows, CONTACTS_SHEEET_KEY, \
-    schedule_header, contact_header, SCHEDULE_SHEET_KEY
+from .settings import schedule_sync_rows, contact_sync_rows, CONTACTS_SHEET_KEY, \
+    schedule_header, contact_header, SCHEDULE_SHEET_KEY, SCHEDULE_SHEET_KEY_TEST, \
+    CONTACTS_SHEET_KEY_TEST
 
 from . import contact_filter, schedule_filter
 
@@ -35,8 +36,6 @@ class SheetSync:
     models = []
     # fields from each model to be given here
     titles = []
-    # id of the spreadsheet
-    sheet_key = ""
     # pivot fields is one field per model which
     # will be used to split the row base into
     # individual sheets
@@ -47,10 +46,11 @@ class SheetSync:
     # If there are no filters for a model, issue None
     filters = []
 
-    def __init__(self, gc):
+    def __init__(self, gc, sheet_key=""):
         # get a reference to the authentication backend
         # if one doesn't exist, create it
         self.gc = gc or authenticate()
+        self.__class__.sheet_key = sheet_key
 
         self.model_map = dict()
         self.pivot_map = dict()
@@ -155,7 +155,6 @@ class SheetSync:
 class ScheduleSync(SheetSync):
     models = [ProgramSchedule]
     titles = schedule_sync_rows
-    sheet_key = SCHEDULE_SHEET_KEY
     pivot_fields = ['zone']
     target_columns = [schedule_header]
     filters = [schedule_filter.ScheduleSync]
@@ -186,6 +185,9 @@ class ScheduleSync(SheetSync):
                            instance.center.center_name,
                            instance.program.name,
                            timing_codes,
+                           instance.get_gender_display(),
+                           instance.primary_language.name,
+                           instance.get_status_display(),
                            instance.contact_phone1,
                            instance.contact_email,
                            "" if not schedule_venue else schedule_venue[0].address]
@@ -197,7 +199,6 @@ class ContactSync(SheetSync):
     models = [IndividualContactRoleZone,
               IndividualContactRoleCenter]
     titles = contact_sync_rows
-    sheet_key = CONTACTS_SHEEET_KEY
     pivot_fields = ['zone', 'zone']
     target_columns = [contact_header, contact_header]
     filters = [contact_filter.ContactSync,
@@ -245,9 +246,19 @@ class ContactSync(SheetSync):
 
 def sync_schedules():
     gc = authenticate()
-    ScheduleSync(gc).sync()
+    ScheduleSync(gc, SCHEDULE_SHEET_KEY).sync()
+
+
+def sync_schedules_test():
+    gc = authenticate()
+    ScheduleSync(gc, SCHEDULE_SHEET_KEY_TEST).sync()
 
 
 def sync_contacts():
     gc = authenticate()
-    ContactSync(gc).sync()
+    ContactSync(gc, CONTACTS_SHEET_KEY).sync()
+
+
+def sync_contacts_test():
+    gc = authenticate()
+    ContactSync(gc, CONTACTS_SHEET_KEY_TEST).sync()

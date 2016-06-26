@@ -2,8 +2,12 @@ from collections import namedtuple
 from django.utils.text import slugify
 
 SCHEDULE_SHEET_KEY = "12Zj8m8eHsiYLdX-EHUY_7jSOHupPjfqWWg225zaiOVI"
-CONTACTS_SHEEET_KEY = "1n5Iy-ewKheuX40T3UJZ1I0tYjhcm7n9w2vy-65m68GY"
-DEFAULT_SHEET_KEY = SCHEDULE_SHEET_KEY
+SCHEDULE_SHEET_KEY_TEST = "1VeqAeWZHzy_hSesxZdu-3K2MjciEY0NUMl5rKGRD7N8"
+
+CONTACTS_SHEET_KEY = "1n5Iy-ewKheuX40T3UJZ1I0tYjhcm7n9w2vy-65m68GY"
+CONTACTS_SHEET_KEY_TEST = "1MvXoYjuZr95PAGcrm0-YTrGG7cmaJVWCxQc5r5tCfLQ"
+
+DEFAULT_SHEET_KEY = SCHEDULE_SHEET_KEY_TEST
 
 GDOC_ACCESS_SCOPE = ['https://spreadsheets.google.com/feeds']
 
@@ -14,6 +18,9 @@ schedule_sync_rows = ['SNo',
                       'Place',
                       'Program Type',
                       'Timing',
+                      'Gender',
+                      'Language',
+                      'Status',
                       'Contact No',
                       'Contact Email',
                       'Venue']
