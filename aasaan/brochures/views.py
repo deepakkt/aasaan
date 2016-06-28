@@ -18,4 +18,5 @@ def get_brochure_set(request):
     if request.method == 'GET':
         brochure_set = request.GET['brochure_set']
     brochure_list = BrochureSetItem.objects.filter(brochure_set=brochure_set).values_list('item', 'quantity')
+    # dkt - no need to call json.dumps for JsonResponse. Just pass brochure_list
     return JsonResponse(json.dumps(list(brochure_list)), safe=False)
