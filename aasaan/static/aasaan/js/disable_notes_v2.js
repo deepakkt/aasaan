@@ -63,14 +63,12 @@ aasaan.enable_notes = function () {
 
 aasaan.append_user = function() {
     // this function will get newly added notes and append the user id with timestamp
-    aasaan.new_notes = document.getElementsByClassName('inline-related dynamic-brouchertransfernote_set');
+    aasaan.new_notes = document.getElementsByClassName('inline-related last-related');
     for (var i=0; i < aasaan.new_notes.length; i++) {
         if (aasaan.new_notes[i].getElementsByTagName('textarea').length > 0) {
-//            alert('--------------')
             var current_element = aasaan.new_notes[i].getElementsByTagName('textarea')[0];
             aasaan.new_notes_text = current_element.value;
             aasaan.new_notes_text += "\n";
-            alert(aasaan.new_notes_text)
             
             var user_div = document.getElementById('user-tools');
             var user_name = user_div.getElementsByTagName('strong')[0].innerHTML;
@@ -80,7 +78,6 @@ aasaan.append_user = function() {
             note_meta += Date(Date.now());
             
             current_element.value = aasaan.new_notes_text + note_meta;
-            alert(current_element.value)
         }
     }        
 }
