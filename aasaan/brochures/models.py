@@ -24,6 +24,7 @@ class StockPointMaster(models.Model):
     active_objects = ActiveManager()
 
     def __str__(self):
+        # dkt - "(self.zone) self.name"
         return "%s - %s" % (self.name, self.zone)
 
     class Meta:
@@ -117,6 +118,8 @@ class BrochureMaster(models.Model):
     get_brochure_image.short_description = "Brochure picture"
     get_brochure_image.allow_tags = True
 
+    # dkt - this method is doing the exact same thing as get_brochure_image
+    # why can't we just reuse that?
     def brochure_image_display(self):
         image_style = 'style="width:240px; height:300px"'
         if self.brochure_image != "":
@@ -212,6 +215,8 @@ class BrochureSetItem(models.Model):
 
 
 class BrochuresTransaction(models.Model):
+    # dkt - as we discussed, please make this a separate master
+    # add an admin privilege
     TRANSFER_TYPE_VALUES = (('ABSP', 'Add Brochures to Stock Point'),
                             ('BLSP', 'Brochures Lost/Damaged in a Stock Point'),
                             ('PRSP', 'Printer to Stock Point'),
@@ -308,6 +313,7 @@ class BrochuresTransaction(models.Model):
         if self.transfer_type == 'PRSP':
             return self.source_printer
         elif self.transfer_type == 'SCSP':
+            # dkt - it is not necessary to call __str__
             return self.source_program_schedule.__str__()[:35]
         else:
             return self.source_stock_point
@@ -316,13 +322,14 @@ class BrochuresTransaction(models.Model):
         if self.transfer_type == 'ABSP' or self.transfer_type == 'BLSP':
             return 'Not Applicable'
         elif self.transfer_type == 'SPSC':
+            # dkt - it is not necessary to call __str__
             return self.destination_program_schedule.__str__()[:35]
         elif self.transfer_type == 'SPGT':
             return self.guest_name
         else:
             return self.destination_stock_point
 
-
+# dkt - meta is not indented. it won't get assigned to the Brochure Transaction class
 class Meta:
     verbose_name = "Brochures Transfer"
     verbose_name_plural = "Brochures Transfers"
@@ -369,6 +376,7 @@ class BrochuresShipment(models.Model):
     remarks = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
+        # dkt - this is not enough. The string should be self defining.
         return "%s - %s" % (self.sent_from, self.sent_to)
 
     class Meta:
