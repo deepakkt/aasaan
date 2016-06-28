@@ -4,7 +4,7 @@
 // not tested on multi-form settings!
 
 var aasaan = window.aasaan || {};
-
+var $ = django.jQuery;
 aasaan.disable_notes = function () {
     // this function saves the current textarea notes into a separate area
     // and substitutes them with a simpler text based display. 
@@ -22,6 +22,81 @@ aasaan.disable_notes = function () {
 
 aasaan.submit_dispatch = function (e) {        
     e.preventDefault();
+
+    $("#id_transfer_type").prop("disabled", false);
+        $("#id_source_stock_point").prop("disabled", false);
+        $("#id_destination_stock_point").prop("disabled", false);
+        $("#id_destination_program_schedule").prop("disabled", false);
+        $('#id_status').prop("disabled", false);
+        $('.field-sent_quantity').find('input').prop("readonly", false);
+        $('.field-received_quantity').find('input').prop("readonly", false);
+        $('.field-brochures').find('select').prop("disabled", false);
+
+        var transaction_type = $('#id_transfer_type');
+        if(transaction_type.val() == 'SPSP'){
+            if($("#id_source_stock_point").val()==''){
+                return addErrorMessage('Source stock point can not be empty')
+            }
+            if($("#id_destination_stock_point").val()==''){
+                return addErrorMessage('Destination stock point can not be empty')
+            }
+            if($("#id_source_stock_point").val()==$("#id_destination_stock_point").val()){
+               return addErrorMessage('Source stock point and destination stock point can not be same.')
+            }
+        }
+        // if not even single brochures added/selected, throws validation error
+        if(parseInt($('#id_brochurestransactionitem_set-TOTAL_FORMS').val())==0){
+            return addErrorMessage('Please add brochures and quantity.')
+        }
+        // Checks for the entered quantity vs available qty in source stock point
+        var no_of_item = parseInt($('#id_brochurestransactionitem_set-TOTAL_FORMS').val())
+        var item_array = [];
+        for (var i=0; i<no_of_item; i++){
+            var f_brochure = $('.field-brochures').find('select')[i]
+            var quantity = $('.field-sent_quantity').find('input')[i]
+            var key = $(f_brochure).val()
+            var qty = $(quantity).val()
+            if ($('#id_transaction_status').val()=='NEW'){
+                if(qty=='' || key==''){
+                    return addErrorMessage('Brochures and quantity can not be empty')
+                }
+                if(item_array.length>0 && $.inArray(parseInt(key), item_array)>=0){
+                    return addErrorMessage('Selected '+$(f_brochure.selectedOptions).text() +' multiple times')
+                }
+                item_array.push(parseInt(key))
+                if(transaction_type.val() == 'DBSP' || transaction_type.val() == 'SPSC' || transaction_type.val() == 'SPSP' || transaction_type.val() == 'SPGT'){
+                    if(brochure_list[key]==undefined || brochure_list[key]=='undefined'){
+                        return addErrorMessage('Selected '+$(f_brochure.selectedOptions).text() +' brochure in the source stock point is not available.')
+                    }
+                    if(parseInt(qty) > parseInt(brochure_list[key])){
+                        return addErrorMessage('Selected '+$(f_brochure.selectedOptions).text() +' quantity in the source stock point is not available.')
+                    }
+                }
+            }
+            if($('#id_status').val()=='DD'){
+                var r_quantity = $('.field-received_quantity').find('input')[i]
+                var r_qty = $(r_quantity).val()
+                if(r_qty!='' && parseInt(r_qty)>parseInt(qty)){
+                    return addErrorMessage('Entered '+ $(f_brochure.selectedOptions).text() +' received quantity is more than sent quantity')
+                }else if(r_qty==''){
+                    $(r_quantity).val(qty)
+                }
+            }
+        }
+
+        //Adds validation error message
+        function addErrorMessage(message) {
+            removeErrorMessage();
+            $($('.submit-row')[0]).after('<p class="errornote">Please correct the error below. </p> <ul class="errorlist nonfield"><li>'+message+'</li></ul>');
+            custom_error = true
+            return false;
+        }
+
+        //Removes all validation error message
+        function removeErrorMessage() {
+            $(".errorlist").remove();
+            $(".errornote").remove();
+        }
     
     // this section disables the submit buttons after the form has been submitted
     // to avoid multi-clicks
@@ -63,11 +138,11 @@ aasaan.enable_notes = function () {
 
 aasaan.append_user = function() {
     // this function will get newly added notes and append the user id with timestamp
-    aasaan.new_notes = document.getElementsByClassName('inline-related dynamic-brouchertransfernote_set');
+    aasaan.new_notes = $('.field-note').find('textarea');
     for (var i=0; i < aasaan.new_notes.length; i++) {
 
-        if (aasaan.new_notes[i].getElementsByTagName('textarea').length > 0) {
-            var current_element = aasaan.new_notes[i].getElementsByTagName('textarea')[0];
+        if (aasaan.new_notes.length > 0) {
+            var current_element = aasaan.new_notes[i]
             if(current_element.value.trim()=='')
                 return;
             aasaan.new_notes_text = current_element.value;
