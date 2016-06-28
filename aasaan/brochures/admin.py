@@ -1,25 +1,18 @@
 from contacts.models import Zone
 from django.contrib import admin
 from django_markdown.admin import MarkdownInlineAdmin
-
 from .models import Brochures, BrochureMaster, StockPointMaster, StockPoint, BrochuresTransaction, \
-    BrochuresTransactionItem, \
+    BrochuresTransactionItem, TransactionTypeMaster, \
     StockPointAddress, BrochuresShipment, BrochureSet, BrochureSetItem, BroucherTransferNote, StockPointNote
+import datetime
+from django.utils import formats
 
 
 class BrochuresInline(admin.TabularInline):
-    list_display = ('item', 'quantity', 'status')
     fields = ('item', 'quantity', 'status')
     model = Brochures
     extra = 1
     can_delete = False
-
-    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        if db_field.name == 'stock_point':
-            kwargs["queryset"] = StockPointMaster.active_objects.all()
-        if db_field.name == 'item':
-            kwargs["queryset"] = BrochureMaster.active_objects.all()
-        return super(BrochuresTransactionAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     def has_add_permission(self, request):
         return False
@@ -97,7 +90,13 @@ class StockPointNoteInline(MarkdownInlineAdmin, admin.TabularInline):
 
 
 class BrochuresAdmin(admin.ModelAdmin):
-    fields = ('name', 'zone')
+    fieldsets = (
+        ('', {
+            'fields': (('name', 'contact_name'), ('zone', 'contact_phone')),
+            'classes': ('has-cols', 'cols-2')
+        }),
+    )
+    list_display = ('name', 'zone', 'contact_name', 'contact_phone')
     inlines = [BrochuresInline, StockPointNoteInline]
     list_per_page = 30
     list_filter = ('zone',)
@@ -121,10 +120,9 @@ class ZoneFilter(admin.SimpleListFilter):
             zone = Zone.objects.filter(zone_name=self.value())
             src_sp_brochures = BrochuresTransaction.objects.filter(source_stock_point__zone__in=zone)
             dest_sp_brochures = BrochuresTransaction.objects.filter(destination_stock_point__zone__in=zone)
-            src_sch_brochures = BrochuresTransaction.objects.filter(source_program_schedule__center__zone__in=zone)
             dest_sch_brochures = BrochuresTransaction.objects.filter(
                 destination_program_schedule__center__zone__in=zone)
-            brochure_trans_all = src_sp_brochures | dest_sp_brochures | dest_sch_brochures | src_sch_brochures
+            brochure_trans_all = src_sp_brochures | dest_sp_brochures | dest_sch_brochures
             return brochure_trans_all
 
 
@@ -132,6 +130,8 @@ class BrochuresTransactionAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'source_stock_point' or db_field.name == 'destination_stock_point':
             kwargs["queryset"] = StockPointMaster.active_objects.all()
+        if db_field.name == 'transfer_type' and not request.user.is_superuser:
+            kwargs["queryset"] = TransactionTypeMaster.objects.filter(admin=False)
         return super(BrochuresTransactionAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     def __init__(self, *args, **kwargs):
@@ -146,14 +146,14 @@ class BrochuresTransactionAdmin(admin.ModelAdmin):
 
     fieldsets = [
         ('', {'fields': ('transfer_type', 'status', 'brochure_set', 'source_printer', 'source_stock_point',
-                         'source_program_schedule', 'destination_stock_point', 'destination_program_schedule',
+                         'destination_stock_point', 'destination_program_schedule',
                          'guest_name', 'guest_phone', 'guest_email'), }),
         ('Hidden Fields',
          {'fields': [('transaction_status',)], 'classes': ['hidden']}),
     ]
 
     class Media:
-        js = ('/static/aasaan/js/brochures_transfer.js',)
+        js = ('/static/aasaan/js/brochures_transfer.js', '/static/aasaan/js/disable_notes_brochures_v2.js',)
 
     def get_queryset(self, request):
         qs = super(BrochuresTransactionAdmin, self).get_queryset(request)
@@ -165,10 +165,9 @@ class BrochuresTransactionAdmin(admin.ModelAdmin):
         user_zones = [x.zone.id for x in request.user.aasaanuserzone_set.all()]
         src_sp_brochures = BrochuresTransaction.objects.filter(source_stock_point__zone__in=user_zones)
         dest_sp_brochures = BrochuresTransaction.objects.filter(destination_stock_point__zone__in=user_zones)
-        src_sch_brochures = BrochuresTransaction.objects.filter(source_program_schedule__center__zone__in=user_zones)
         dest_sch_brochures = BrochuresTransaction.objects.filter(
             destination_program_schedule__center__zone__in=user_zones)
-        brochure_trans_all = src_sp_brochures | dest_sp_brochures | dest_sch_brochures | src_sch_brochures
+        brochure_trans_all = src_sp_brochures | dest_sp_brochures | dest_sch_brochures
         return brochure_trans_all
 
     def save_model(self, request, obj, form, change):
@@ -176,80 +175,86 @@ class BrochuresTransactionAdmin(admin.ModelAdmin):
         super(BrochuresTransactionAdmin, self).save_model(request, obj, form, change)
 
     def save_related(self, request, form, formsets, change):
-        transfer_note = ''
-        is_note = False
+        trans_type = form.instance.transfer_type.value
+        status = form.instance.status
         if self.transfer_id is None:
-            if form.instance.transfer_type == 'ABSP':
-                for formset in formsets:
-                    for fs in formset:
-                        if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
-                            try:
-                                brochure = Brochures.objects.get(stock_point=form.instance.source_stock_point,
-                                                                 item=fs.instance.brochures)
-                                brochure.quantity = brochure.quantity + fs.instance.sent_quantity
-                                brochure.save()
-                            except Brochures.DoesNotExist:
-                                brochure = Brochures()
-                                brochure.stock_point = form.instance.source_stock_point
-                                brochure.item = fs.instance.brochures
-                                brochure.quantity = fs.instance.sent_quantity
-                                brochure.save()
-            elif form.instance.transfer_type == 'BLSP':
-                for formset in formsets:
-                    for fs in formset:
-                        if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
-                            brochure = Brochures.objects.get(stock_point=form.instance.source_stock_point,
-                                                             item=fs.instance.brochures)
-                            brochure.quantity = brochure.quantity - fs.instance.sent_quantity
-                            brochure.save()
-            #subtract the quantity from source stock point
-            elif (form.instance.status == 'NEW' or form.instance.status == 'IT' or form.instance.status == 'DD') and (
-                                form.instance.transfer_type == 'SPSC' or
-                                form.instance.transfer_type == 'SPSP' or form.instance.transfer_type == 'SPGT'):
-                for formset in formsets:
-                    for fs in formset:
-                        if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
-                            brochure = Brochures.objects.get(stock_point=form.instance.source_stock_point,
-                                                             item=fs.instance.brochures)
-                            brochure.quantity = brochure.quantity - fs.instance.sent_quantity
-                            brochure.save()
-        if form.instance.transaction_status != 'CLOSED' and (form.instance.status == 'DD' or form.instance.status == 'TC'):
-            for formset in formsets:
-                for fs in formset:
-                    if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
-                        if fs.instance.brochures:
-                            if form.instance.status == 'TC':
-                                stock_point = form.instance.source_stock_point
-                            else:
-                                stock_point = form.instance.destination_stock_point
-                            try:
-                                brochure = Brochures.objects.get(stock_point=stock_point,
-                                                                 item=fs.instance.brochures)
-                                if form.instance.status == 'DD':
-                                    if fs.instance.received_quantity < fs.instance.sent_quantity:
-                                        brochure.quantity = brochure.quantity + fs.instance.received_quantity
-                                        transfer_note = transfer_note + brochure.item.__str__() + 'sent quantity is ' + str(
-                                            fs.instance.sent_quantity) + ' but received only ' + str(
-                                            fs.instance.received_quantity)
-                                        is_note = True
-                                    else:
-                                        brochure.quantity = brochure.quantity + fs.instance.sent_quantity
-                            except Brochures.DoesNotExist:
-                                brochure = Brochures()
-                                brochure.stock_point = stock_point
-                                brochure.item = fs.instance.brochures
-                                brochure.quantity = fs.instance.sent_quantity
-                            brochure.save()
-        if is_note:
-            t_note = BroucherTransferNote()
-            t_note.brochure_transfer = form.instance
-            t_note.note = "Quantity Lost/Damaged during Transfer :" + transfer_note
-            t_note.save()
+            if trans_type == 'ABSP':
+                add_brochure(formsets, form.instance.source_stock_point)
+            elif trans_type == 'PRSP' or trans_type == 'SCSP':
+                add_brochure(formsets, form.instance.destination_stock_point)
+            elif trans_type == 'DBSP':
+                delete_brochure(formsets, form.instance.source_stock_point)
+            elif trans_type == 'SPSC' or trans_type == 'SPSP' or trans_type == 'SPGT':
+                if status == 'NEW' or status == 'DD':
+                    delete_brochure(formsets, form.instance.source_stock_point)
+        if trans_type == 'SPSC' or trans_type == 'SPSP' or trans_type == 'SPGT':
+            if status == 'TC':
+                add_brochure(formsets, form.instance.source_stock_point)
+            if status == 'DD':
+                transfer_stock(request, form, formsets)
         super(BrochuresTransactionAdmin, self).save_related(request, form, formsets, change)
+
+
+def add_brochure(formsets, stock_point):
+    for formset in formsets:
+        for fs in formset:
+            if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
+                try:
+                    brochure = Brochures.objects.get(stock_point=stock_point, item=fs.instance.brochures)
+                    brochure.quantity = brochure.quantity + fs.instance.sent_quantity
+                    brochure.save()
+                except Brochures.DoesNotExist:
+                    brochure = Brochures()
+                    brochure.stock_point = stock_point
+                    brochure.item = fs.instance.brochures
+                    brochure.quantity = fs.instance.sent_quantity
+                    brochure.save()
+
+
+def delete_brochure(formsets, stock_point):
+    for formset in formsets:
+        for fs in formset:
+            if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
+                brochure = Brochures.objects.get(stock_point=stock_point, item=fs.instance.brochures)
+                brochure.quantity = brochure.quantity - fs.instance.sent_quantity
+                brochure.save()
+
+
+def transfer_stock(request, form, formsets):
+    transfer_note = ''
+    is_note = False
+    for formset in formsets:
+        for fs in formset:
+            if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
+                if fs.instance.brochures:
+                    stock_point = form.instance.destination_stock_point
+                    try:
+                        brochure = Brochures.objects.get(stock_point=stock_point, item=fs.instance.brochures)
+                        if fs.instance.received_quantity < fs.instance.sent_quantity:
+                            brochure.quantity = brochure.quantity + fs.instance.received_quantity
+                            transfer_note = transfer_note + brochure.item.__str__() + 'sent quantity is ' + str(
+                                fs.instance.sent_quantity) + ' but received only ' + str(
+                                fs.instance.received_quantity)
+                            is_note = True
+                        else:
+                            brochure.quantity = brochure.quantity + fs.instance.sent_quantity
+                    except Brochures.DoesNotExist:
+                        brochure = Brochures()
+                        brochure.stock_point = stock_point
+                        brochure.item = fs.instance.brochures
+                        brochure.quantity = fs.instance.sent_quantity
+                    brochure.save()
+    if is_note:
+        formatted_datetime = formats.date_format(datetime.datetime.now(), "DATETIME_FORMAT")
+        t_note = BroucherTransferNote()
+        t_note.brochure_transfer = form.instance
+        t_note.note = "Quantity Lost/Damaged during Transfer :" + transfer_note + '''\n-----------------------\n %s \n %s''' % request.user, formatted_datetime
+        t_note.save()
 
 
 class StockPointMasterAdmin(admin.ModelAdmin):
     inlines = [StockPointAddressInline]
+    list_display = ('name', 'zone', 'contact_name', 'contact_phone')
     extra = 0
     list_filter = ('zone',)
 
@@ -257,6 +262,11 @@ class StockPointMasterAdmin(admin.ModelAdmin):
 class BrochureMasterAdmin(admin.ModelAdmin):
     list_display = ('name', 'version', 'language', 'active', 'get_brochure_image')
     readonly_fields = ('brochure_image_display',)
+
+
+class TransactionTypeMasterAdmin(admin.ModelAdmin):
+    list_display = ('name', 'value', 'admin',)
+    list_editable = ('admin',)
 
 
 class BrochuresSetAdmin(admin.ModelAdmin):
@@ -268,3 +278,4 @@ admin.site.register(StockPointMaster, StockPointMasterAdmin)
 admin.site.register(StockPoint, BrochuresAdmin)
 admin.site.register(BrochuresTransaction, BrochuresTransactionAdmin)
 admin.site.register(BrochureSet, BrochuresSetAdmin)
+admin.site.register(TransactionTypeMaster, TransactionTypeMasterAdmin)

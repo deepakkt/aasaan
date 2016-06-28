@@ -65,12 +65,13 @@ aasaan.append_user = function() {
     // this function will get newly added notes and append the user id with timestamp
     aasaan.new_notes = document.getElementsByClassName('inline-related dynamic-brouchertransfernote_set');
     for (var i=0; i < aasaan.new_notes.length; i++) {
+
         if (aasaan.new_notes[i].getElementsByTagName('textarea').length > 0) {
-//            alert('--------------')
             var current_element = aasaan.new_notes[i].getElementsByTagName('textarea')[0];
+            if(current_element.value.trim()=='')
+                return;
             aasaan.new_notes_text = current_element.value;
             aasaan.new_notes_text += "\n";
-            alert(aasaan.new_notes_text)
             
             var user_div = document.getElementById('user-tools');
             var user_name = user_div.getElementsByTagName('strong')[0].innerHTML;
@@ -80,7 +81,6 @@ aasaan.append_user = function() {
             note_meta += Date(Date.now());
             
             current_element.value = aasaan.new_notes_text + note_meta;
-            alert(current_element.value)
         }
     }        
 }
@@ -107,7 +107,6 @@ window.addEventListener("load", function (e) {
     for (var i=0; i < aasaan.submit_elements.length; i++) {
         aasaan.submit_elements[i].addEventListener('click', aasaan["submit_clicked" + aasaan.submit_elements[i].name], true);
     }
-    
     
     // do the auto population only for new schedules. leave existing schedules untouched
     if (document.URL.endsWith('/change/')) {        

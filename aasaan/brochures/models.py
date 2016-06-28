@@ -8,6 +8,8 @@ from django.conf import settings
 import os, os.path
 from PIL import Image
 import datetime
+from django.utils import formats
+from AasaanUser.util import get_request
 
 
 class ActiveManager(models.Manager):
@@ -18,6 +20,9 @@ class ActiveManager(models.Manager):
 class StockPointMaster(models.Model):
     name = models.CharField(max_length=50)
     zone = models.ForeignKey(Zone)
+    contact_name = models.CharField('Stock Point Incharge', max_length=50, blank=True, null=True)
+    contact_phone = models.CharField("Contact No", max_length=15, blank=True, null=True)
+    contact_email = models.EmailField("Email", max_length=50, blank=True, null=True)
     active = models.BooleanField(default=True)
 
     objects = models.Manager()
@@ -29,6 +34,19 @@ class StockPointMaster(models.Model):
     class Meta:
         verbose_name = 'Stock Point Master'
         ordering = ['zone', 'name']
+
+
+class TransactionTypeMaster(models.Model):
+    value = models.CharField(primary_key=True, max_length=6)
+    name = models.CharField(max_length=50)
+    admin = models.BooleanField(default=True)
+
+    def __str__(self):
+        return "%s" % (self.name)
+
+    class Meta:
+        verbose_name = 'TransactionType Master'
+        ordering = ['name',]
 
 
 class StockPointAddress(models.Model):
@@ -147,7 +165,7 @@ class BrochureMaster(models.Model):
         self.__reset_changed_values()
 
     class Meta:
-        verbose_name = 'Brochure Master'
+        verbose_name = 'Program Material Master'
         ordering = ['name']
         unique_together = ('name', 'version', 'language')
 
@@ -174,8 +192,8 @@ class Brochures(models.Model):
         return ""
 
     class Meta:
-        verbose_name = "brochure"
-        verbose_name_plural = "brochures"
+        verbose_name = "Program Material"
+        verbose_name_plural = "Program Materials"
 
 
 class StockPointNote(models.Model):
@@ -201,8 +219,8 @@ class BrochureSet(models.Model):
         return "%s" % self.name
 
     class Meta:
-        verbose_name = "Brochure Set"
-        verbose_name_plural = "Brochure Sets"
+        verbose_name = "Program Material Set"
+        verbose_name_plural = "Program Material Sets"
 
 
 class BrochureSetItem(models.Model):
@@ -212,28 +230,18 @@ class BrochureSetItem(models.Model):
 
 
 class BrochuresTransaction(models.Model):
-    TRANSFER_TYPE_VALUES = (('ABSP', 'Add Brochures to Stock Point'),
-                            ('BLSP', 'Brochures Lost/Damaged in a Stock Point'),
-                            ('PRSP', 'Printer to Stock Point'),
-                            ('SPSC', 'Stock Point to Schedule'),
-                            ('SCSP', 'Schedule to Stock Point'),
-                            ('SPSP', 'Stock Point to Stock Point'),
-                            ('SPGT', 'Stock Point to Guest'),)
-    transfer_type = models.CharField('transaction type', max_length=6, choices=TRANSFER_TYPE_VALUES, blank=False,
-                                     default='SPSP')
+
+    transfer_type = models.ForeignKey(TransactionTypeMaster, blank=False, null=True, default='SPSP')
     STATUS_VALUES = (('NEW', 'Transfer Initiated'),
-                     ('IT', 'In Transit'),
-                     ('DD', 'Delivered'),
+                     ('DD', 'Send / Delivered'),
                      ('TC', 'Cancelled'),
-                     ('LOST', 'Lost/Damaged'),
-                     ('CLS', 'Closed'),)
+                     ('LOST', 'Lost/Damaged'),)
     status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=False,
                               default=STATUS_VALUES[0][0])
     brochure_set = models.ForeignKey(BrochureSet, blank=True, null=True)
 
     source_printer = models.CharField(max_length=100, blank=True, null=True)
     source_stock_point = models.ForeignKey(StockPointMaster, blank=True, null=True)
-    source_program_schedule = models.ForeignKey(ProgramSchedule, blank=True, null=True)
     destination_stock_point = models.ForeignKey(StockPointMaster, related_name='destination_sp', blank=True, null=True)
     destination_program_schedule = models.ForeignKey(ProgramSchedule, related_name='destination_sch', blank=True,
                                                      null=True)
@@ -244,44 +252,13 @@ class BrochuresTransaction(models.Model):
     transaction_date = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return "%s, %s - %s" % (self.get_transfer_type_display(), self.source(), self.destination())
-
-    def clean(self):
-        if not self.transfer_type=='ABSP' and not self.transfer_type=='BLSP':
-            if not self.id and (self.status=='TC' or self.status=='LOST' or self.status=='CLS'):
-                raise ValidationError("New entry can not be created with %s status" % self.get_status_display())
-        if self.transfer_type=='ABSP' or self.transfer_type=='BLSP':
-            if not self.source_stock_point:
-                raise ValidationError("Please enter stock point")
-        if self.transfer_type == 'PRSP':
-            if not self.source_printer:
-                raise ValidationError("Please enter source printer")
-            if not self.destination_stock_point:
-                raise ValidationError("Please enter destination stock point")
-        if self.transfer_type == 'SPSC':
-            if not self.source_stock_point:
-                raise ValidationError("Please enter source stock point")
-            if not self.destination_program_schedule:
-                raise ValidationError("Please enter destination Program Schedule")
-        if self.transfer_type == 'SCSP':
-            if not self.source_program_schedule:
-                raise ValidationError("Please enter source Program Schedule")
-            if not self.destination_stock_point:
-                raise ValidationError("Please enter destination stock point")
-        if self.transfer_type == 'SPSP':
-            if not self.destination_stock_point or not self.source_stock_point:
-                raise ValidationError("Source and destination stock points needs to be selected.")
-        if self.transfer_type == 'SPGT':
-            if not self.source_stock_point:
-                raise ValidationError("Please enter source stock point")
-            if not self.guest_name:
-                raise ValidationError("Please enter Guest name")
+        return "%s, %s - %s" % (self.transfer_type, self.source(), self.destination())
 
     def save(self, *args, **kwargs):
         if not self.id:
             new_entry = True
-            if self.transfer_type=='ABSP' or self.transfer_type=='BLSP':
-                self.status = 'CLS'
+            if self.transfer_type.value == 'ABSP' or self.transfer_type.value == 'DBSP':
+                self.status = 'DD'
         else:
             new_entry = False
             old_status = BrochuresTransaction.objects.get(pk=self.id).get_status_display()
@@ -293,27 +270,27 @@ class BrochuresTransaction(models.Model):
         super(BrochuresTransaction, self).save(*args, **kwargs)
         transfer_note = BroucherTransferNote()
         transfer_note.brochure_transfer = self
-        now = datetime.datetime.now()
+        formatted_datetime = formats.date_format(datetime.datetime.now(), "DATETIME_FORMAT")
         if not new_entry:
             if (old_status != new_status) and (old_status != ""):
-                transfer_note.note = "Automatic Log: Status of %s changed from '%s' to '%s' at '%s'" % \
-                                     (self.transfer_type, old_status, new_status, now)
+                transfer_note.note = "Automatic Log: Status of %s changed from '%s' to '%s' at '%s' by '%s'" % \
+                                     (self.transfer_type, old_status, new_status, formatted_datetime, get_request().user)
                 transfer_note.save()
         else:
-            transfer_note.note = "Automatic Log: New transfer created with status '%s' at '%s'" % \
-                                 (self.get_status_display(), now)
+            transfer_note.note = "Automatic Log: New transfer created with status '%s' at '%s' by '%s'" % \
+                                 (self.get_status_display(), formatted_datetime, get_request().user)
             transfer_note.save()
 
     def source(self):
         if self.transfer_type == 'PRSP':
             return self.source_printer
         elif self.transfer_type == 'SCSP':
-            return self.source_program_schedule.__str__()[:35]
+            return 'Not Applicable'
         else:
             return self.source_stock_point
 
     def destination(self):
-        if self.transfer_type == 'ABSP' or self.transfer_type == 'BLSP':
+        if self.transfer_type == 'ABSP' or self.transfer_type == 'DBSP':
             return 'Not Applicable'
         elif self.transfer_type == 'SPSC':
             return self.destination_program_schedule.__str__()[:35]
@@ -322,10 +299,9 @@ class BrochuresTransaction(models.Model):
         else:
             return self.destination_stock_point
 
-
-class Meta:
-    verbose_name = "Brochures Transfer"
-    verbose_name_plural = "Brochures Transfers"
+    class Meta:
+        verbose_name = "Program Material Transfer"
+        verbose_name_plural = "Program Material Transfers"
 
 
 class BroucherTransferNote(models.Model):

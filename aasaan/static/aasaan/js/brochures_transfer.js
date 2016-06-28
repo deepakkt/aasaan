@@ -15,7 +15,6 @@ var custom_error = false;
         $("#id_transfer_type").prop("disabled", false);
         $("#id_source_stock_point").prop("disabled", false);
         $("#id_destination_stock_point").prop("disabled", false);
-        $("#id_source_program_schedule").prop("disabled", false);
         $("#id_destination_program_schedule").prop("disabled", false);
         $('#id_status').prop("disabled", false);
         $('.field-sent_quantity').find('input').prop("readonly", false);
@@ -54,7 +53,7 @@ var custom_error = false;
                     return addErrorMessage('Selected '+$(f_brochure.selectedOptions).text() +' multiple times')
                 }
                 item_array.push(parseInt(key))
-                if(transaction_type.val() == 'BLSP' || transaction_type.val() == 'SPSC' || transaction_type.val() == 'SPSP' || transaction_type.val() == 'SPGT'){
+                if(transaction_type.val() == 'DBSP' || transaction_type.val() == 'SPSC' || transaction_type.val() == 'SPSP' || transaction_type.val() == 'SPGT'){
                     if(brochure_list[key]==undefined || brochure_list[key]=='undefined'){
                         return addErrorMessage('Selected '+$(f_brochure.selectedOptions).text() +' brochure in the source stock point is not available.')
                     }
@@ -104,7 +103,6 @@ var custom_error = false;
             $("#id_transfer_type").prop("disabled", true);
             $("#id_source_stock_point").prop("disabled", true);
             $("#id_destination_stock_point").prop("disabled", true);
-            $("#id_source_program_schedule").prop("disabled", true);
             $("#id_destination_program_schedule").prop("disabled", true);
             $("#id_source_printer").prop("readonly", true);
             $("#id_guest_name").prop("readonly", true);
@@ -112,13 +110,13 @@ var custom_error = false;
             $("#id_guest_email").prop("readonly", true);
 
             var status = $('#id_status').val()
-            if(status=='DD' || status=='TC' || status=='LOST' || status=='CLS'){
+            if(status=='DD' || status=='TC' || status=='LOST'){
                 $('.field-sent_quantity').find('input').prop("readonly", true);
                 $('.field-received_quantity').find('input').prop("readonly", true);
                 $('.field-brochures').find('select').prop("disabled", true);
                 $('#id_status').prop("disabled", true);
             }
-            else if(status=='NEW' || status=='IT'){
+            else if(status=='NEW'){
                 $('.field-sent_quantity').find('input').prop("readonly", true);
                 $('.field-received_quantity').find('input').prop("readonly", false);
                 $('.field-brochures').find('select').prop("disabled", true);
@@ -128,11 +126,10 @@ var custom_error = false;
         var transaction_type = $('#id_transfer_type');
         function toggleVerified(value) {
 
-            if(value == 'ABSP' || value == 'BLSP') {
+            if(value == 'ABSP' || value == 'DBSP') {
                 $('.field-source_printer').hide()
                 $('.field-source_stock_point').show()
                 $('.field-destination_stock_point').hide()
-                $('.field-source_program_schedule').hide()
                 $('.field-destination_program_schedule').hide()
                 $('.field-guest_name').hide()
                 $('.field-guest_phone').hide()
@@ -146,12 +143,11 @@ var custom_error = false;
                 $('.field-source_printer').show()
                 $('.field-source_stock_point').hide()
                 $('.field-destination_stock_point').show()
-                $('.field-source_program_schedule').hide()
                 $('.field-destination_program_schedule').hide()
                 $('.field-guest_name').hide()
                 $('.field-guest_phone').hide()
                 $('.field-guest_email').hide()
-                $('.field-brochure_set').show()
+                $('.field-brochure_set').hide()
                 $('.field-status').show()
                 $('label[for="'+$('#id_source_stock_point').attr('id')+'"]').text('Source stock Point:');
                 $("#brochuresshipment_set-group").show()
@@ -160,7 +156,6 @@ var custom_error = false;
                 $('.field-source_printer').hide()
                 $('.field-source_stock_point').show()
                 $('.field-destination_stock_point').hide()
-                $('.field-source_program_schedule').hide()
                 $('.field-destination_program_schedule').show()
                 $('.field-guest_name').hide()
                 $('.field-guest_phone').hide()
@@ -174,12 +169,11 @@ var custom_error = false;
                 $('.field-source_printer').hide()
                 $('.field-source_stock_point').hide()
                 $('.field-destination_stock_point').show()
-                $('.field-source_program_schedule').show()
                 $('.field-destination_program_schedule').hide()
                 $('.field-guest_name').hide()
                 $('.field-guest_phone').hide()
                 $('.field-guest_email').hide()
-                $('.field-brochure_set').show()
+                $('.field-brochure_set').hide()
                 $('.field-status').show()
                 $('label[for="'+$('#id_source_stock_point').attr('id')+'"]').text('Source stock Point:');
                 $("#brochuresshipment_set-group").show()
@@ -188,12 +182,11 @@ var custom_error = false;
                 $('.field-source_printer').hide()
                 $('.field-source_stock_point').show()
                 $('.field-destination_stock_point').show()
-                $('.field-source_program_schedule').hide()
                 $('.field-destination_program_schedule').hide()
                 $('.field-guest_name').hide()
                 $('.field-guest_phone').hide()
                 $('.field-guest_email').hide()
-                $('.field-brochure_set').show()
+                $('.field-brochure_set').hide()
                 $('.field-status').show()
                 $('label[for="'+$('#id_source_stock_point').attr('id')+'"]').text('Source stock Point:');
                 $("#brochuresshipment_set-group").show()
@@ -202,12 +195,11 @@ var custom_error = false;
                 $('.field-source_printer').hide()
                 $('.field-source_stock_point').show()
                 $('.field-destination_stock_point').hide()
-                $('.field-source_program_schedule').hide()
                 $('.field-destination_program_schedule').hide()
                 $('.field-guest_name').show()
                 $('.field-guest_phone').show()
                 $('.field-guest_email').show()
-                $('.field-brochure_set').show()
+                $('.field-brochure_set').hide()
                 $('.field-status').show()
                 $('label[for="'+$('#id_source_stock_point').attr('id')+'"]').text('Source stock Point:');
                 $("#brochuresshipment_set-group").show()
