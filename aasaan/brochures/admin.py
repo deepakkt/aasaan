@@ -6,8 +6,7 @@ from .models import Brochures, BrochureMaster, StockPointMaster, StockPoint, Bro
     StockPointAddress, BrochuresShipment, BrochureSet, BrochureSetItem, BroucherTransferNote, StockPointNote
 import datetime
 from django.utils import formats
-
-
+from schedulemaster.models import ProgramSchedule
 class BrochuresInline(admin.TabularInline):
     fields = ('item', 'quantity', 'status')
     model = Brochures
@@ -46,10 +45,10 @@ class BrochuresTransactionItemInline(admin.TabularInline):
     model = BrochuresTransactionItem
     extra = 0
     can_delete = False
-    fields = ('brochures', 'sent_quantity', 'received_quantity')
+    fields = ('item', 'sent_quantity', 'received_quantity')
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        if db_field.name == 'brochures':
+        if db_field.name == 'item':
             kwargs["queryset"] = BrochureMaster.active_objects.all()
         return super(BrochuresTransactionItemInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -127,6 +126,14 @@ class ZoneFilter(admin.SimpleListFilter):
 
 
 class BrochuresTransactionAdmin(admin.ModelAdmin):
+
+    def get_changeform_initial_data(self, request):
+        get_data = super(BrochuresTransactionAdmin, self).get_changeform_initial_data(request)
+        user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
+        get_data['zone'] = user_zones[0].pk
+        get_data['destination_program_schedule'] = ProgramSchedule.objects.filter(center__zone__in=user_zones)
+        return get_data
+
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'source_stock_point' or db_field.name == 'destination_stock_point':
             kwargs["queryset"] = StockPointMaster.active_objects.all()
@@ -141,12 +148,12 @@ class BrochuresTransactionAdmin(admin.ModelAdmin):
     inlines = [BrochuresTransactionItemInline, BrochuresShipmentInline, BroucherTransferNoteInline]
     list_filter = (ZoneFilter, 'status')
     list_display = (
-        'transfer_type', 'source', 'destination', 'transaction_date', 'status')
+        'transfer_type', 'source', 'destination', 'transaction_date', 'get_status')
     save_on_top = True
 
     fieldsets = [
         ('', {'fields': ('transfer_type', 'status', 'brochure_set', 'source_printer', 'source_stock_point',
-                         'destination_stock_point', 'destination_program_schedule',
+                         'destination_stock_point', 'zone', 'destination_program_schedule',
                          'guest_name', 'guest_phone', 'guest_email'), }),
         ('Hidden Fields',
          {'fields': [('transaction_status',)], 'classes': ['hidden']}),
@@ -200,13 +207,13 @@ def add_brochure(formsets, stock_point):
         for fs in formset:
             if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
                 try:
-                    brochure = Brochures.objects.get(stock_point=stock_point, item=fs.instance.brochures)
+                    brochure = Brochures.objects.get(stock_point=stock_point, item=fs.instance.item)
                     brochure.quantity = brochure.quantity + fs.instance.sent_quantity
                     brochure.save()
                 except Brochures.DoesNotExist:
                     brochure = Brochures()
                     brochure.stock_point = stock_point
-                    brochure.item = fs.instance.brochures
+                    brochure.item = fs.instance.item
                     brochure.quantity = fs.instance.sent_quantity
                     brochure.save()
 
@@ -215,7 +222,7 @@ def delete_brochure(formsets, stock_point):
     for formset in formsets:
         for fs in formset:
             if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
-                brochure = Brochures.objects.get(stock_point=stock_point, item=fs.instance.brochures)
+                brochure = Brochures.objects.get(stock_point=stock_point, item=fs.instance.item)
                 brochure.quantity = brochure.quantity - fs.instance.sent_quantity
                 brochure.save()
 
@@ -226,10 +233,10 @@ def transfer_stock(request, form, formsets):
     for formset in formsets:
         for fs in formset:
             if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
-                if fs.instance.brochures:
+                if fs.instance.item:
                     stock_point = form.instance.destination_stock_point
                     try:
-                        brochure = Brochures.objects.get(stock_point=stock_point, item=fs.instance.brochures)
+                        brochure = Brochures.objects.get(stock_point=stock_point, item=fs.instance.item)
                         if fs.instance.received_quantity < fs.instance.sent_quantity:
                             brochure.quantity = brochure.quantity + fs.instance.received_quantity
                             transfer_note = transfer_note + brochure.item.__str__() + 'sent quantity is ' + str(
@@ -241,7 +248,7 @@ def transfer_stock(request, form, formsets):
                     except Brochures.DoesNotExist:
                         brochure = Brochures()
                         brochure.stock_point = stock_point
-                        brochure.item = fs.instance.brochures
+                        brochure.item = fs.instance.item
                         brochure.quantity = fs.instance.sent_quantity
                     brochure.save()
     if is_note:

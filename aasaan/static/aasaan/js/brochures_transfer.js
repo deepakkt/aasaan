@@ -36,13 +36,13 @@ var custom_error = false;
             if(status=='DD' || status=='TC' || status=='LOST'){
                 $('.field-sent_quantity').find('input').prop("readonly", true);
                 $('.field-received_quantity').find('input').prop("readonly", true);
-                $('.field-brochures').find('select').prop("disabled", true);
+                $('.field-item').find('select').prop("disabled", true);
                 $('#id_status').prop("disabled", true);
             }
             else if(status=='NEW'){
                 $('.field-sent_quantity').find('input').prop("readonly", true);
                 $('.field-received_quantity').find('input').prop("readonly", false);
-                $('.field-brochures').find('select').prop("disabled", true);
+                $('.field-item').find('select').prop("disabled", true);
             }
         }
 
@@ -53,6 +53,7 @@ var custom_error = false;
                 $('.field-source_printer').hide()
                 $('.field-source_stock_point').show()
                 $('.field-destination_stock_point').hide()
+                $('.field-zone').hide()
                 $('.field-destination_program_schedule').hide()
                 $('.field-guest_name').hide()
                 $('.field-guest_phone').hide()
@@ -66,6 +67,7 @@ var custom_error = false;
                 $('.field-source_printer').show()
                 $('.field-source_stock_point').hide()
                 $('.field-destination_stock_point').show()
+                $('.field-zone').hide()
                 $('.field-destination_program_schedule').hide()
                 $('.field-guest_name').hide()
                 $('.field-guest_phone').hide()
@@ -79,6 +81,7 @@ var custom_error = false;
                 $('.field-source_printer').hide()
                 $('.field-source_stock_point').show()
                 $('.field-destination_stock_point').hide()
+                $('.field-zone').show()
                 $('.field-destination_program_schedule').show()
                 $('.field-guest_name').hide()
                 $('.field-guest_phone').hide()
@@ -87,11 +90,14 @@ var custom_error = false;
                 $('.field-status').show()
                 $('label[for="'+$('#id_source_stock_point').attr('id')+'"]').text('Source stock Point:');
                 $("#brochuresshipment_set-group").show()
+                if($("#id_zone").find('option')[0].value=='')
+                    $("#id_zone").find('option')[0].remove()
             }
             else if(value == 'SCSP') {
                 $('.field-source_printer').hide()
                 $('.field-source_stock_point').hide()
                 $('.field-destination_stock_point').show()
+                $('.field-zone').hide()
                 $('.field-destination_program_schedule').hide()
                 $('.field-guest_name').hide()
                 $('.field-guest_phone').hide()
@@ -105,6 +111,7 @@ var custom_error = false;
                 $('.field-source_printer').hide()
                 $('.field-source_stock_point').show()
                 $('.field-destination_stock_point').show()
+                $('.field-zone').hide()
                 $('.field-destination_program_schedule').hide()
                 $('.field-guest_name').hide()
                 $('.field-guest_phone').hide()
@@ -118,6 +125,7 @@ var custom_error = false;
                 $('.field-source_printer').hide()
                 $('.field-source_stock_point').show()
                 $('.field-destination_stock_point').hide()
+                $('.field-zone').hide()
                 $('.field-destination_program_schedule').hide()
                 $('.field-guest_name').show()
                 $('.field-guest_phone').show()
@@ -171,9 +179,35 @@ var custom_error = false;
 
         });
 
+        $("#id_zone").change(function() {
+            if($(this).val()==''){
+                $("#id_destination_program_schedule").find('option').remove()
+            }
+            else{
+                $.ajax({
+                    type: 'GET',
+                    url: '/admin/brochures/get_program_schedules/',
+                    data: {
+                            'zone_id': $(this).val()
+                            },
+                    contentType: 'application/json; charset=utf-8',
+                    cache: false,
+                    success: function(data) {
+                        var listitems = '';
+                        $.each(data, function(key, value){
+                            listitems += '<option value=' + value[0] + '>' + value[1] + '</option>';
+                        });
+                        $("#id_destination_program_schedule").find('option').remove()
+                        $("#id_destination_program_schedule").append(listitems);
+                    }
+                });
+            }
+
+        });
+
         function clearBrochureSet(){
             $('.inline-deletelink').trigger("click");
-            $($('.field-brochures').find('select')[0]).val('')
+            $($('.field-item').find('select')[0]).val('')
             $($('.field-sent_quantity').find('input')[0]).val('')
             $($('.field-received_quantity').find('input')[0]).val('')
         }
@@ -185,7 +219,7 @@ var custom_error = false;
             var i = 0;
             $.each(transset , function( key, value ) {
                 addRow.find('a').trigger("click");
-                var f_brochure = $('.field-brochures').find('select')[i]
+                var f_brochure = $('.field-item').find('select')[i]
                 var f_sent_quantity = $('.field-sent_quantity').find('input')[i]
                 $(f_brochure).val(value[0])
                 $(f_sent_quantity).val(value[1])
@@ -216,7 +250,7 @@ var custom_error = false;
             else{
                 //if brochure set is not selected or empty, delete all iteam and empty first item
                 $('.inline-deletelink').trigger("click");
-                $($('.field-brochures').find('select')[0]).val('')
+                $($('.field-item').find('select')[0]).val('')
                 $($('.field-sent_quantity').find('input')[0]).val('')
                 $($('.field-received_quantity').find('input')[0]).val('')
             }

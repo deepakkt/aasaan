@@ -23,17 +23,17 @@ aasaan.disable_notes = function () {
 aasaan.submit_dispatch = function (e) {        
     e.preventDefault();
 
-    $("#id_transfer_type").prop("disabled", false);
+        $("#id_transfer_type").prop("disabled", false);
         $("#id_source_stock_point").prop("disabled", false);
         $("#id_destination_stock_point").prop("disabled", false);
         $("#id_destination_program_schedule").prop("disabled", false);
         $('#id_status').prop("disabled", false);
         $('.field-sent_quantity').find('input').prop("readonly", false);
         $('.field-received_quantity').find('input').prop("readonly", false);
-        $('.field-brochures').find('select').prop("disabled", false);
+        $('.field-item').find('select').prop("disabled", false);
 
-        var transaction_type = $('#id_transfer_type');
-        if(transaction_type.val() == 'SPSP'){
+        var trans_type = $('#id_transfer_type').val();
+        if(trans_type == 'SPSP'){
             if($("#id_source_stock_point").val()==''){
                 return addErrorMessage('Source stock point can not be empty')
             }
@@ -44,15 +44,39 @@ aasaan.submit_dispatch = function (e) {
                return addErrorMessage('Source stock point and destination stock point can not be same.')
             }
         }
+        if((trans_type == 'ABSP' || trans_type == 'DBSP') && $("#id_source_stock_point").val()==''){
+             return addErrorMessage('Please enter stock point')
+        }
+        if((trans_type == 'PRSP' && $("#id_source_printer").val()=='')){
+            return addErrorMessage('Please enter printer source')
+        }
+        if(trans_type == 'SPSC' && ($("#id_destination_program_schedule").val()=='' || $("#id_source_stock_point").val()=='')){
+            return addErrorMessage('Please select stock point and program schedule')
+        }
+        if(trans_type == 'SCSP' &&  $("#id_destination_stock_point").val()==''){
+            return addErrorMessage('Please select destination stock point')
+        }
+        if(trans_type == 'SPGT' && ($("#id_source_stock_point").val()=='' || $("#id_guest_name").val=='')){
+            return addErrorMessage('Please enter source stock point and guest name')
+        }
+        if ($('#id_transaction_status').val()=='NEW' && (trans_type == 'PRSP' || trans_type == 'SPSC' || trans_type == 'SCSP' ||trans_type == 'SPGT' || trans_type == 'SPSP')){
+            if($('#id_status').val()=='TC' || $('#id_status').val()=='LOST')
+                return addErrorMessage('New entry can not be created with the status '+$('#id_status option:selected').text())
+        }
+        if(trans_type == 'DBSP' && $('.field-note').find('textarea')[0].value.trim()==''){
+             return addErrorMessage('Please enter note for the loss of materials')
+        }
+
         // if not even single brochures added/selected, throws validation error
         if(parseInt($('#id_brochurestransactionitem_set-TOTAL_FORMS').val())==0){
             return addErrorMessage('Please add brochures and quantity.')
         }
+
         // Checks for the entered quantity vs available qty in source stock point
         var no_of_item = parseInt($('#id_brochurestransactionitem_set-TOTAL_FORMS').val())
         var item_array = [];
         for (var i=0; i<no_of_item; i++){
-            var f_brochure = $('.field-brochures').find('select')[i]
+            var f_brochure = $('.field-item').find('select')[i]
             var quantity = $('.field-sent_quantity').find('input')[i]
             var key = $(f_brochure).val()
             var qty = $(quantity).val()
@@ -64,7 +88,7 @@ aasaan.submit_dispatch = function (e) {
                     return addErrorMessage('Selected '+$(f_brochure.selectedOptions).text() +' multiple times')
                 }
                 item_array.push(parseInt(key))
-                if(transaction_type.val() == 'DBSP' || transaction_type.val() == 'SPSC' || transaction_type.val() == 'SPSP' || transaction_type.val() == 'SPGT'){
+                if(trans_type == 'DBSP' || trans_type == 'SPSC' || trans_type == 'SPSP' || trans_type == 'SPGT'){
                     if(brochure_list[key]==undefined || brochure_list[key]=='undefined'){
                         return addErrorMessage('Selected '+$(f_brochure.selectedOptions).text() +' brochure in the source stock point is not available.')
                     }
@@ -82,6 +106,8 @@ aasaan.submit_dispatch = function (e) {
                     $(r_quantity).val(qty)
                 }
             }
+            if(trans_type != 'SPSC')
+                $("#id_zone").val('')
         }
 
         //Adds validation error message

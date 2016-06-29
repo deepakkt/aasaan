@@ -243,6 +243,7 @@ class BrochuresTransaction(models.Model):
     source_printer = models.CharField(max_length=100, blank=True, null=True)
     source_stock_point = models.ForeignKey(StockPointMaster, blank=True, null=True)
     destination_stock_point = models.ForeignKey(StockPointMaster, related_name='destination_sp', blank=True, null=True)
+    zone = models.ForeignKey(Zone, blank=True, null=True)
     destination_program_schedule = models.ForeignKey(ProgramSchedule, related_name='destination_sch', blank=True,
                                                      null=True)
     guest_name = models.CharField(max_length=100, blank=True, null=True)
@@ -282,26 +283,34 @@ class BrochuresTransaction(models.Model):
             transfer_note.save()
 
     def source(self):
-        if self.transfer_type == 'PRSP':
+        if self.transfer_type.value == 'PRSP':
             return self.source_printer
-        elif self.transfer_type == 'SCSP':
+        elif self.transfer_type.value == 'SCSP':
             return 'Not Applicable'
         else:
             return self.source_stock_point
 
     def destination(self):
-        if self.transfer_type == 'ABSP' or self.transfer_type == 'DBSP':
+        if self.transfer_type.value == 'ABSP' or self.transfer_type.value == 'DBSP':
             return 'Not Applicable'
-        elif self.transfer_type == 'SPSC':
+        elif self.transfer_type.value == 'SPSC':
             return self.destination_program_schedule.__str__()[:35]
-        elif self.transfer_type == 'SPGT':
+        elif self.transfer_type.value == 'SPGT':
             return self.guest_name
         else:
             return self.destination_stock_point
 
+    def get_status(self):
+        if self.transfer_type.value == 'ABSP':
+            return 'Added'
+        elif self.transfer_type.value == 'DBSP':
+            return 'Deleted'
+        else:
+            return self.get_status_display()
+
     class Meta:
-        verbose_name = "Program Material Transfer"
-        verbose_name_plural = "Program Material Transfers"
+        verbose_name = "Program Material Transaction"
+        verbose_name_plural = "Program Material Transactions"
 
 
 class BroucherTransferNote(models.Model):
@@ -314,18 +323,22 @@ class BroucherTransferNote(models.Model):
 
     class Meta:
         ordering = ['-note_timestamp']
-        verbose_name = 'brochure transfer note'
-        verbose_name_plural = 'notes about brochure transfer'
+        verbose_name = 'Transaction note'
+        verbose_name_plural = 'Transaction notes'
 
 
 class BrochuresTransactionItem(models.Model):
-    brochures = models.ForeignKey(BrochureMaster)
+    item = models.ForeignKey(BrochureMaster)
     brochures_transfer = models.ForeignKey(BrochuresTransaction)
     sent_quantity = models.IntegerField('quantity')
     received_quantity = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return ""
+
+    class Meta:
+        verbose_name = 'Item'
+        verbose_name_plural = 'Items'
 
 
 class BrochuresShipment(models.Model):
@@ -348,5 +361,5 @@ class BrochuresShipment(models.Model):
         return "%s - %s" % (self.sent_from, self.sent_to)
 
     class Meta:
-        verbose_name = 'Brochure Shipment'
+        verbose_name = 'Material Shipment'
         ordering = ['sent_date']
