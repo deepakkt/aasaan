@@ -170,8 +170,7 @@ var custom_error = false;
                 contentType: 'application/json; charset=utf-8',
                 cache: false,
                 success: function(data) {
-                    var blist = $.parseJSON(data)
-                    $.each(blist, function(key, value){
+                    $.each(data, function(key, value){
                         brochure_list[value[0]] = value[1];
                      });
                 }
@@ -215,7 +214,6 @@ var custom_error = false;
         function createBrochureSet(transset) {
             clearBrochureSet()
             var addRow = $(".add-row", "#brochurestransactionitem_set-group");
-            var transset = $.parseJSON(transset)
             var i = 0;
             $.each(transset , function( key, value ) {
                 addRow.find('a').trigger("click");

@@ -7,22 +7,16 @@ from .models import Brochures, BrochureMaster, StockPointMaster, StockPoint, Bro
 import datetime
 from django.utils import formats
 from schedulemaster.models import ProgramSchedule
+
+
 class BrochuresInline(admin.TabularInline):
-    fields = ('item', 'quantity', 'status')
+    fields = ('item', 'quantity', 'status', 'brochure_image')
     model = Brochures
     extra = 1
     can_delete = False
 
     def has_add_permission(self, request):
         return False
-
-    def get_readonly_fields(self, request, obj=None):
-        result = list(set(
-            [field.name for field in self.opts.local_fields] +
-            [field.name for field in self.opts.local_many_to_many]
-        ))
-        result.remove('id')
-        return result
 
 
 class BrochureSetItemInline(admin.TabularInline):
@@ -128,11 +122,14 @@ class ZoneFilter(admin.SimpleListFilter):
 class BrochuresTransactionAdmin(admin.ModelAdmin):
 
     def get_changeform_initial_data(self, request):
+        if request.user.is_superuser:
+            pass
         get_data = super(BrochuresTransactionAdmin, self).get_changeform_initial_data(request)
         user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
-        get_data['zone'] = user_zones[0].pk
-        get_data['destination_program_schedule'] = ProgramSchedule.objects.filter(center__zone__in=user_zones)
-        return get_data
+        if user_zones:
+            get_data['zone'] = user_zones[0].pk if user_zones[0] else []
+            get_data['destination_program_schedule'] = ProgramSchedule.objects.filter(center__zone__in=user_zones)
+            return get_data
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'source_stock_point' or db_field.name == 'destination_stock_point':

@@ -22,7 +22,6 @@ aasaan.disable_notes = function () {
 
 aasaan.submit_dispatch = function (e) {        
     e.preventDefault();
-
         $("#id_transfer_type").prop("disabled", false);
         $("#id_source_stock_point").prop("disabled", false);
         $("#id_destination_stock_point").prop("disabled", false);
