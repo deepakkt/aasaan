@@ -92,6 +92,7 @@ var custom_error = false;
                 $("#brochuresshipment_set-group").show()
                 if($("#id_zone").find('option')[0].value=='')
                     $("#id_zone").find('option')[0].remove()
+                $('#id_zone').trigger("change");
             }
             else if(value == 'SCSP') {
                 $('.field-source_printer').hide()
@@ -161,23 +162,27 @@ var custom_error = false;
         });
         //retrieves source stock point item and quantity for validation in form submit
         $("#id_source_stock_point").change(function() {
-            $.ajax({
-                type: 'GET',
-                url: '/admin/brochures/get_brochure_list/',
-                data: {
-                        'source_stock_point': $(this).val()
-                        },
-                contentType: 'application/json; charset=utf-8',
-                cache: false,
-                success: function(data) {
-                    $.each(data, function(key, value){
-                        brochure_list[value[0]] = value[1];
-                     });
-                }
-            });
+            if($(this).val()!=''){
+                $.ajax({
+                    type: 'GET',
+                    url: '/admin/brochures/get_brochure_list/',
+                    data: {
+                            'source_stock_point': $(this).val()
+                            },
+                    contentType: 'application/json; charset=utf-8',
+                    cache: false,
+                    success: function(data) {
+                        $.each(data, function(key, value){
+                            brochure_list[value[0]] = value[1];
+                         });
+                    }
+                });
+            }
+            else{
+                brochure_list = {};
+            }
 
         });
-
         $("#id_zone").change(function() {
             if($(this).val()==''){
                 $("#id_destination_program_schedule").find('option').remove()
@@ -216,7 +221,8 @@ var custom_error = false;
             var addRow = $(".add-row", "#brochurestransactionitem_set-group");
             var i = 0;
             $.each(transset , function( key, value ) {
-                addRow.find('a').trigger("click");
+                if(i<transset.length-1)
+                    addRow.find('a').trigger("click");
                 var f_brochure = $('.field-item').find('select')[i]
                 var f_sent_quantity = $('.field-sent_quantity').find('input')[i]
                 $(f_brochure).val(value[0])

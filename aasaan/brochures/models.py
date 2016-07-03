@@ -234,7 +234,7 @@ class BrochuresTransaction(models.Model):
 
     transfer_type = models.ForeignKey(TransactionTypeMaster, blank=False, null=True, default='SPSP')
     STATUS_VALUES = (('NEW', 'Transfer Initiated'),
-                     ('DD', 'Send / Delivered'),
+                     ('DD', 'Sent / Received'),
                      ('TC', 'Cancelled'),
                      ('LOST', 'Lost/Damaged'),)
     status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=False,

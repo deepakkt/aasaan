@@ -37,7 +37,7 @@ class StockPointAddressInline(admin.StackedInline):
 
 class BrochuresTransactionItemInline(admin.TabularInline):
     model = BrochuresTransactionItem
-    extra = 0
+    extra = 1
     can_delete = False
     fields = ('item', 'sent_quantity', 'received_quantity')
 
