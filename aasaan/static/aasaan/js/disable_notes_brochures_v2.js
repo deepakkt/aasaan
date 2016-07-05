@@ -89,10 +89,10 @@ aasaan.submit_dispatch = function (e) {
                 item_array.push(parseInt(key))
                 if(trans_type == 'DBSP' || trans_type == 'SPSC' || trans_type == 'SPSP' || trans_type == 'SPGT'){
                     if(brochure_list[key]==undefined || brochure_list[key]=='undefined'){
-                        return addErrorMessage('Selected '+$(f_brochure.selectedOptions).text() +' brochure in the source stock point is not available.')
+                        return addErrorMessage('Source stock point does not have one or more materials for the quantity specified.')
                     }
                     if(parseInt(qty) > parseInt(brochure_list[key])){
-                        return addErrorMessage('Selected '+$(f_brochure.selectedOptions).text() +' quantity in the source stock point is not available.')
+                        return addErrorMessage('Source stock point does not have one or more materials for the quantity specified.')
                     }
                 }
             }

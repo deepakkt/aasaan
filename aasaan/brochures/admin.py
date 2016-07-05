@@ -221,7 +221,10 @@ def delete_brochure(formsets, stock_point):
             if isinstance(fs.instance, BrochuresTransactionItem) and fs.cleaned_data:
                 brochure = Brochures.objects.get(stock_point=stock_point, item=fs.instance.item)
                 brochure.quantity = brochure.quantity - fs.instance.sent_quantity
-                brochure.save()
+                if brochure.quantity == 0:
+                    brochure.delete()
+                else:
+                    brochure.save()
 
 
 def transfer_stock(request, form, formsets):

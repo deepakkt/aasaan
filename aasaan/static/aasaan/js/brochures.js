@@ -29,7 +29,10 @@ var aasaan = window.aasaan || {};
                 var line_items = parseInt($("#id_brochures_set-TOTAL_FORMS").val())
                 for(var i=0;i<line_items;i++){
                     var image_href = ps_list[$($('.field-item').find('select')[i]).val()]
-                    $($('.field-brochure_image')[i]).html('<a href="'+image_href+'"><img src="'+image_href+'" style="width:50px; height:50px"></a>')
+                    if(image_href.indexOf('no-photo.jpg')>=0)
+                        $($('.field-brochure_image')[i]).html('<img src="'+image_href+'" style="width:50px; height:50px">')
+                    else
+                        $($('.field-brochure_image')[i]).html('<a href=""><img src="'+image_href+'" style="width:50px; height:50px"></a>')
                 }
             }
         });

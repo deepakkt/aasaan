@@ -29,7 +29,7 @@ class StockPointMaster(models.Model):
     active_objects = ActiveManager()
 
     def __str__(self):
-        return "%s - %s" % (self.name, self.zone)
+        return "%s - %s" % (self.zone , self.name)
 
     class Meta:
         verbose_name = 'Stock Point Master'
@@ -229,6 +229,8 @@ class BrochureSetItem(models.Model):
     item = models.ForeignKey(BrochureMaster)
     quantity = models.IntegerField()
 
+    def __str__(self):
+        return ""
 
 class BrochuresTransaction(models.Model):
 
@@ -287,7 +289,7 @@ class BrochuresTransaction(models.Model):
         if self.transfer_type.value == 'PRSP':
             return self.source_printer
         elif self.transfer_type.value == 'SCSP':
-            return 'Not Applicable'
+            return 'Schedules'
         else:
             return self.source_stock_point
 
@@ -308,6 +310,8 @@ class BrochuresTransaction(models.Model):
             return 'Deleted'
         else:
             return self.get_status_display()
+
+    get_status.short_description = 'Status'
 
     class Meta:
         verbose_name = "Program Material Transaction"
