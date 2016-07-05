@@ -25,6 +25,8 @@ class ContactNoteInline(MarkdownInlineAdmin, admin.TabularInline):
 class ContactAddressInline(admin.StackedInline):
     model = ContactAddress
     extra = 0
+    max_num = 1
+
 
 
 class ContactRoleGroupInline(admin.TabularInline):

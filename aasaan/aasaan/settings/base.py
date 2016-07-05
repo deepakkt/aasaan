@@ -66,6 +66,7 @@ INSTALLED_APPS += (
     'schedulemaster',
     'iconnect',
     'gsync',
+    'brochures',
 )
 
 # third party apps
@@ -88,6 +89,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'AasaanUser.util.RequestMiddleware',
 )
 
 AUTHENTICATION_BACKENDS = (

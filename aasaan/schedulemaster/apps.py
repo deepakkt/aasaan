@@ -2,4 +2,5 @@ from django.apps import AppConfig
 
 
 class SchedulemasterConfig(AppConfig):
-    name = 'Schedule Master'
+    name = 'schedulemaster'
+    verbose_name = "Program Schedules"

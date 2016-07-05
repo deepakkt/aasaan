@@ -225,8 +225,55 @@ fieldset.collapsed .collapse-toggle {
 
 /* MONOSPACE TEXTAREAS */
 
-fieldset.monospace textarea {
-    font-family: "Bitstream Vera Sans Mono", Monaco, "Courier New", Courier, monospace;
+
+
+fieldset.aligned.has-cols .form-row p.help {
+    margin-left: 120px;
+    padding-left: 5px;
+    color: #CCC;
+    font-size: 12px;
+}
+
+fieldset.aligned.has-cols .form-row select {
+    width: 194px;
+}
+
+fieldset.aligned.has-cols .form-row label {
+    padding: 4px 3px 0 0;
+    width: 120px;
+}
+
+fieldset.aligned.has-cols .form-row label + p {
+    margin-left: 0;
+}
+
+fieldset.aligned.has-cols .form-row .field-box {
+    margin-right: 0;
+    padding-right: 10px;
+    box-sizing: border-box;
+}
+
+fieldset.aligned.has-cols .form-row p.datetime {
+    margin-left: 0;
+    float: right;
+}
+
+
+
+fieldset.aligned.cols-2 .form-row .field-box {
+    width: 50%;
+}
+
+fieldset.aligned.cols-3 .form-row .field-box {
+    width: 33%;
+}
+
+fieldset.aligned.cols-4 .form-row .field-box {
+    width: 25%;
+}
+
+fieldset.aligned.cols-5 .form-row .field-box {
+    width: 20%;
 }
 
 /* SUBMIT ROW */
