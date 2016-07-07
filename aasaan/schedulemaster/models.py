@@ -117,11 +117,12 @@ class ProgramSchedule(models.Model):
     hidden = models.BooleanField(default=False)
 
     event_management_software = models.CharField(max_length=15, blank=True)
-    event_management_code = models.CharField(verbose_name="code from event management software",
+    event_management_code = models.CharField(verbose_name="ORS Code",
                                              max_length=15, blank=True)
 
     online_registration = models.BooleanField(default=True)
-    online_registration_code = models.CharField(max_length=15, blank=True)
+    online_registration_code = models.CharField(verbose_name = "joomla Code", 
+                                                max_length=15, blank=True)
 
     contact_name = models.CharField("contact Name", max_length=50)
     contact_phone1 = models.CharField("Contact Phone1", max_length=15)
@@ -129,7 +130,6 @@ class ProgramSchedule(models.Model):
     contact_email = models.EmailField("contact Email", max_length=50)
 
     STATUS_VALUES = (('RO', 'Registration Open'),
-                     ('AN', 'Announced'),
                      ('RC', 'Registration Closed'),
                      ('CA', 'Cancelled'),
                      ('CO', 'Closed'))

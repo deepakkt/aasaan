@@ -182,7 +182,8 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
         return all_schedules.filter(hidden=False).filter(program__admin=False)
 
     list_display = ['program_name', 'center', 'start_date', 'end_date',
-                    'gender', 'primary_language']
+                    'gender', 'primary_language', 'event_management_code', 
+                    'online_registration_code']
 
     list_filter = [ProgramScheduleZoneFilter, ProgramScheduleProgramFilter,
                    ProgramScheduleHiddenFilter]

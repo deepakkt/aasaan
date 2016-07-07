@@ -11,7 +11,7 @@ class ScheduleFilterDate(ScheduleSync):
         if not schedule:
             return tuple()
 
-        if schedule_model.end_date < date.today():
+        if schedule_model.end_date < date.fromordinal(date.today().toordinal() - 30):
             return tuple()
 
         return schedule_header(*schedule)
