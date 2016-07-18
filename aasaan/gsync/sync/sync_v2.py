@@ -193,7 +193,8 @@ class ScheduleSync(SheetSync):
                             instance.online_registration_code,
                            instance.contact_phone1,
                            instance.contact_email,
-                           "" if not schedule_venue else schedule_venue[0].address]
+                           "" if not schedule_venue else schedule_venue[0].address,
+                           instance.id]
 
         return schedule_header(*schedule_values)
 

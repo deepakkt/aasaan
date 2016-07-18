@@ -26,7 +26,8 @@ schedule_sync_rows = ['SNo',
                       'Joomla Code',
                       'Contact No',
                       'Contact Email',
-                      'Venue']
+                      'Venue',
+                      'ID']
 
 schedule_header = namedtuple('Schedule', [slugify(x).replace("-", "_") for x in schedule_sync_rows])
 
