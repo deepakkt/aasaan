@@ -157,6 +157,20 @@ class ProgramSchedule(models.Model):
         return self.program.name
     program_name = property(_program_name)
 
+    def _cancelled(self, field_value):
+        if self.get_status_display() == "Cancelled":
+            return "<span style='background-color: rgb(222, 186, 99);'>%s</span>" % field_value
+        else:
+            return field_value
+
+
+    def is_cancelled(self):
+        return "<span style='color : red;'>&#10006;</span>" \
+            if self.get_status_display() == "Cancelled" \
+            else "<span style='color : green    ;'>&#10004;</span>"
+    is_cancelled.allow_tags = True
+    is_cancelled.short_description = " "
+
     class Meta:
         verbose_name = 'Program Schedule'
         ordering = ['-start_date', 'center']
