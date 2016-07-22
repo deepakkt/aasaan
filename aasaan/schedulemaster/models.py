@@ -167,7 +167,7 @@ class ProgramSchedule(models.Model):
     def is_cancelled(self):
         return "<span style='color : red;'>&#10006;</span>" \
             if self.get_status_display() == "Cancelled" \
-            else "<span style='color : green    ;'>&#10004;</span>"
+            else "<span style='color : green;'>&#10004;</span>"
     is_cancelled.allow_tags = True
     is_cancelled.short_description = " "
 
