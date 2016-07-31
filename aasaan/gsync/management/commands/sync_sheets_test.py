@@ -9,6 +9,9 @@ from django.core.management.base import BaseCommand
 from gsync.sync import sync_v2 as sync
 from communication.api import stage_pushover, send_communication
 
+import sys
+from datetime import datetime
+
 
 class Command(BaseCommand):
     help = "Sync schedules. See gsync.settings for definitions"
