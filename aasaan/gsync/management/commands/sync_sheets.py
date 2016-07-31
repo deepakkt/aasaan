@@ -21,7 +21,7 @@ class Command(BaseCommand):
             sync.sync_contacts()
         except:
             send_communication("Pushover", stage_pushover(communication_message="Sync failed with %s" % sys.exc_info()[0],
-                                                          role_group = ["Aasaan Admin"]))
+                                                          role_groups = ["Aasaan Admin"]))
             sys.exit(1)
         send_communication("Pushover", stage_pushover(communication_message="Sync complete in server %s" % datetime.now().isoformat(),
-                                                      role_group = ["Aasaan Admin"]))
+                                                      role_groups = ["Aasaan Admin"]))
