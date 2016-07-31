@@ -7,11 +7,21 @@ All definitions are given in gsync.settings
 
 from django.core.management.base import BaseCommand
 from gsync.sync import sync_v2 as sync
+from communication.api import stage_pushover, send_communication
+import sys
+from datetime import datetime
 
 
 class Command(BaseCommand):
     help = "Sync schedules. See gsync.settings for definitions"
 
     def handle(self, *args, **options):
-        sync.sync_schedules()
-        sync.sync_contacts()
+        try:
+            sync.sync_schedules()
+            sync.sync_contacts()
+        except:
+            send_communication("Pushover", stage_pushover(communication_message="Sync failed with %s" % sys.exc_info()[0],
+                                                          role_group = ["Aasaan Admin"]))
+            sys.exit(1)
+        send_communication("Pushover", stage_pushover(communication_message="Sync complete in server %s" % datetime.now().isoformat(),
+                                                      role_group = ["Aasaan Admin"]))

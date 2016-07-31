@@ -236,7 +236,7 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
                                               'id_proof_type', 'id_proof_other',
                                               'id_proof_number',
                                               'id_proof_scan',
-                                              'pushbullet_token',
+                                              'pushover_token',
                                               'remarks',
                                               ], 'classes': ['collapse']}),
     ]

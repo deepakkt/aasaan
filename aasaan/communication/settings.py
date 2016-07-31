@@ -3,7 +3,8 @@
 # they need to have corresponding dispatchers
 COMMUNICATION_TYPES = (('EMail', 'EMail'),
                        ('SMS', 'SMS'),
-                       ('SendGrid', 'SendGrid'),)
+                       ('SendGrid', 'SendGrid'),
+                       ('Pushover', 'Pushover'))
 
 COMMUNICATION_STATUS = (('Pending', 'Pending'),
                         ('In Progress', 'In Progress'),
@@ -12,14 +13,15 @@ COMMUNICATION_STATUS = (('Pending', 'Pending'),
 
 # Add other application specific contexts below
 COMMUNICATION_CONTEXTS = (('Communication', 'Planned Communication'),
-                          ('Transaction', 'Transactional Communication'))
+                          ('Transactional', 'Transactional Communication'))
 
 # add dispatchers here. Define a new python module under communication
 # say pushbullet.py or pushover.py. Include your logic there. Import the core function
 # (added to dispatcher below) into api.py
 communication_dispatcher = {'SMS': 'communication.api.SMSCountryMessageAdapter',
                             'EMail': 'communication.api.EmailMessageAdapter',
-                            'SendGrid': 'communication.api.SendGridMessageAdapter'}
+                            'SendGrid': 'communication.api.SendGridMessageAdapter',
+                            'Pushover': 'communication.api.PushoverMessageAdapter'}
 
 # sms defaults
 sms_length_limit = 450  # allow upto 3 SMS'es as one SMS. More than that is unreliable
@@ -43,3 +45,7 @@ DEFAULT_EMAIL_TYPE = (('HTML', 'HTML Email'),
                       ('Text', 'Text Email'))
 
 default_email_type = DEFAULT_EMAIL_TYPE[0][0]
+
+
+# Pushover settings
+pushover_api_url = "https://api.pushover.net/1/messages.json"

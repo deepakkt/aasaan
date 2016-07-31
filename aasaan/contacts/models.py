@@ -51,6 +51,7 @@ class Contact(models.Model):
     primary_email = models.EmailField("primary Email", max_length=50, unique=True)
     secondary_email = models.EmailField("secondary Email", max_length=50, blank=True)
     pushbullet_token = models.CharField('pushbullet Token', max_length=64, blank=True)
+    pushover_token = models.CharField('pushover Token', max_length=64, blank=True)
     id_card_type = models.CharField("Ashram ID Card Type", max_length=10, blank=True)
     id_card_number = models.CharField("Ashram ID Card Number", max_length=20, blank=True)
     id_proof_type = models.CharField("govt ID Proof Type", max_length=2,
@@ -351,7 +352,7 @@ class RoleGroup(models.Model):
     role_remarks = models.TextField(blank=True)
 
     def _get_contacts_with_role(self):
-        return [item.contact for item in self.contactrole_set.all()]
+        return [item.contact for item in self.contactrolegroup_set.all()]
     contacts = property(_get_contacts_with_role)
 
     def __str__(self):

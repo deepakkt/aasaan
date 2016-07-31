@@ -1,16 +1,26 @@
 import requests
 from sys import modules
+from functools import partial
 
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.mail import get_connection
 from django.core.mail.message import EmailMultiAlternatives
+from django.conf import settings
 
 from .settings import smscountry_parms as base_smscountry_parms
+from .settings import COMMUNICATION_CONTEXTS, COMMUNICATION_TYPES, RECIPIENT_VISIBILITY
 from . import settings as comm_settings
 from .models import Payload, PayloadDetail, CommunicationProfile
 
+from contacts.models import RoleGroup
+
 import sendgrid
 import markdown
+
+try:
+    import django_rq
+except ImportError:
+    pass
 
 
 def _get_param(param_name):
@@ -336,6 +346,81 @@ class SMSCountryMessageAdapter(MessageAdapter):
                                                                        self.adapter_message['mobilenumber']))
 
 
+class PushoverMessageAdapter(MessageAdapter):
+    def get_connection(self):
+        self.connection = _get_param('pushover_api_url')
+
+    def load_communication_settings(self):
+        self.loop_individual_recipient = True
+        self.message_send_exceptions = ValidationError
+
+    def setup_initial_adapter_message(self):
+        self.adapter_message = dict()
+        self.adapter_message['message'] = self.message.communication_message
+        self.adapter_message['token'] = self.profile.user_name
+
+    def setup_final_adapter_message(self, *args, **kwargs):
+        self.adapter_message['user'] = kwargs.get('recipient').communication_recipient
+
+    def send_adapter_communication(self):
+        pushover_request = requests.post(self.connection, params=self.adapter_message)
+
+        if pushover_request.status_code != 200:
+            raise ValidationError('Could not push for user %s. Error message received was'
+                                  '"%s"' %(self.adapter_message['user'], pushover_request.text))
+
+
+def stage_communication(communication_type="EMail", role_groups=None,
+                        communication_recipients=None, communication_context="Communication",
+                        communication_title="", communication_message="",
+                        recipient_visibility=""):
+
+    if not (role_groups or communication_recipients):
+        raise ValidationError("Specify at least one recipient")
+
+    if communication_type not in [x[0] for x in COMMUNICATION_TYPES]:
+        raise ValidationError("Invalid communication type '%s'" % communication_type)
+
+    if communication_context not in [x[0] for x in COMMUNICATION_CONTEXTS]:
+        raise ValidationError("Invalid communication context '%s'" % communication_context)
+
+    if not (communication_title and communication_message):
+        raise ValidationError("Specify message and title")
+
+    if not recipient_visibility:
+        recipient_visibility = RECIPIENT_VISIBILITY[-1][0]
+    else:
+        if recipient_visibility not in [x[0] for x in RECIPIENT_VISIBILITY]:
+            raise ValidationError("Invalid recipient visibility '%s'" % recipient_visibility)
+
+    message = Payload()
+    message.communication_title = communication_title
+    message.communication_message = communication_message
+    message.communication_type = communication_type
+    message.communication_context = communication_context
+    message.recipient_visibility = recipient_visibility
+    message.save()
+
+    contact_set = []
+    contact_field_map = dict(zip([x[0] for x in COMMUNICATION_TYPES],
+                            ['primary_email', 'primary_mobile', 'primary_email', 'pushover_token']))
+
+    for each_role in (role_groups or []):
+        curr_role_group = RoleGroup.objects.get(role_name=each_role)
+        contact_set.extend(filter(bool, [getattr(x, contact_field_map[communication_type])
+                            for x in curr_role_group.contacts]))
+
+    contact_set.extend(communication_recipients or [])
+
+    for each_contact in sorted(list(set(contact_set))):
+        new_recipient = PayloadDetail()
+        new_recipient.communication = message
+        new_recipient.communication_recipient = each_contact
+        new_recipient.save()
+
+    return message.communication_hash
+
+
 def send_communication(communication_type="EMail",
                        message_key="", *args, **kwargs):
     this_module = modules[__name__]
@@ -348,7 +433,13 @@ def send_communication(communication_type="EMail",
                               % (communication_type))
 
     message_container = message_api(message_key=message_key)
-    message_status = message_container.send_message()
+
+    if settings.ASYNC:
+        django_rq.enqueue(message_container.send_message())
+        message_status = "Complete"
+    else:
+        message_status = message_container.send_message()
+
 
     if message_status != comm_settings.COMMUNICATION_STATUS[2][0]:
         raise ValidationError("Message send for key '%s' does not report success. "
@@ -356,3 +447,23 @@ def send_communication(communication_type="EMail",
                               "for error details" % (message_key))
 
     return message_status
+
+# setup canned functions for various scenarios
+stage_pushover = partial(stage_communication, communication_type="Pushover",
+                         communication_context = "Transactional",
+                         communication_title = "Pushover Notification")
+stage_email_transactional = partial(stage_communication, communication_type="EMail",
+                                       communication_context = "Transactional",
+                                    communication_title = "Email Notification")
+stage_email = partial(stage_communication, communication_type="EMail",
+                                       communication_context = "Communication")
+stage_sendgrid = partial(stage_communication, communication_type="SendGrid",
+                                       communication_context = "Communication")
+stage_sendgrid_transactional = partial(stage_communication, communication_type="SendGrid",
+                                       communication_context = "Transactional",
+                                    communication_title = "Sendgrid Notification")
+stage_sms = partial(stage_communication, communication_type="SMS",
+                                       communication_context = "Communication")
+stage_sms_transactional = partial(stage_communication, communication_type="SMS",
+                                       communication_context = "Transactional",
+                                       communication_title = "SMS Notification")

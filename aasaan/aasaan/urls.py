@@ -16,6 +16,11 @@ urlpatterns = patterns('',
 
 )
 
+if settings.ASYNC:
+    urlpatterns += patterns('',
+    url(r'^django-rq/', include('django_rq.urls')),
+                            )
+
 if settings.DEBUG:
     urlpatterns += patterns('django.views.static',
                             (r'^media/(?P<path>.*)',

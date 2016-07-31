@@ -126,6 +126,8 @@ SOCIALACCOUNT_ADAPTER = 'AasaanUser.social_login.SocialAccountAdapter'
 
 ROOT_URLCONF = 'aasaan.urls'
 
+ASYNC = False
+
 WSGI_APPLICATION = 'aasaan.wsgi.application'
 
 # Database
