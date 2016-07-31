@@ -31,7 +31,21 @@ ALLOWED_HOSTS = ["188.166.245.115",
                  "52.72.197.233",
                  "aasaan.isha.in"]
 
-# deploy on gunicorn on linux boxes
+# setup asynchronous processing with rq and django-rq
+ASYNC = True
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'DEFAULT_TIMEOUT': 360,
+    },
+}
+
+
+# deploy on gunicorn and django_rq for prod
 INSTALLED_APPS += (
+    "django_rq",
     'gunicorn',
 )
