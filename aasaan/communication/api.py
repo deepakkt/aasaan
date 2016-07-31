@@ -435,7 +435,7 @@ def send_communication(communication_type="EMail",
     message_container = message_api(message_key=message_key)
 
     if settings.ASYNC:
-        django_rq.enqueue(message_container.send_message())
+        django_rq.enqueue(message_container.send_message)
         message_status = "Complete"
     else:
         message_status = message_container.send_message()
