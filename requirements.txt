@@ -3,6 +3,7 @@ anyjson==0.3.3
 billiard==3.3.0.23
 celery==3.1.23
 cffi==1.4.2
+click==6.6
 cryptography==1.1.2
 defusedxml==0.4.1
 diff-match-patch==20121119
@@ -17,6 +18,7 @@ django-grappelli==2.7.2
 django-import-export==0.4.2
 django-markdown==0.8.4
 django-registration-redux==1.2
+django-rq==0.9.1
 gspread==0.3.0
 gunicorn==19.4.5
 httplib2==0.9.2
@@ -38,6 +40,7 @@ python3-openid==3.0.9
 pytz==2016.3
 requests==2.9.1
 requests-oauthlib==0.6.0
+rq==0.6.0
 rsa==3.2.3
 sendgrid==1.6.20
 setproctitle==1.1.9
