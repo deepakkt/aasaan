@@ -2,7 +2,7 @@ from collections import namedtuple
 from django.utils.text import slugify
 
 SCHEDULE_SHEET_KEY = "12Zj8m8eHsiYLdX-EHUY_7jSOHupPjfqWWg225zaiOVI"
-SCHEDULE_SHEET_KEY_TEST = "1VeqAeWZHzy_hSesxZdu-3K2MjciEY0NUMl5rKGRD7N8"
+SCHEDULE_SHEET_KEY_TEST = "1BegkkqiaA8TqCQLd2RJkKLLbmmdvFLJ14XkpweEgl28"
 
 CONTACTS_SHEET_KEY = "1n5Iy-ewKheuX40T3UJZ1I0tYjhcm7n9w2vy-65m68GY"
 CONTACTS_SHEET_KEY_TEST = "1MvXoYjuZr95PAGcrm0-YTrGG7cmaJVWCxQc5r5tCfLQ"
@@ -27,7 +27,8 @@ schedule_sync_rows = ['SNo',
                       'Contact No',
                       'Contact Email',
                       'Venue',
-                      'ID']
+                      'ID',
+                      'Last Modified']
 
 schedule_header = namedtuple('Schedule', [slugify(x).replace("-", "_") for x in schedule_sync_rows])
 

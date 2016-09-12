@@ -137,6 +137,10 @@ class ProgramSchedule(models.Model):
     status = models.CharField(max_length=2, choices=STATUS_VALUES,
                               default=STATUS_VALUES[0][0])
 
+    last_modified = models.DateTimeField(auto_now=True)
+
+    cancelled_date = models.DateField(null=True)
+
     def __str__(self):
         if self.gender != self.GENDER_VALUES[0][0]:
             return "%s %s - %s - %s" % (self.program, self.get_gender_display(), self.center,
@@ -162,7 +166,6 @@ class ProgramSchedule(models.Model):
             return "<span style='background-color: rgb(222, 186, 99);'>%s</span>" % field_value
         else:
             return field_value
-
 
     def is_cancelled(self):
         return "<span style='color : red;'>&#10006;</span>" \
