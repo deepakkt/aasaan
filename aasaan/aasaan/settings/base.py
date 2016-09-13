@@ -67,6 +67,7 @@ INSTALLED_APPS += (
     'iconnect',
     'gsync',
     'brochures',
+    'config',
 )
 
 # third party apps

@@ -12,6 +12,7 @@ from .settings import GENDER_VALUES, STATUS_VALUES, ID_PROOF_VALUES,\
                         CENTER_CATEGORY_VALUES
 
 from django_markdown.models import MarkdownField
+from config.models import SmartModel
 
 from PIL import Image
 
@@ -35,7 +36,7 @@ def _word_clean(word_to_clean):
 
 
 # Create your models here.
-class Contact(models.Model):
+class Contact(SmartModel):
     """Main contact model"""
     first_name = models.CharField("first Name", max_length=50)
     last_name = models.CharField("last Name", max_length=50)
@@ -61,29 +62,6 @@ class Contact(models.Model):
     id_proof_scan = models.ImageField(upload_to=_generate_idproof_path, blank=True)
     profile_picture = models.ImageField(upload_to=_generate_profile_path, blank=True)
     remarks = MarkdownField(max_length=500, blank=True)
-
-    def __init__(self, *args, **kwargs):
-        super(Contact, self).__init__(*args, **kwargs)
-
-        # setup a function to give expanded status values
-        # instead of the short code stored in database
-        self.__display_func = lambda x: 'get_' + x + '_display'
-
-        # store old values of following fields to track changes
-        self.old_field_list = ['__old_' + x.name for x in self._meta.fields]
-        self.field_list = [x.name for x in self._meta.fields]
-
-        self.__reset_changed_values()
-
-    # set __old_* fields to current model fields
-    # use it for first time init or after comparisons for
-    # changes and actions are all done
-    def __reset_changed_values(self):
-        for each_field in self.field_list:
-            try:
-                setattr(self, '__old_' + each_field, getattr(self, self.__display_func(each_field))())
-            except AttributeError:
-                setattr(self, '__old_' + each_field, getattr(self, each_field))
 
     def profile_image(self):
         image_style = 'style="width:50px; height:50px"'
@@ -140,22 +118,6 @@ class Contact(models.Model):
         else:
             return self.full_name
 
-    # return a dictionary of changed fields alone
-    # along with a tuple of old versus new values
-    def __changed_fields(self):
-        changed_fields = {}
-        for old_field, new_field in zip(self.old_field_list, self.field_list):
-            try:
-                new_field_value = getattr(self, self.__display_func(new_field))()
-            except AttributeError:
-                new_field_value = getattr(self, new_field)
-            old_field_value = getattr(self, old_field)
-
-            if new_field_value != getattr(self, old_field):
-                changed_fields[new_field] = (old_field_value,
-                                             new_field_value)
-        return changed_fields
-
     def clean(self):
         def _validate_mobile():
             def _validate_length(mobile, min_length=10):
@@ -200,7 +162,7 @@ class Contact(models.Model):
 
     def save(self, *args, **kwargs):
         # get a map of field changes
-        changed_fields = self.__changed_fields()
+        changed_fields = self.changed_fields()
 
         self.teacher_tno = self.teacher_tno.rstrip().capitalize()
 
@@ -210,7 +172,7 @@ class Contact(models.Model):
         self.first_name = _word_clean(self.first_name)
         self.last_name = _word_clean(self.last_name)
 
-        super(Contact, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
         # Create and save status change note if it has changed
         if not new_entry:
@@ -256,7 +218,7 @@ class Contact(models.Model):
                 resized_image = id_proof_image.resize((640, 480))
                 resized_image.save(self.id_proof_scan.file.name)
 
-        self.__reset_changed_values()
+        self.reset_changed_values()
 
     class Meta:
         ordering = ['first_name', 'last_name']

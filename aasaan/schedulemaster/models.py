@@ -1,7 +1,10 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
+from datetime import date
+
 from contacts.models import Center, Contact, Zone, Sector
+from config.models import SmartModel
 from django_markdown.models import MarkdownField
 
 
@@ -95,7 +98,7 @@ class ProgramCountMaster(models.Model):
         ordering = ['count_category']
 
 
-class ProgramSchedule(models.Model):
+class ProgramSchedule(SmartModel):
     program = models.ForeignKey(ProgramMaster)
     center = models.ForeignKey(Center)
     program_location = models.CharField(max_length=100)
@@ -182,6 +185,17 @@ class ProgramSchedule(models.Model):
         if self.end_date < self.start_date:
             raise ValidationError('End date cannot be before start date')
 
+    def save(self, *args, **kwargs):
+        changed_fields = self.changed_fields()
+
+        if 'status' in changed_fields and changed_fields['status'][-1] == "Cancelled":
+            self.cancelled_date = date.today()
+
+        if 'status' in changed_fields and changed_fields['status'][0] == "Cancelled":
+            self.cancelled_date = None
+
+        super().save(*args, **kwargs)
+        self.reset_changed_values()
 
 class ProgramAdditionalLanguages(models.Model):
     program = models.ForeignKey(ProgramSchedule)
