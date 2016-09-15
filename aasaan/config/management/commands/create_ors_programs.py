@@ -43,6 +43,7 @@ class Command(BaseCommand):
         if not ors_interface.authenticate():
             send_communication("Pushover", stage_pushover(communication_message="Unable to login to ORS. Aborting!",
                                                           role_groups = ["Aasaan Admin"]))
+            return
 
         program_schedules = ProgramSchedule.objects.filter(event_management_code="",
                                                            program__name__in=filter_programs,

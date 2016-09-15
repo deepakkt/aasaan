@@ -25,8 +25,12 @@ class SmartModel(models.Model):
         for each_field in self.field_list:
             try:
                 setattr(self, '__old_' + each_field, getattr(self, self.display_func(each_field))())
-            except AttributeError:
-                setattr(self, '__old_' + each_field, getattr(self, each_field))
+            except (AttributeError, ObjectDoesNotExist):
+                try:
+                    setattr(self, '__old_' + each_field, getattr(self, each_field))
+                except:
+                    setattr(self, '__old_' + each_field, None)
+
 
     # return a dictionary of changed fields alone
     # along with a tuple of old versus new values
