@@ -4,6 +4,8 @@ import copy
 
 import re
 
+from django.utils.text import slugify
+
 class ORSInterface(object):
     """This class defines an interface to work with ORS, which is
     currently located at https://ors.isha.in at the time of writing
@@ -141,83 +143,89 @@ class ORSInterface(object):
 
             return "%02d-%s-%d" % (mydate.day, current_month, mydate.year)
 
+        get_config_key = lambda program, config: slugify("ors-" + program + " " + config).upper().replace("-", "_")
+
         create_url = "https://ors.isha.in/Program/Save"
         create_data = dict()
 
-        create_data["HostingCenterCode"] = ""
-        create_data["IshangaRef"] = ""
-        create_data["ProgramID"] = ""
-        create_data["TimeStamp"] = ""
-        create_data["ProgramCode"] = "IYP"
-        create_data["Status"] = "NEW"
+        try:
+            create_data["HostingCenterCode"] = ""
+            create_data["IshangaRef"] = ""
+            create_data["ProgramID"] = ""
+            create_data["TimeStamp"] = ""
+            create_data["ProgramCode"] = configuration[get_config_key(program_schedule.program.name, "Program Name")]
+            create_data["Status"] = "NEW"
 
-        languages = {'English': 'E', 'Tamil': 'T', 'Hindi': 'H'}
+            languages = {'English': 'E', 'Tamil': 'T', 'Hindi': 'H'}
 
-        # Language, ORS supports only English, Tamil and Hindi. For others, mark English
-        create_data["LanguageCode"] = languages.get(program_schedule.primary_language) or "E"
+            # Language, ORS supports only English, Tamil and Hindi. For others, mark English
+            create_data["LanguageCode"] = languages.get(program_schedule.primary_language) or "E"
 
-        create_data["Gender"] = program_schedule.gender[0]
-        create_data["ProgramStartDate"] = getformatdateddmmyy(program_schedule.start_date)
-        create_data["ProgramEndDate"] = getformatdateddmmyy(program_schedule.end_date)
-        create_data["Venue"] = program_schedule.program_location
-        create_data["DisplayName"] = " - ".join([program_schedule.program.name,
-                                                 "7 days", create_data["Venue"],
-                    "%s to %s" % (getformatteddate(program_schedule.start_date),
-                                  getformatteddate(program_schedule.end_date))])
-        create_data["AdminUserID"] = ""
-        create_data["LadiesSeats"] = ""
-        create_data["GentsSeats"] = ""
-        create_data["TotalSeats"] = "200"
-        create_data["ReservedTotalSeats"] = ""
-        create_data["ProgramActiveFrom"] = ""
-        create_data["ProgramActiveTo"] = ""
-        create_data["ProgramDonationAmount"] = "%d" % (program_schedule.donation_amount)
-        create_data["Volunteers"] = ""
-        create_data["ZoneQuotaRestriction"] = "N"
-        create_data["ValidateReceiptNo"] = "Y"
-        create_data["CompanyID"] = configuration["ORS_COMPANY_ID_IIIS"]
-        create_data["ProgramPurpose"] = configuration["ORS_PROGRAM_PURPOSE_CODE_7DAY"]
-        create_data["ReferenceProgramID"] = ""
-        create_data["CaptureArrivalDepartureTimings"] = "N"
-        create_data["BatchType"] = configuration["ORS_BATCH_TYPE_7DAY"]
-        create_data["SpecialProgram"] = "N"
-        create_data["LockProgram"] = "N"
-        create_data["DarshanProgram"] = "N"
-        create_data["InstantGeneration"] = "Y"
-        create_data["ProgramEntity"] = configuration["ORS_PROGRAM_ENTITY_7DAY"]
-        create_data["City"] = ""
-        create_data["Teacher"] = ""
-        create_data["CoTeacher"] = ""
-        create_data["ProgramApplicable"] = "A"
-        create_data["SelectCenterCode"] = ""
-        create_data["SelectCount"] = "1"
-        create_data["Center"] = configuration["ORS_PROGRAM_CENTER_CODE"]
-        create_data["EmergencyContact"] = "N"
-        create_data["SMSProfileID"] = configuration["ORS_PROGRAM_CREATE_SMS_PROFILE_ID"]
-        create_data["SMSSenderID"] = configuration["ORS_PROGRAM_CREATE_SMS_SENDER_ID"]
-        create_data["ParticipantSMSMessage"] = configuration["ORS_PROGRAM_CREATE_PARTICIPANT_MSG"]
-        create_data["DonorSMSMessage"] = ""
-        create_data["SummarySMSMessage"] = ""
-        create_data["RPSummarySMSMessage"] = ""
-        create_data["BulkSMSMessage"] = ""
-        create_data["CountSMSMessage"] = ""
-        create_data["PCCRecipients"] = ""
-        create_data["KitchenRecipients"] = ""
-        create_data["FinanceRecipients"] = ""
-        create_data["DefaultReportColumnName"] = ""
-        create_data["IDCardValidation"] = "N"
-        create_data["SenderEMailID"] = ""
-        create_data["MailingInfo1"] = ""
-        create_data["MailingInfo2"] = ""
-        create_data["MailingInfo3"] = ""
-        create_data["MailingInfo4"] = ""
-        create_data["MailingInfo5"] = ""
-        create_data["ThankyouScript"] = ""
+            create_data["Gender"] = program_schedule.gender[0]
+            create_data["ProgramStartDate"] = getformatdateddmmyy(program_schedule.start_date)
+            create_data["ProgramEndDate"] = getformatdateddmmyy(program_schedule.end_date)
+            create_data["Venue"] = program_schedule.program_location
+            create_data["DisplayName"] = " - ".join([program_schedule.program.name,
+                                                     "7 days", create_data["Venue"],
+                        "%s to %s" % (getformatteddate(program_schedule.start_date),
+                                      getformatteddate(program_schedule.end_date))])
+            create_data["AdminUserID"] = ""
+            create_data["LadiesSeats"] = ""
+            create_data["GentsSeats"] = ""
+            create_data["TotalSeats"] = "200"
+            create_data["ReservedTotalSeats"] = ""
+            create_data["ProgramActiveFrom"] = ""
+            create_data["ProgramActiveTo"] = ""
+            create_data["ProgramDonationAmount"] = "%d" % program_schedule.donation_amount
+            create_data["Volunteers"] = ""
+            create_data["ZoneQuotaRestriction"] = "N"
+            create_data["ValidateReceiptNo"] = "Y"
+            create_data["CompanyID"] = configuration[get_config_key(program_schedule.program.name, "Hosting Company")]
+            create_data["ProgramPurpose"] = configuration[get_config_key(program_schedule.program.name, "Purpose")]
+            create_data["ReferenceProgramID"] = ""
+            create_data["CaptureArrivalDepartureTimings"] = "N"
+            create_data["BatchType"] = configuration[get_config_key(program_schedule.program.name, "Batch")]
+            create_data["SpecialProgram"] = "N"
+            create_data["LockProgram"] = "N"
+            create_data["DarshanProgram"] = "N"
+            create_data["InstantGeneration"] = "Y"
+            create_data["ProgramEntity"] = configuration[get_config_key(program_schedule.program.name, "Program Entity")]
+            create_data["City"] = ""
+            create_data["Teacher"] = ""
+            create_data["CoTeacher"] = ""
+            create_data["ProgramApplicable"] = "A"
+            create_data["SelectCenterCode"] = ""
+            create_data["SelectCount"] = "1"
+            create_data["Center"] = configuration["ORS_PROGRAM_CENTER_CODE"]
+            create_data["EmergencyContact"] = "N"
+            create_data["SMSProfileID"] = configuration["ORS_PROGRAM_CREATE_SMS_PROFILE_ID"]
+            create_data["SMSSenderID"] = configuration["ORS_PROGRAM_CREATE_SMS_SENDER_ID"]
+            create_data["ParticipantSMSMessage"] = configuration["ORS_PROGRAM_CREATE_PARTICIPANT_MSG"]
+            create_data["DonorSMSMessage"] = ""
+            create_data["SummarySMSMessage"] = ""
+            create_data["RPSummarySMSMessage"] = ""
+            create_data["BulkSMSMessage"] = ""
+            create_data["CountSMSMessage"] = ""
+            create_data["PCCRecipients"] = ""
+            create_data["KitchenRecipients"] = ""
+            create_data["FinanceRecipients"] = ""
+            create_data["DefaultReportColumnName"] = ""
+            create_data["IDCardValidation"] = "N"
+            create_data["SenderEMailID"] = ""
+            create_data["MailingInfo1"] = ""
+            create_data["MailingInfo2"] = ""
+            create_data["MailingInfo3"] = ""
+            create_data["MailingInfo4"] = ""
+            create_data["MailingInfo5"] = ""
+            create_data["ThankyouScript"] = ""
 
-        self.postrequest(request_url=create_url, request_data=create_data,
-                         request_label="Create - %s" %(create_data["DisplayName"]))
+            self.postrequest(request_url=create_url, request_data=create_data,
+                             request_label="Create - %s" %(create_data["DisplayName"]))
 
-        if self.last_response.status_code != 200:
+            if self.last_response.status_code != 200:
+                return "FAILED"
+
+        except KeyError:
             return "FAILED"
 
         program_code_re = re.compile("E[0-9]{8}")

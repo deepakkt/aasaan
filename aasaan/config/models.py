@@ -64,6 +64,9 @@ class Configuration(models.Model):
         self.configuration_key = self.configuration_key.upper().rstrip()
         super().save(self, *args, **kwargs)
 
+    class Meta:
+        ordering = ['configuration_key']
+
 
 def get_configuration(key):
     try:
