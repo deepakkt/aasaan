@@ -166,9 +166,8 @@ class ORSInterface(object):
             create_data["ProgramEndDate"] = getformatdateddmmyy(program_schedule.end_date)
             create_data["Venue"] = program_schedule.program_location
             create_data["DisplayName"] = " - ".join([program_schedule.program.name,
-                                                     "7 days", create_data["Venue"],
-                        "%s to %s" % (getformatteddate(program_schedule.start_date),
-                                      getformatteddate(program_schedule.end_date))])
+                                                     program_schedule.center.center_name,
+                                                     getformatteddate(program_schedule.start_date)])
             create_data["AdminUserID"] = ""
             create_data["LadiesSeats"] = ""
             create_data["GentsSeats"] = ""

@@ -33,6 +33,9 @@ class Command(BaseCommand):
         filter_programs = config_dict["ORS_PROGRAM_CREATION_PROGRAM_TYPES"]
         filter_programs = [x.strip() for x in filter_programs.split("\r\n")]
 
+        exclude_zones = config_dict["ORS_PROGRAM_CREATE_EXCLUDE_ZONES"]
+        exclude_zones = [x.strip() for x in exclude_zones.split("\r\n")]
+
         ors_interface = ORSInterface(settings.ORS_USER, settings.ORS_PASSWORD)
         if not ors_interface.authenticate():
             send_communication("Pushover", stage_pushover(communication_message="Unable to login to ORS. Aborting!",
@@ -47,6 +50,9 @@ class Command(BaseCommand):
 
         for each_schedule in program_schedules:
             if each_schedule.status == 'CA':
+                continue
+
+            if each_schedule.center.zone.zone_name in exclude_zones:
                 continue
 
             programs_created += 1
