@@ -1,0 +1,22 @@
+server {
+
+    listen 80;
+    server_name 188.166.245.115 aasaan.isha.in;
+    charset utf-8;
+
+    location /static {
+        alias /var/www/aasaan/static;
+    }
+
+    location /media {
+        alias /var/www/aasaan/media;
+    }
+
+    location / {
+        proxy_pass http://aasaan:8001;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+}

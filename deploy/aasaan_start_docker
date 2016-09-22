@@ -15,8 +15,9 @@ cd $DJANGODIR
 export DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
 export PYTHONPATH=$DJANGODIR:$PYTHONPATH
 
-python manage.py migrate --settings=aasaan.settings.prod-docker
-python manage.py collectstatic --no-input --settings=aasaan.settings.prod-docker
+python manage.py migrate --settings=$DJANGO_SETTINGS_MODULE
+python manage.py collectstatic --no-input --settings=$DJANGO_SETTINGS_MODULE
+echo "from django.contrib.auth.models import User; x = User.objects.filter(username='admin') or User.objects.create_superuser('admin', '', 'aasaan_admin')" | python manage.py shell --settings=$DJANGO_SETTINGS_MODULE
 
 # Start your Django Unicorn
 # Programs meant to be run under supervisor should not daemonize themselves (do not use --daemon)
