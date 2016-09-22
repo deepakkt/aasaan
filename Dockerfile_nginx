@@ -1,0 +1,4 @@
+FROM nginx
+MAINTAINER deepak.kumaran@ishafoundation.org
+RUN mkdir /var/www && /var/www/aasaan
+COPY deploy/nginx_docker.conf /etc/nginx/nginx.conf
