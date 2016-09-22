@@ -15,8 +15,8 @@ cd $DJANGODIR
 export DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
 export PYTHONPATH=$DJANGODIR:$PYTHONPATH
 
-python manage.py collectstatic --no-input
-
+python manage.py migrate --settings=aasaan.settings.prod-docker
+python manage.py collectstatic --no-input --settings=aasaan.settings.prod-docker
 
 # Start your Django Unicorn
 # Programs meant to be run under supervisor should not daemonize themselves (do not use --daemon)
