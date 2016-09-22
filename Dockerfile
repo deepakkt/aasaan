@@ -18,5 +18,6 @@ RUN pip install -r requirements.txt
 COPY . /usr/aasaan/src
 COPY deploy/aasaan_start_docker /usr/local/bin
 COPY deploy/aasaan_worker_start_docker /usr/local/bin
+RUN chmod +x /usr/local/bin/aasaan*
 COPY deploy/supervisord_docker.conf /etc/supervisor/conf.d/supervisord.conf
 CMD ["/usr/bin/supervisord"]
