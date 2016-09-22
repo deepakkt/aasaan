@@ -1,0 +1,18 @@
+#!/bin/bash
+
+NAME="aasaan-rq"                                  # Name of the application
+DJANGODIR=/usr/aasaan/src/aasaan       # Django project directory
+USER=root                                       # the user to run as
+GROUP=root                                     # the group to run as
+NUM_WORKERS=1                                     # how many worker processes should Gunicorn spawn
+DJANGO_SETTINGS_MODULE=aasaan.settings.prod-docker             # which settings file should Django use
+DJANGO_WSGI_MODULE=aasaan.wsgi                     # WSGI module name
+
+echo "Starting $NAME as `whoami`"
+
+# Activate the virtual environment
+cd $DJANGODIR
+export DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
+export PYTHONPATH=$DJANGODIR:$PYTHONPATH
+
+exec python ${DJANGODIR}/manage.py rqworker
