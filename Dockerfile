@@ -20,4 +20,5 @@ COPY deploy/aasaan_start_docker /usr/local/bin
 COPY deploy/aasaan_worker_start_docker /usr/local/bin
 RUN chmod +x /usr/local/bin/aasaan*
 COPY deploy/supervisord_docker.conf /etc/supervisor/conf.d/supervisord.conf
+EXPOSE 8001
 CMD ["/usr/bin/supervisord"]
