@@ -27,9 +27,7 @@ CACHES = {
 }
 
 # to be filled in during deployment
-ALLOWED_HOSTS = ["188.166.245.115",
-                 "52.72.197.233",
-                 "aasaan.isha.in"]
+ALLOWED_HOSTS = ['*']
 
 # setup asynchronous processing with rq and django-rq
 ASYNC = True
