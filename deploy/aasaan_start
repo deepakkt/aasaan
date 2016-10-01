@@ -1,0 +1,37 @@
+checkandabort()  {
+	last_cmd_status=$1
+	last_cmd_desc=$2
+	if [[ ${last_cmd_status} != "0" ]]; then
+		echo "Command not successful. Aborting. Please check the last executed command and attempt to fix error manually. Then try rerunning the script again."
+		exit 1
+	else
+		echo "${last_cmd_desc} successful!"
+	fi
+	
+}
+
+blankline() {
+	echo " "
+}
+
+
+aasaan_status=$(docker ps | grep aasaan | wc -l)
+
+if [[ ${aasaan_status} != "0" ]]; then
+	echo "aasaan seems to be in running state already"
+	echo "issue aasaan_stop first"
+	exit 0
+fi
+
+docker start aasaan_redis
+docker start aasaan_db
+docker start aasaan
+docker start aasaan_nginx
+
+blankline
+
+docker ps | grep aasaan
+
+blankline
+
+echo "aasaan started"
