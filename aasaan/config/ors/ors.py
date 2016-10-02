@@ -150,7 +150,8 @@ class ORSInterface(object):
             base = base + " " + config
             return slugify(base).upper().replace("-", "_")
 
-        def parse_config(configuration_dict, program_name, program_zone_name, config):
+        def parse_config(configuration_dict, program_name, program_zone_name, config,
+                         fallback_value="", raise_exception=True):
             config_value = configuration_dict.get(get_config_key(program_name,
                                                                  config,
                                                                  program_zone_name))
@@ -160,7 +161,10 @@ class ORSInterface(object):
                                                                      config))
 
             if not config_value:
-                raise KeyError
+                if raise_exception:
+                    raise KeyError
+                else:
+                    config_value = fallback_value
 
             return config_value
 
@@ -172,6 +176,8 @@ class ORSInterface(object):
             _program_zone_name = program_schedule.center.zone.zone_name
 
             _parse_config_only = partial(parse_config, configuration, _program_name, _program_zone_name)
+            _parse_config_fallback = partial(parse_config, configuration, _program_name,
+                                             _program_zone_name, raise_exception=False)
 
             create_data["HostingCenterCode"] = ""
             create_data["IshangaRef"] = ""
@@ -195,52 +201,53 @@ class ORSInterface(object):
             create_data["AdminUserID"] = ""
             create_data["LadiesSeats"] = ""
             create_data["GentsSeats"] = ""
-            create_data["TotalSeats"] = "200"
-            create_data["ReservedTotalSeats"] = ""
-            create_data["ProgramActiveFrom"] = ""
-            create_data["ProgramActiveTo"] = ""
+            create_data["TotalSeats"] = _parse_config_fallback("Total Seats", "200")
+            create_data["ReservedTotalSeats"] = _parse_config_fallback("Reserved Total Seats")
+            create_data["ProgramActiveFrom"] = _parse_config_fallback("Program Active From")
+            create_data["ProgramActiveTo"] = _parse_config_fallback("Program Active To")
             create_data["ProgramDonationAmount"] = "%d" % program_schedule.donation_amount
-            create_data["Volunteers"] = ""
-            create_data["ZoneQuotaRestriction"] = "N"
-            create_data["ValidateReceiptNo"] = "Y"
+            create_data["Volunteers"] = _parse_config_fallback("Volunteers")
+            create_data["ZoneQuotaRestriction"] = _parse_config_fallback("Zone Quota Restriction", "N")
+            create_data["ValidateReceiptNo"] = _parse_config_fallback("Validate Receipt No", "Y")
             create_data["CompanyID"] = _parse_config_only("Hosting Company")
             create_data["ProgramPurpose"] = _parse_config_only("Purpose")
-            create_data["ReferenceProgramID"] = ""
-            create_data["CaptureArrivalDepartureTimings"] = "N"
+            create_data["ReferenceProgramID"] = _parse_config_fallback("Reference Program ID")
+            create_data["CaptureArrivalDepartureTimings"] = _parse_config_fallback("Capture Arrival Departure Timings",
+                                                                                   "N")
             create_data["BatchType"] = _parse_config_only("Batch")
-            create_data["SpecialProgram"] = "N"
-            create_data["LockProgram"] = "N"
-            create_data["DarshanProgram"] = "N"
-            create_data["InstantGeneration"] = "Y"
+            create_data["SpecialProgram"] = _parse_config_fallback("Special Program", "N")
+            create_data["LockProgram"] = _parse_config_fallback("Lock Program", "N")
+            create_data["DarshanProgram"] = _parse_config_fallback("Darshan Program", "N")
+            create_data["InstantGeneration"] = _parse_config_fallback("Instant Generation", "Y")
             create_data["ProgramEntity"] = _parse_config_only("Program Entity")
-            create_data["City"] = ""
-            create_data["Teacher"] = ""
-            create_data["CoTeacher"] = ""
-            create_data["ProgramApplicable"] = "A"
-            create_data["SelectCenterCode"] = ""
-            create_data["SelectCount"] = "1"
+            create_data["City"] = _parse_config_fallback("City")
+            create_data["Teacher"] = _parse_config_fallback("Teacher")
+            create_data["CoTeacher"] = _parse_config_fallback("Co Teacher")
+            create_data["ProgramApplicable"] = _parse_config_fallback("Program Applicable", "A")
+            create_data["SelectCenterCode"] = _parse_config_fallback("Select Center Code")
+            create_data["SelectCount"] = _parse_config_fallback("Select Count", "1")
             create_data["Center"] = configuration["ORS_PROGRAM_CENTER_CODE"]
-            create_data["EmergencyContact"] = "N"
+            create_data["EmergencyContact"] = _parse_config_fallback("Emergency Contact", "N")
             create_data["SMSProfileID"] = configuration["ORS_PROGRAM_CREATE_SMS_PROFILE_ID"]
             create_data["SMSSenderID"] = configuration["ORS_PROGRAM_CREATE_SMS_SENDER_ID"]
             create_data["ParticipantSMSMessage"] = configuration["ORS_PROGRAM_CREATE_PARTICIPANT_MSG"]
-            create_data["DonorSMSMessage"] = ""
-            create_data["SummarySMSMessage"] = ""
-            create_data["RPSummarySMSMessage"] = ""
-            create_data["BulkSMSMessage"] = ""
-            create_data["CountSMSMessage"] = ""
-            create_data["PCCRecipients"] = ""
-            create_data["KitchenRecipients"] = ""
-            create_data["FinanceRecipients"] = ""
-            create_data["DefaultReportColumnName"] = ""
-            create_data["IDCardValidation"] = "N"
-            create_data["SenderEMailID"] = ""
-            create_data["MailingInfo1"] = ""
-            create_data["MailingInfo2"] = ""
-            create_data["MailingInfo3"] = ""
-            create_data["MailingInfo4"] = ""
-            create_data["MailingInfo5"] = ""
-            create_data["ThankyouScript"] = ""
+            create_data["DonorSMSMessage"] = _parse_config_fallback("Donor SMS Message")
+            create_data["SummarySMSMessage"] = _parse_config_fallback("Summary SMS Message")
+            create_data["RPSummarySMSMessage"] = _parse_config_fallback("RP Summary SMS Message")
+            create_data["BulkSMSMessage"] = _parse_config_fallback("Bulk SMS Message")
+            create_data["CountSMSMessage"] = _parse_config_fallback("Count SMS Message")
+            create_data["PCCRecipients"] = _parse_config_fallback("PCC Recipients")
+            create_data["KitchenRecipients"] = _parse_config_fallback("Kitchen Recipients")
+            create_data["FinanceRecipients"] = _parse_config_fallback("Finance Recipients")
+            create_data["DefaultReportColumnName"] = _parse_config_fallback("Default Report Column Name")
+            create_data["IDCardValidation"] = _parse_config_fallback("ID Card Validation", "N")
+            create_data["SenderEMailID"] = _parse_config_fallback("Sender EMail ID")
+            create_data["MailingInfo1"] = _parse_config_fallback("Mailing Info 1")
+            create_data["MailingInfo2"] = _parse_config_fallback("Mailing Info 2")
+            create_data["MailingInfo3"] = _parse_config_fallback("Mailing Info 3")
+            create_data["MailingInfo4"] = _parse_config_fallback("Mailing Info 4")
+            create_data["MailingInfo5"] = _parse_config_fallback("Mailing Info 5")
+            create_data["ThankyouScript"] = _parse_config_fallback("Thank You Script")
 
             if not dryrun:
                 self.postrequest(request_url=create_url, request_data=create_data,
