@@ -1,6 +1,7 @@
 from requests import Request, Session
 from collections import OrderedDict
 import copy
+from functools import partial
 
 import re
 
@@ -119,8 +120,7 @@ class ORSInterface(object):
         #restore header from copy
         self.headers = headers_copy
 
-    def create_new_program(self, program_schedule, configuration):
-
+    def create_new_program(self, program_schedule, configuration, dryrun=False):
         """Create a new program under ORS
         Warning: This program will happily create a new program even if
         the same program exists under ORS. ORS doesn't allow deleting a
@@ -143,12 +143,36 @@ class ORSInterface(object):
 
             return "%02d-%s-%d" % (mydate.day, current_month, mydate.year)
 
-        get_config_key = lambda program, config: slugify("ors-" + program + " " + config).upper().replace("-", "_")
+        def get_config_key(program, config, zone=None):
+            base = "ors-" + program
+            if zone:
+                base = base + " " + zone
+            base = base + " " + config
+            return slugify(base).upper().replace("-", "_")
+
+        def parse_config(configuration_dict, program_name, program_zone_name, config):
+            config_value = configuration_dict.get(get_config_key(program_name,
+                                                                 config,
+                                                                 program_zone_name))
+
+            if not config_value:
+                config_value = configuration_dict.get(get_config_key(program_name,
+                                                                     config))
+
+            if not config_value:
+                raise KeyError
+
+            return config_value
 
         create_url = "https://ors.isha.in/Program/Save"
         create_data = dict()
 
         try:
+            _program_name = program_schedule.program.name
+            _program_zone_name = program_schedule.center.zone.zone_name
+
+            _parse_config_only = partial(parse_config, configuration, _program_name, _program_zone_name)
+
             create_data["HostingCenterCode"] = ""
             create_data["IshangaRef"] = ""
             create_data["ProgramID"] = ""
@@ -179,16 +203,16 @@ class ORSInterface(object):
             create_data["Volunteers"] = ""
             create_data["ZoneQuotaRestriction"] = "N"
             create_data["ValidateReceiptNo"] = "Y"
-            create_data["CompanyID"] = configuration[get_config_key(program_schedule.program.name, "Hosting Company")]
-            create_data["ProgramPurpose"] = configuration[get_config_key(program_schedule.program.name, "Purpose")]
+            create_data["CompanyID"] = _parse_config_only("Hosting Company")
+            create_data["ProgramPurpose"] = _parse_config_only("Purpose")
             create_data["ReferenceProgramID"] = ""
             create_data["CaptureArrivalDepartureTimings"] = "N"
-            create_data["BatchType"] = configuration[get_config_key(program_schedule.program.name, "Batch")]
+            create_data["BatchType"] = _parse_config_only("Batch")
             create_data["SpecialProgram"] = "N"
             create_data["LockProgram"] = "N"
             create_data["DarshanProgram"] = "N"
             create_data["InstantGeneration"] = "Y"
-            create_data["ProgramEntity"] = configuration[get_config_key(program_schedule.program.name, "Program Entity")]
+            create_data["ProgramEntity"] = _parse_config_only("Program Entity")
             create_data["City"] = ""
             create_data["Teacher"] = ""
             create_data["CoTeacher"] = ""
@@ -218,18 +242,19 @@ class ORSInterface(object):
             create_data["MailingInfo5"] = ""
             create_data["ThankyouScript"] = ""
 
-            self.postrequest(request_url=create_url, request_data=create_data,
-                             request_label="Create - %s" %(create_data["DisplayName"]))
+            if not dryrun:
+                self.postrequest(request_url=create_url, request_data=create_data,
+                                 request_label="Create - %s" %(create_data["DisplayName"]))
 
-            if self.last_response.status_code != 200:
-                return "FAILED"
+                if self.last_response.status_code != 200:
+                    return "FAILED"
 
         except KeyError:
             return "FAILED"
 
-        program_code_re = re.compile("E[0-9]{8}")
+        if not dryrun:
+            program_code_re = re.compile("E[0-9]{8}")
 
-        return program_code_re.findall(self.last_response.text)[0]
-
-
-
+            return program_code_re.findall(self.last_response.text)[0]
+        else:
+            return "E99999999"
