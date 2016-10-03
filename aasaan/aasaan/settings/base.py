@@ -68,6 +68,7 @@ INSTALLED_APPS += (
     'gsync',
     'brochures',
     'config',
+    'ipctravels'
 )
 
 # third party apps
@@ -79,6 +80,7 @@ INSTALLED_APPS += (
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'ajax_select',
+    'daterange_filter',
     # 'allauth.socialaccount.providers.facebook',
 )
 
