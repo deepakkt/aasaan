@@ -18,7 +18,7 @@ from contacts.models import Center
 
 
 def return_count_master(category):
-    return ProgramCountMaster.objects.get(count_category=category)
+    return ProgramCountMaster.objects.get(count_category=category.strip())
 
 
 def get_center(center, zone):
@@ -71,14 +71,18 @@ class Command(BaseCommand):
             load_file = each_file
             break
 
-        row_headers = "sno,status,start,end,zone,center,program,total,m,n,e".split(",")
+        row_headers = "sno,status,start,end,zone,center,program,gender,total,m,n,e,a,i".split(",")
 
         schedule_reader = csv.reader(open(load_file))
 
         counts = Counter()
 
-        morning, noon, evening, total = map(return_count_master, ['Morning', 'Noon', 'Evening',
-                                                                  'Total Participant Count'])
+        morning, noon, evening, total, absentees, volunteers = map(return_count_master,
+                                                                   ['Morning', 'Noon',
+                                                                    'Evening',
+                                                                    'Total Participant Count',
+                                                                    'Absentees',
+                                                                    'Initiation Volunteers Count'])
 
         for each_row in schedule_reader:
             if schedule_reader.line_num == 1:
@@ -110,7 +114,9 @@ class Command(BaseCommand):
                 new_schedule.center = get_center(current_row['center'], current_row['zone'])
                 new_schedule.start_date = get_date(current_row['start'])
                 new_schedule.end_date = get_date(current_row['end'])
-                new_schedule.gender = 'BO'
+                new_schedule.gender = {'Ladies': 'F',
+                                       'Gents': 'M',
+                                       'All': 'BO'}.get(current_row['gender']) or 'BO'
 
                 if current_row['program'].strip().lower() == 'isha yoga program 7 days':
                     new_schedule.primary_language = LanguageMaster.objects.get(name='Tamil')
@@ -132,5 +138,12 @@ class Command(BaseCommand):
                 get_or_set_count(new_schedule, evening, current_row['e'])
                 get_or_set_count(new_schedule, noon, current_row['n'])
                 get_or_set_count(new_schedule, total, current_row['total'])
+                get_or_set_count(new_schedule, absentees, current_row.get('a'))
+                get_or_set_count(new_schedule, volunteers, current_row.get('i'))
             except:
                 self.stdout.write("%d ==> Aborted %s. Check data" % (schedule_reader.line_num, each_row))
+
+        self.stdout.write('Processed => %d' % counts['processed'])
+        self.stdout.write('Skipped => %d' % counts['skipped'])
+        self.stdout.write('Newly added => %d' % counts['added'])
+        self.stdout.write('Updated => %d' % counts['updated'])
