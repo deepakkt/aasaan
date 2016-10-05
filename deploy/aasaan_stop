@@ -1,0 +1,24 @@
+checkandabort()  {
+	last_cmd_status=$1
+	last_cmd_desc=$2
+	if [[ ${last_cmd_status} != "0" ]]; then
+		echo "Command not successful. Aborting. Please check the last executed command and attempt to fix error manually. Then try rerunning the script again."
+		exit 1
+	else
+		echo "${last_cmd_desc} successful!"
+	fi
+	
+}
+
+blankline() {
+	echo " "
+}
+
+
+docker stop aasaan_nginx &> /dev/null
+docker stop aasaan_redis &> /dev/null
+docker stop aasaan_db &> /dev/null
+docker stop aasaan &> /dev/null
+
+echo "aasaan stopped"
+
