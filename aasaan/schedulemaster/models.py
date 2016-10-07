@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from datetime import date
 
 from contacts.models import Center, Contact, Zone, Sector
-from config.models import SmartModel
+from config.models import SmartModel, Tag
 from django_markdown.models import MarkdownField
 
 
@@ -312,6 +312,7 @@ class ProgramTeacher(models.Model):
     class Meta:
         verbose_name = 'teacher for class'
         verbose_name_plural = 'teachers for class'
+        unique_together = ['program', 'teacher']
 
 
 class ProgramBatch(models.Model):
@@ -337,6 +338,7 @@ class ProgramScheduleCounts(models.Model):
 
     class Meta:
         verbose_name = 'program count'
+        unique_together = ['program', 'category']
 
 
 class ProgramAdditionalInformation(models.Model):
@@ -349,3 +351,15 @@ class ProgramAdditionalInformation(models.Model):
 
     class Meta:
         verbose_name = 'additional program information. (Do not use if not required)'
+
+
+class ProgramTag(models.Model):
+    program = models.ForeignKey(ProgramSchedule)
+    tag = models.ForeignKey(Tag)
+
+    def __str__(self):
+        return '%s - %s' % (self.program, self.tag)
+
+    class Meta:
+        ordering = ['program', 'tag']
+        unique_together = ['program', 'tag']
