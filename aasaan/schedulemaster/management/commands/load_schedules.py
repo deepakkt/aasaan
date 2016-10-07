@@ -71,7 +71,7 @@ class Command(BaseCommand):
             load_file = each_file
             break
 
-        row_headers = "sno,status,start,end,zone,center,program,gender,total,m,n,e,a,i".split(",")
+        row_headers = "sno,status,start,end,zone,center,program,donation,gender,language,total,m,n,e,a,i".split(",")
 
         schedule_reader = csv.reader(open(load_file))
 
@@ -100,14 +100,13 @@ class Command(BaseCommand):
 
             try:
                 match_schedule = ProgramSchedule.objects.filter(program=get_program(current_row['program']),
-                                                                center=get_center(current_row['center'], current_row['zone']),
+                                                                center=get_center(current_row['center'],
+                                                                                  current_row['zone']),
                                                                 start_date=get_date(current_row['start']))
 
                 if not match_schedule:
-                    counts['added'] += 1
                     new_schedule = ProgramSchedule()
                 else:
-                    counts['updated'] += 1
                     new_schedule = match_schedule[0]
 
                 new_schedule.program = get_program(current_row['program'])
@@ -116,14 +115,11 @@ class Command(BaseCommand):
                 new_schedule.end_date = get_date(current_row['end'])
                 new_schedule.gender = {'Ladies': 'F',
                                        'Gents': 'M',
-                                       'All': 'BO'}.get(current_row['gender']) or 'BO'
+                                       'All': 'BO'}.get(current_row['gender'].strip()) or 'BO'
 
-                if current_row['program'].strip().lower() == 'isha yoga program 7 days':
-                    new_schedule.primary_language = LanguageMaster.objects.get(name='Tamil')
-                else:
-                    new_schedule.primary_language = LanguageMaster.objects.get(name='English')
+                new_schedule.primary_language = LanguageMaster.objects.get(name=current_row['language'].strip())
 
-                new_schedule.donation_amount = 0
+                new_schedule.donation_amount = int(current_row['donation'])
                 new_schedule.status = 'RC'
                 new_schedule.contact_name = 'System Loaded'
                 new_schedule.contact_email = 'aasaanbot@aasaan.isha.in'
@@ -140,10 +136,18 @@ class Command(BaseCommand):
                 get_or_set_count(new_schedule, total, current_row['total'])
                 get_or_set_count(new_schedule, absentees, current_row.get('a'))
                 get_or_set_count(new_schedule, volunteers, current_row.get('i'))
+
+                if not match_schedule:
+                    counts['added'] += 1
+                else:
+                    counts['updated'] += 1
+
             except:
+                counts['aborted'] += 1
                 self.stdout.write("%d ==> Aborted %s. Check data" % (schedule_reader.line_num, each_row))
 
         self.stdout.write('Processed => %d' % counts['processed'])
         self.stdout.write('Skipped => %d' % counts['skipped'])
         self.stdout.write('Newly added => %d' % counts['added'])
+        self.stdout.write('Aborted => %d' % counts['aborted'])
         self.stdout.write('Updated => %d' % counts['updated'])
