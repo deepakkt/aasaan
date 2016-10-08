@@ -1,18 +1,20 @@
-from datetime import datetime
+from datetime import datetime, date
 
 from django.core.exceptions import ImproperlyConfigured
 
-from schedulemaster.models import ProgramSchedule
+from schedulemaster.models import ProgramSchedule, ProgramCountMaster
 from contacts.models import IndividualContactRoleCenter, IndividualContactRoleZone
 
 from .sheets_api import open_workbook, delete_worksheets, update_header_row, \
     update_cell, update_row, authenticate
 
-from .settings import schedule_sync_rows, contact_sync_rows, CONTACTS_SHEET_KEY, \
-    schedule_header, contact_header, SCHEDULE_SHEET_KEY, SCHEDULE_SHEET_KEY_TEST, \
-    CONTACTS_SHEET_KEY_TEST
+from .settings import schedule_sync_rows, contact_sync_rows, schedule_enrollment_sync_rows, \
+    CONTACTS_SHEET_KEY, \
+    schedule_header, contact_header, schedule_enrollment_header, \
+    SCHEDULE_SHEET_KEY, SCHEDULE_SHEET_KEY_TEST, \
+    CONTACTS_SHEET_KEY_TEST, SCHEDULE_ENROLLMENT_SHEET_KEY
 
-from . import contact_filter, schedule_filter
+from . import contact_filter, schedule_filter, schedule_enrollment_filter
 
 
 class SheetSync:
@@ -249,6 +251,74 @@ class ContactSync(SheetSync):
         return contact_header(*contact_values)
 
 
+class ScheduleEnrollmentSync(SheetSync):
+    models = [ProgramSchedule]
+    titles = schedule_enrollment_sync_rows
+    pivot_fields = ['zone']
+    target_columns = [schedule_enrollment_header]
+    filters = [schedule_enrollment_filter.ScheduleEnrollmentSync]
+
+    def __init__(self, *args, **kwargs):
+        self._counts_master = list(ProgramCountMaster.objects.all())
+        super().__init__(*args, **kwargs)
+
+    def get_programschedule_queryset(self):
+        forty_five_days_ago = date.fromordinal(date.today().toordinal() - 45)
+        return ProgramSchedule.objects.filter(start_date__gte=forty_five_days_ago).order_by('center__zone',
+                                                                                            '-start_date',                                                                                            'center', 'program')
+
+    def translate_programschedule(self, instance):
+        def _get_category_values():
+            program_category_values = [(x.category, x.value) for x in instance.programschedulecounts_set.all()]
+            program_categories = [x[0] for x in program_category_values]
+            category_values = []
+
+            for each_master_category in self._counts_master:
+                if each_master_category in program_categories:
+                    master_category_index = program_categories.index(each_master_category)
+                    category_value = program_category_values[master_category_index][-1]
+                    category_values.append(category_value)
+                else:
+                    category_values.append('Not Available')
+
+            return category_values
+
+        _worksheet_row = 0
+
+        months = ['Ignore', 'January', 'February', 'March',
+                  'April', 'May', 'June', 'July', 'August',
+                  'September', 'October', 'November', 'December']
+
+        # generate program timings in the format of M-N-E
+        timing_codes = '-'.join([x.batch.batch_code for x in instance.programbatch_set.all()])
+
+        # get a list of teachers and their roles for this program as a comma separated field
+        program_teachers = '\n'.join([t.teacher.full_name + ' - ' + t.get_teacher_type_display()
+                            for t in instance.programteacher_set.all()])
+
+        _date_fmt = lambda x: "-".join([str(x.day), str(months[x.month][:3]),
+                                        str(x.year)])
+
+        # build a value list
+        schedule_enrollment_values = [_worksheet_row,
+                           instance.center.zone.zone_name,
+                           _date_fmt(instance.start_date),
+                           _date_fmt(instance.end_date),
+                           instance.center.center_name,
+                           instance.center.parent_center.center_name if instance.center.pre_center else "",
+                           instance.program.name,
+                           timing_codes,
+                           instance.get_gender_display(),
+                           instance.primary_language.name,
+                           instance.get_status_display(),
+                           program_teachers]
+
+        schedule_enrollment_values.extend(_get_category_values())
+        schedule_enrollment_values.extend([instance.id, instance.last_modified])
+
+        return schedule_enrollment_header(*schedule_enrollment_values)
+
+
 def sync_schedules():
     gc = authenticate()
     ScheduleSync(gc, SCHEDULE_SHEET_KEY).sync()
@@ -267,3 +337,8 @@ def sync_contacts():
 def sync_contacts_test():
     gc = authenticate()
     ContactSync(gc, CONTACTS_SHEET_KEY_TEST).sync()
+
+
+def sync_enrollments():
+    gc = authenticate()
+    ScheduleEnrollmentSync(gc, SCHEDULE_ENROLLMENT_SHEET_KEY).sync()

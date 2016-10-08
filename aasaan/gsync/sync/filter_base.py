@@ -43,3 +43,17 @@ class ScheduleSync(metaclass=SyncMeta):
     def filter_row(row, model_row_instance):
         return tuple(row[:])
     """
+
+
+class ScheduleEnrollmentSync(metaclass=SyncMeta):
+    """
+    Classes that inherit from this class need to implement a
+    filter_row method. It needs to take in an iterable and
+    return a result tuple after the respective filter logic.
+
+    Example:
+    The below is a silly example where it returns a copy of the
+    incoming row
+    def filter_row(row, model_row_instance):
+        return tuple(row[:])
+    """
