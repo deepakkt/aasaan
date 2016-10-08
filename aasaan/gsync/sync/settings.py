@@ -2,6 +2,7 @@ from collections import namedtuple
 from django.utils.text import slugify
 
 from schedulemaster.models import ProgramCountMaster
+from config.models import get_configuration
 
 SCHEDULE_SHEET_KEY = "12Zj8m8eHsiYLdX-EHUY_7jSOHupPjfqWWg225zaiOVI"
 SCHEDULE_SHEET_KEY_TEST = "1BegkkqiaA8TqCQLd2RJkKLLbmmdvFLJ14XkpweEgl28"
@@ -50,7 +51,7 @@ contact_sync_rows = ['SNo',
 
 contact_header = namedtuple('Contact', [slugify(x).replace("-", "_") for x in contact_sync_rows])
 
-_count_categories = [x.count_category for x in ProgramCountMaster.objects.all()]
+enrollment_count_categories = get_configuration("SYNC_ENROLLMENT_COUNT_CATEGORIES").split('\r\n')
 
 schedule_enrollment_sync_rows = ['SNo',
                                  'Zone',
@@ -63,9 +64,10 @@ schedule_enrollment_sync_rows = ['SNo',
                                  'Gender',
                                  'Language',
                                  'Status',
+                                 'ORS Code',
                                  'Teacher']
 
-schedule_enrollment_sync_rows.extend(_count_categories)
+schedule_enrollment_sync_rows.extend(enrollment_count_categories)
 schedule_enrollment_sync_rows.extend(['ID', 'Last Modified'])
 
 schedule_enrollment_header = namedtuple('ScheduleEnrollment', [slugify(x).replace("-", "_")

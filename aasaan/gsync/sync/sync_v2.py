@@ -12,7 +12,8 @@ from .settings import schedule_sync_rows, contact_sync_rows, schedule_enrollment
     CONTACTS_SHEET_KEY, \
     schedule_header, contact_header, schedule_enrollment_header, \
     SCHEDULE_SHEET_KEY, SCHEDULE_SHEET_KEY_TEST, \
-    CONTACTS_SHEET_KEY_TEST, SCHEDULE_ENROLLMENT_SHEET_KEY
+    CONTACTS_SHEET_KEY_TEST, SCHEDULE_ENROLLMENT_SHEET_KEY, \
+    enrollment_count_categories
 
 from . import contact_filter, schedule_filter, schedule_enrollment_filter
 
@@ -259,17 +260,19 @@ class ScheduleEnrollmentSync(SheetSync):
     filters = [schedule_enrollment_filter.ScheduleEnrollmentSync]
 
     def __init__(self, *args, **kwargs):
-        self._counts_master = list(ProgramCountMaster.objects.all())
+        self._counts_master = enrollment_count_categories
         super().__init__(*args, **kwargs)
 
     def get_programschedule_queryset(self):
         forty_five_days_ago = date.fromordinal(date.today().toordinal() - 45)
         return ProgramSchedule.objects.filter(start_date__gte=forty_five_days_ago).order_by('center__zone',
-                                                                                            '-start_date',                                                                                            'center', 'program')
+                                                                                            '-start_date',
+                                                                                            'center', 'program')
 
     def translate_programschedule(self, instance):
         def _get_category_values():
-            program_category_values = [(x.category, x.value) for x in instance.programschedulecounts_set.all()]
+            program_category_values = [(x.category.count_category, x.value)
+                                       for x in instance.programschedulecounts_set.all()]
             program_categories = [x[0] for x in program_category_values]
             category_values = []
 
@@ -279,7 +282,7 @@ class ScheduleEnrollmentSync(SheetSync):
                     category_value = program_category_values[master_category_index][-1]
                     category_values.append(category_value)
                 else:
-                    category_values.append('Not Available')
+                    category_values.append('')
 
             return category_values
 
@@ -311,6 +314,7 @@ class ScheduleEnrollmentSync(SheetSync):
                            instance.get_gender_display(),
                            instance.primary_language.name,
                            instance.get_status_display(),
+                                      instance.event_management_code,
                            program_teachers]
 
         schedule_enrollment_values.extend(_get_category_values())
