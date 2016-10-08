@@ -36,14 +36,3 @@ class ScheduleFilterInactive(ScheduleEnrollmentSync):
 
         return schedule_enrollment_header(*schedule)
 
-
-# temp filter for testing
-class ScheduleFilterZone(ScheduleEnrollmentSync):
-    def filter_row(schedule, schedule_model):
-        if not schedule:
-            return tuple()
-
-        if schedule_model.center.zone.zone_name != "Chennai":
-            return tuple()
-
-        return schedule_enrollment_header(*schedule)
