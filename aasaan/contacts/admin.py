@@ -7,7 +7,9 @@ from import_export.formats import base_formats
 from .models import Contact, ContactNote, \
     ContactAddress, ContactRoleGroup, RoleGroup, Zone, \
     Center, IndividualRole, IndividualContactRoleCenter, \
-    IndividualContactRoleZone
+    IndividualContactRoleZone, ContactTag
+from config.models import Tag
+
 from django_markdown.admin import MarkdownModelAdmin, MarkdownInlineAdmin
 
 admin.AdminSite.site_header = "aasaan"
@@ -37,6 +39,17 @@ class ContactRoleGroupInline(admin.TabularInline):
 class ContactRoleGroupInline2(admin.TabularInline):
     model = ContactRoleGroup
     extra = 20
+
+
+class ContactTagInline(admin.TabularInline):
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'tag':
+            kwargs["queryset"] = Tag.objects.filter(tag_name__startswith='contact-')
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    model = ContactTag
+    extra = 0
 
 
 class CenterInline(admin.TabularInline):
@@ -182,6 +195,19 @@ class ContactRoleFilter(admin.SimpleListFilter):
             return all_roles.distinct()
 
 
+class ContactTagFilter(admin.SimpleListFilter):
+    title = 'tag'
+    parameter_name = 'tag'
+
+    def lookups(self, request, model_admin):
+        return ((x, x) for x in Tag.objects.filter(tag_name__startswith='contact-'))
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(contacttag__tag__tag_name=self.value())
+
+
+
 class ContactAdmin(ExportMixin, MarkdownModelAdmin):
     # filter contact records based on user permissions
     def get_queryset(self, request):
@@ -214,7 +240,7 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
     list_display = ('full_name', 'primary_mobile', 'whatsapp_number',
                     'primary_email', 'teacher_tno', 'status', 'profile_image')
 
-    list_filter = (ContactZoneFilter, ContactRoleFilter)
+    list_filter = (ContactZoneFilter, ContactRoleFilter, ContactTagFilter)
 
     search_fields = ('teacher_tno', 'first_name', 'last_name',
                      'cug_mobile', 'other_mobile_1')
@@ -243,7 +269,7 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
 
     readonly_fields = ('profile_image', 'profile_image_display',)
 
-    inlines = [ContactAddressInline,
+    inlines = [ContactTagInline, ContactAddressInline,
                IndividualContactRoleZoneInline,
                IndividualContactRoleCenterInline,
                ContactNoteInline, ContactRoleGroupInline]

@@ -5,7 +5,10 @@ from contacts.models import Contact, IndividualRole, Zone, Center
 from .models import LanguageMaster, ProgramCategory, ProgramMaster, \
     ProgramMasterCategory, ProgramSchedule, ProgramVenueAddress, ProgramScheduleNote, \
     ProgramTeacher, BatchMaster, ProgramBatch, ProgramScheduleCounts, \
-    ProgramCountMaster, ProgramAdditionalLanguages, ProgramAdditionalInformation
+    ProgramCountMaster, ProgramAdditionalLanguages, ProgramAdditionalInformation, \
+    ProgramTag
+
+from config.models import Tag
 
 from django_markdown.admin import MarkdownModelAdmin, MarkdownInlineAdmin
 
@@ -89,6 +92,17 @@ class ProgramAdditionalInformationAdmin(admin.TabularInline):
     extra = 0
 
 
+class ProgramTagAdmin(admin.TabularInline):
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'tag':
+            kwargs["queryset"] = Tag.objects.filter(tag_name__startswith='schedule-')
+
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    model = ProgramTag
+    extra = 0
+
+
 class ProgramScheduleZoneFilter(admin.SimpleListFilter):
     title = 'zones'
     parameter_name = 'zones'
@@ -128,6 +142,18 @@ class ProgramScheduleHiddenFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         if self.value():
             return queryset.filter(hidden=True)
+
+
+class ProgramScheduleTagFilter(admin.SimpleListFilter):
+    title = 'tag'
+    parameter_name = 'tag'
+
+    def lookups(self, request, model_admin):
+        return ((x, x) for x in Tag.objects.filter(tag_name__startswith='schedule-'))
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(programtag__tag__tag_name=self.value())
 
 
 class ProgramScheduleAdmin(admin.ModelAdmin):
@@ -191,6 +217,7 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
     exclude = ('cancelled_date',)
 
     list_filter = [ProgramScheduleZoneFilter, ProgramScheduleProgramFilter,
+                   ProgramScheduleTagFilter,
                    ProgramScheduleHiddenFilter]
 
     search_fields = ['center__center_name', 'program_location']
@@ -199,7 +226,7 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
 
     list_per_page = 30
 
-    inlines = [ProgramLanguageAdmin, ProgramBatchAdmin, ProgramTeacherAdmin,
+    inlines = [ProgramTagAdmin, ProgramLanguageAdmin, ProgramBatchAdmin, ProgramTeacherAdmin,
                ProgramScheduleCountsAdmin, ProgramVenueAdmin,
                ProgramScheduleNoteAdmin, ProgramAdditionalInformationAdmin]
 

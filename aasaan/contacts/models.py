@@ -12,7 +12,7 @@ from .settings import GENDER_VALUES, STATUS_VALUES, ID_PROOF_VALUES,\
                         CENTER_CATEGORY_VALUES
 
 from django_markdown.models import MarkdownField
-from config.models import SmartModel
+from config.models import SmartModel, Tag
 
 from PIL import Image
 
@@ -306,6 +306,18 @@ class ContactAddress(models.Model):
             self.country = self.country.title().strip()
 
         super(ContactAddress, self).save(*args, **kwargs)
+
+
+class ContactTag(models.Model):
+    contact= models.ForeignKey(Contact)
+    tag = models.ForeignKey(Tag)
+
+    class Meta:
+        unique_together = ['contact', 'tag']
+        ordering = ['contact', 'tag']
+
+    def __str__(self):
+        return "%s -%s" % (self.contact, self.tag)
 
 
 class RoleGroup(models.Model):

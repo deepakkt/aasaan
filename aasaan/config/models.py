@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils.text import slugify
 
 # Create your models here.
 
@@ -74,3 +75,17 @@ def get_configuration(key):
         return x.configuration_value
     except ObjectDoesNotExist:
         return None
+
+
+class Tag(models.Model):
+    tag_name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        ordering = ['tag_name']
+
+    def __str__(self):
+        return self.tag_name
+
+    def save(self, *args, **kwargs):
+        self.tag_name = slugify(self.tag_name.strip().lower())
+        super().save(*args, **kwargs)
