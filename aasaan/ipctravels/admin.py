@@ -51,7 +51,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
     list_display = ('traveller', 'travel_details', 'get_status',)
     inlines = [BookingDetailsInline, TravellerDetailsInline, TicketDetailsInline, AddtionalDetailsInline]
     save_on_top = True
-    list_filter = ('status', ('bookingdetails__date_of_booking', DateRangeFilter),
+    list_filter = ('status', 'travellerdetails__zone', ('bookingdetails__date_of_booking', DateRangeFilter),
                    ('bookingdetails__date_of_journey', DateRangeFilter), ('request_date', DateRangeFilter), 'bookingdetails__booked_by',
                    'bookingdetails__travel_mode')
 
