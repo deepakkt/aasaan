@@ -23,8 +23,8 @@ class TravellerDetailsInline(admin.StackedInline):
     max_num = 5
     fieldsets = (
         ('', {
-            'fields': (('traveller', 'non_ipc_contacts'), ('schedule', 'purpose'),
-                       ('zone', 'status'), ('fare', 'refund_amount'), ('budget_code')),
+            'fields': (('traveller', 'non_ipc_contacts'),
+                       ('zone', 'status'), ('fare', 'refund_amount'), ('budget_code', 'purpose')),
             'classes': ('has-cols', 'cols-2')
         }),
     )
@@ -49,6 +49,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
          }),
     )
     list_display = ('traveller', 'travel_details', 'get_status',)
+    list_display_links = ('traveller', 'travel_details')
     inlines = [BookingDetailsInline, TravellerDetailsInline, TicketDetailsInline, AddtionalDetailsInline]
     save_on_top = True
     list_filter = ('status', 'travellerdetails__zone', ('bookingdetails__date_of_booking', DateRangeFilter),

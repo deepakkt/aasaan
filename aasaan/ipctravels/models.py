@@ -5,7 +5,7 @@ from schedulemaster.models import ProgramSchedule
 import os, os.path
 from django.utils.text import slugify
 from django.utils import timezone
-
+from django_markdown.models import MarkdownField
 
 class AgentMaster(models.Model):
     name = models.CharField(max_length=50, blank=True)
@@ -76,7 +76,7 @@ class BookingDetails(models.Model):
     date_of_journey = models.DateField()
     source = models.CharField(max_length=50)
     destination = models.CharField(max_length=50)
-    description = models.CharField(max_length=300, blank=True, null=True)
+    description = models.CharField('Remarks', max_length=300, blank=True, null=True)
     date_of_booking = models.DateField(blank=True, null=True)
     travel_mode = models.ForeignKey(TravelModeMaster, default=1)
     booked_by = models.ForeignKey(AgentMaster, default=1)
@@ -87,15 +87,20 @@ class BookingDetails(models.Model):
 
 class TravellerDetails(models.Model):
     request = models.ForeignKey(TravelRequest)
-    traveller = models.ForeignKey(Contact)
+    traveller = models.ForeignKey(Contact, blank=True, null=True)
     non_ipc_contacts = models.CharField(max_length=100, blank=True, null=True)
     fare = models.IntegerField(blank=True, null=True)
     refund_amount = models.IntegerField(blank=True, null=True)
     zone = models.ForeignKey(Zone, blank=True, null=True)
     schedule = models.ForeignKey(ProgramSchedule, blank=True, null=True)
-    purpose = models.CharField(max_length=100, blank=True, null=True)
-    STATUS_VALUES = (('BK', 'Booked'),
-                     ('NB', 'Not booked'),
+    PURPOSE_VALUES = (('SC', 'Schedule'),
+                     ('BK', 'Break'),
+                     ('OA', 'Other Activities'),
+                     )
+    purpose = models.CharField(max_length=6, choices=PURPOSE_VALUES, blank=False,
+                              default=PURPOSE_VALUES[0][0])
+    STATUS_VALUES = (('NB', 'NotBooked'),
+                     ('BK', 'Booked'),
                      ('CD', 'Cancelled'),
                      )
     status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=False,
@@ -116,5 +121,4 @@ class TicketDetails(models.Model):
 
 class AddtionalDetails(models.Model):
     request = models.ForeignKey(TravelRequest)
-    booked_by = models.CharField("booked by", max_length=50)
-    purpose = models.CharField("Purpose", max_length=50)
+    note = MarkdownField(max_length=500)
