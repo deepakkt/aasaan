@@ -29,6 +29,7 @@ class TravellerDetailsInline(admin.StackedInline):
         }),
     )
 
+
 class TicketDetailsInline(admin.TabularInline):
     model = TicketDetails
     extra = 1

@@ -64,7 +64,7 @@ class TravelRequest(models.Model):
 
     @property
     def traveller(self):
-        return ', '.join([m2.traveller.full_name for m2 in self.travellerdetails_set.all()])
+        return ', '.join([m2.traveller.full_name if m2.traveller else m2.non_ipc_contacts for m2 in self.travellerdetails_set.all()])
 
     @property
     def travel_details(self):
@@ -88,7 +88,7 @@ class BookingDetails(models.Model):
 class TravellerDetails(models.Model):
     request = models.ForeignKey(TravelRequest)
     traveller = models.ForeignKey(Contact, blank=True, null=True)
-    non_ipc_contacts = models.CharField(max_length=100, blank=True, null=True)
+    non_ipc_contacts = models.CharField(max_length=150, blank=True, null=True)
     fare = models.IntegerField(blank=True, null=True)
     refund_amount = models.IntegerField(blank=True, null=True)
     zone = models.ForeignKey(Zone, blank=True, null=True)
