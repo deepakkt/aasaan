@@ -230,7 +230,8 @@ class ORSInterface(object):
             create_data["EmergencyContact"] = _parse_config_fallback("Emergency Contact", "N")
             create_data["SMSProfileID"] = configuration["ORS_PROGRAM_CREATE_SMS_PROFILE_ID"]
             create_data["SMSSenderID"] = configuration["ORS_PROGRAM_CREATE_SMS_SENDER_ID"]
-            create_data["ParticipantSMSMessage"] = configuration["ORS_PROGRAM_CREATE_PARTICIPANT_MSG"]
+            create_data["ParticipantSMSMessage"] = _parse_config_fallback("Participant SMS Message",
+                                                                          configuration["ORS_PROGRAM_CREATE_PARTICIPANT_MSG"])
             create_data["DonorSMSMessage"] = _parse_config_fallback("Donor SMS Message")
             create_data["SummarySMSMessage"] = _parse_config_fallback("Summary SMS Message")
             create_data["RPSummarySMSMessage"] = _parse_config_fallback("RP Summary SMS Message")

@@ -2,7 +2,7 @@ import requests
 from sys import modules
 from functools import partial
 
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ValidationError, ObjectDoesNotExist, ImproperlyConfigured
 from django.core.mail import get_connection
 from django.core.mail.message import EmailMultiAlternatives
 from django.conf import settings
@@ -19,7 +19,7 @@ import markdown
 
 try:
     import django_rq
-except ImportError:
+except (ImportError, ImproperlyConfigured):
     pass
 
 

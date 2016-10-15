@@ -1,3 +1,5 @@
+from copy import copy
+
 from django.contrib import admin
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -230,7 +232,7 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
                ProgramScheduleCountsAdmin, ProgramVenueAdmin,
                ProgramScheduleNoteAdmin, ProgramAdditionalInformationAdmin]
 
-    actions = ['mark_hidden', 'mark_unhidden']
+    actions = ['mark_hidden', 'mark_unhidden', 'make_schedule_copy']
 
     class Media:
         js = ('/static/schedulemaster/js/new_schedule_default_batches.js',
@@ -257,6 +259,21 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
         self.message_user(request, 'Done! Number of programs unhidden: %s' %(rows_updated))
         return
     mark_unhidden.short_description = "Mark programs unhidden"
+
+    def make_schedule_copy(self, request, queryset):
+        if queryset.count() > 1:
+            self.message_user(request, 'Select just one program to duplicate')
+            return
+
+        schedule = queryset[0]
+
+        new_schedule = copy(schedule)
+        new_schedule.id = None
+        new_schedule.save()
+        self.message_user(request, 'Done! New schedule created with id: %d' % new_schedule.id)
+
+    make_schedule_copy.short_description = "Make a copy of schedule"
+
 
 admin.site.register(LanguageMaster, LanguageMasterAdmin)
 admin.site.register(BatchMaster, BatchMasterAdmin)
