@@ -189,7 +189,7 @@ class ORSInterface(object):
             languages = {'English': 'E', 'Tamil': 'T', 'Hindi': 'H'}
 
             # Language, ORS supports only English, Tamil and Hindi. For others, mark English
-            create_data["LanguageCode"] = languages.get(program_schedule.primary_language) or "E"
+            create_data["LanguageCode"] = languages.get(program_schedule.primary_language.name) or "E"
 
             create_data["Gender"] = program_schedule.gender[0]
             create_data["ProgramStartDate"] = getformatdateddmmyy(program_schedule.start_date)
