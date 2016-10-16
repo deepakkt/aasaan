@@ -185,6 +185,10 @@ class ProgramSchedule(SmartModel):
         if self.end_date < self.start_date:
             raise ValidationError('End date cannot be before start date')
 
+        if bool(self.contact_phone1.strip().find(' ') + 1) or \
+                bool(self.contact_phone2.strip().find(' ') + 1):
+            raise ValidationError('Do not use spaces for contact number')
+
     def save(self, *args, **kwargs):
         changed_fields = self.changed_fields()
 
