@@ -18,7 +18,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             sync.sync_schedules()
-            sync.sync_contacts()
         except:
             send_communication("Pushover", stage_pushover(communication_message="Sync failed with %s" % sys.exc_info()[0],
                                                           role_groups = ["Aasaan Admin"]))
