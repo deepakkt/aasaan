@@ -1,6 +1,7 @@
 from requests import Request, Session
 from collections import OrderedDict
 import copy
+import json
 from functools import partial
 
 import re
@@ -119,6 +120,23 @@ class ORSInterface(object):
 
         #restore header from copy
         self.headers = headers_copy
+
+
+    def getprogramlist(self, postFilterString=None):
+        """Get program list from ORS.
+        Authenticate first! If no filter is used
+        it will list all programs. Potentially large!
+        """
+
+        programlist_url = "https://ors.isha.in/Program/RefreshProgram"
+        programlist = {'page': 1, 'size': 5000}
+        if postFilterString:
+            programlist['filter'] = postFilterString
+        self.postrequest(request_url=programlist_url, request_data=programlist,
+                         request_label = "Program List, called from class")
+
+        progjson = json.loads(self.last_response.text)
+        return progjson
 
     def create_new_program(self, program_schedule, configuration, dryrun=False):
         """Create a new program under ORS
