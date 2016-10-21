@@ -15,7 +15,7 @@ from .settings import schedule_sync_rows, contact_sync_rows, schedule_enrollment
     SCHEDULE_SHEET_KEY, SCHEDULE_SHEET_KEY_TEST, \
     CONTACTS_SHEET_KEY_TEST, SCHEDULE_ENROLLMENT_SHEET_KEY, \
     enrollment_count_categories, siy_dec2016_sync_rows, siy_dec_2016_header,\
-    SIY_DEC_2016_SHEET_KEY
+    SIY_DEC_2016_SHEET_KEY, SCHEDULE_IYC_SHEET_KEY
 
 from . import contact_filter, schedule_filter, schedule_enrollment_filter
 
@@ -333,6 +333,21 @@ class ScheduleEnrollmentSync(SheetSync):
         return schedule_enrollment_header(*schedule_enrollment_values)
 
 
+class IYCScheduleSync(ScheduleSync):
+    models = [ProgramSchedule]
+    titles = schedule_sync_rows
+    pivot_fields = ['zone']
+    target_columns = [schedule_header]
+    filters = [None]
+
+    def get_programschedule_queryset(self):
+        forty_five_days_ago = date.fromordinal(date.today().toordinal() - 45)
+        filter_zone = 'Isha Yoga Center'
+        return ProgramSchedule.objects.filter(start_date__gte=forty_five_days_ago,
+                                              center__zone__zone_name=filter_zone).order_by('-start_date',
+                                                                                            'program')
+
+
 class SIYDec2016Sync(SheetSync):
     models = [ProgramSchedule]
     titles = siy_dec2016_sync_rows
@@ -382,6 +397,11 @@ def sync_contacts_test():
 def sync_enrollments():
     gc = authenticate()
     ScheduleEnrollmentSync(gc, SCHEDULE_ENROLLMENT_SHEET_KEY).sync()
+
+
+def sync_iyc_schedules():
+    gc = authenticate()
+    IYCScheduleSync(gc, SCHEDULE_IYC_SHEET_KEY).sync()
 
 
 def sync_siy_dec_2016():
