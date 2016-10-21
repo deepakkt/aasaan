@@ -367,6 +367,12 @@ class SIYDec2016Sync(SheetSync):
         siy_programs_list = [(z['ProgramID'], _venue(z['ProgramName']), 1000 - z['SeatAvailability'])
                              for z in siy_programs_dict['data']
                              if (z['ProgramName'].find('17-Dec-2016') > 0 and _venue(z['ProgramName']) != 'Adi Yogi Aalayam')]
+        siy_programs_list_dict = {x[1]: x for x in siy_programs_list}
+        siy_programs_list_dict_keys = list(siy_programs_list_dict.keys())
+        siy_programs_list_dict_keys = sorted(siy_programs_list_dict_keys)
+        siy_programs_list = [siy_programs_list_dict[x] for x in siy_programs_list_dict_keys]
+        total_enrollment = sum([x[-1] for x in siy_programs_list])
+        siy_programs_list.append(('', 'Total Enrollment', total_enrollment))
         return siy_programs_list
 
     def translate_programschedule(self, instance):
