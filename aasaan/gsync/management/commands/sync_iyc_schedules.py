@@ -13,14 +13,14 @@ from datetime import datetime
 
 
 class Command(BaseCommand):
-    help = "Sync schedules. See gsync.settings for definitions"
+    help = "Sync IYC schedules. See gsync.settings for definitions"
 
     def handle(self, *args, **options):
         try:
-            sync.sync_schedules()
+            sync.sync_iyc_schedules()
         except:
-            send_communication("Pushover", stage_pushover(communication_message="Sync failed with %s" % sys.exc_info()[0],
+            send_communication("Pushover", stage_pushover(communication_message="Sync IYC failed with %s" % sys.exc_info()[0],
                                                           role_groups = ["Aasaan Admin"]))
             sys.exit(1)
-        send_communication("Pushover", stage_pushover(communication_message="Sync complete in server %s" % datetime.now().isoformat(),
+        send_communication("Pushover", stage_pushover(communication_message="Sync IYC complete in server %s" % datetime.now().isoformat(),
                                                       role_groups = ["Aasaan Admin"]))

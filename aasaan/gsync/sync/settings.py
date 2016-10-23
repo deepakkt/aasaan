@@ -12,6 +12,10 @@ CONTACTS_SHEET_KEY_TEST = "1MvXoYjuZr95PAGcrm0-YTrGG7cmaJVWCxQc5r5tCfLQ"
 
 SCHEDULE_ENROLLMENT_SHEET_KEY = "1tCKRRU0OV_MXo8h3k6kNX8YXbOlDwLsjA_jW_iWoOvk"
 
+SCHEDULE_IYC_SHEET_KEY = "1iVexEphaCV6VmBGD1gidTdOfBRmgsxKmyuqC8Lp1Tsg"
+
+SIY_DEC_2016_SHEET_KEY = "1IEisF5tpaLZXmGxSvUY-h0M8bIGO14uV7OCqYrLHsKg"
+
 DEFAULT_SHEET_KEY = SCHEDULE_SHEET_KEY_TEST
 
 GDOC_ACCESS_SCOPE = ['https://spreadsheets.google.com/feeds']
@@ -72,3 +76,7 @@ schedule_enrollment_sync_rows.extend(['ID', 'Last Modified'])
 
 schedule_enrollment_header = namedtuple('ScheduleEnrollment', [slugify(x).replace("-", "_")
                                                                for x in schedule_enrollment_sync_rows])
+
+siy_dec2016_sync_rows = ['SNo', 'ORS Code', 'Venue', 'Enrollment']
+
+siy_dec_2016_header = namedtuple('SIYDec2016', [slugify(x).replace("-", "_") for x in siy_dec2016_sync_rows])

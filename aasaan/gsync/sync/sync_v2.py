@@ -1,4 +1,5 @@
 from datetime import datetime, date
+import json
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -13,9 +14,13 @@ from .settings import schedule_sync_rows, contact_sync_rows, schedule_enrollment
     schedule_header, contact_header, schedule_enrollment_header, \
     SCHEDULE_SHEET_KEY, SCHEDULE_SHEET_KEY_TEST, \
     CONTACTS_SHEET_KEY_TEST, SCHEDULE_ENROLLMENT_SHEET_KEY, \
-    enrollment_count_categories
+    enrollment_count_categories, siy_dec2016_sync_rows, siy_dec_2016_header,\
+    SIY_DEC_2016_SHEET_KEY, SCHEDULE_IYC_SHEET_KEY
 
 from . import contact_filter, schedule_filter, schedule_enrollment_filter
+
+from config.ors.ors import ORSInterface
+from django.conf import settings
 
 
 class SheetSync:
@@ -93,6 +98,8 @@ class SheetSync:
                                                                                  'translate_' + model_name.lower()))
 
         if len(self.__class__.models) != len(list(self.model_map.keys())):
+            print(len(self.__class__.models))
+            print(len(list(self.model_map.keys())))
             raise ImproperlyConfigured('class %s seems to inconsistently define model tools.'
                                        'Check if pivot fields, filters, named tuples and '
                                        'target columns all map with corresponding models. Define'
@@ -119,7 +126,8 @@ class SheetSync:
         for model in self.model_map:
             for instance in self.model_map[model]['queryset']:
                 result = self.model_map[model]['translate'](instance)
-                result = self.filter(instance, result, self.model_map[model]['filters'])
+                if self.model_map[model]['filters']:
+                    result = self.filter(instance, result, self.model_map[model]['filters'])
 
                 if not result:
                     continue
@@ -163,8 +171,10 @@ class ScheduleSync(SheetSync):
     filters = [schedule_filter.ScheduleSync]
 
     def get_programschedule_queryset(self):
-        return ProgramSchedule.objects.all().order_by('center__zone', '-start_date', 'center', 'program')
-
+        forty_five_days_ago = date.fromordinal(date.today().toordinal() - 45)
+        return ProgramSchedule.objects.filter(start_date__gte=forty_five_days_ago).order_by('center__zone',
+                                                                                            '-start_date',
+                                                                                            'center', 'program')
     def translate_programschedule(self, instance):
         _worksheet_row = 0
 
@@ -323,6 +333,53 @@ class ScheduleEnrollmentSync(SheetSync):
         return schedule_enrollment_header(*schedule_enrollment_values)
 
 
+class IYCScheduleSync(ScheduleSync):
+    models = [ProgramSchedule]
+    titles = schedule_sync_rows
+    pivot_fields = ['zone']
+    target_columns = [schedule_header]
+    filters = [None]
+
+    def get_programschedule_queryset(self):
+        forty_five_days_ago = date.fromordinal(date.today().toordinal() - 45)
+        filter_zone = 'Isha Yoga Center'
+        return ProgramSchedule.objects.filter(start_date__gte=forty_five_days_ago,
+                                              center__zone__zone_name=filter_zone).order_by('-start_date',
+                                                                                            'program')
+
+
+class SIYDec2016Sync(SheetSync):
+    models = [ProgramSchedule]
+    titles = siy_dec2016_sync_rows
+    pivot_fields = [None]
+    target_columns = [siy_dec_2016_header]
+    filters = [None]
+
+    def get_programschedule_queryset(self):
+        ors_interface = ORSInterface(settings.ORS_USER, settings.ORS_PASSWORD)
+        ors_interface.authenticate()
+        program_filter = "ProgramName~substringof~'sadhguruvudan'"
+        siy_programs = ors_interface.getprogramlist(postFilterString=program_filter)
+
+        siy_programs_dict = dict(siy_programs)
+        _venue = lambda x: x.split('-')[1].strip()
+
+        siy_programs_list = [(z['ProgramID'], _venue(z['ProgramName']), 1000 - z['SeatAvailability'])
+                             for z in siy_programs_dict['data']
+                             if (z['ProgramName'].find('17-Dec-2016') > 0 and _venue(z['ProgramName']) != 'Adi Yogi Aalayam')]
+        siy_programs_list_dict = {x[1]: x for x in siy_programs_list}
+        siy_programs_list_dict_keys = list(siy_programs_list_dict.keys())
+        siy_programs_list_dict_keys = sorted(siy_programs_list_dict_keys)
+        siy_programs_list = [siy_programs_list_dict[x] for x in siy_programs_list_dict_keys]
+        total_enrollment = sum([x[-1] for x in siy_programs_list])
+        siy_programs_list.append(('', 'Total Enrollment', total_enrollment))
+        return siy_programs_list
+
+    def translate_programschedule(self, instance):
+        instance_and_sno = (0,) + instance
+        return siy_dec_2016_header(*instance_and_sno)
+
+
 def sync_schedules():
     gc = authenticate()
     ScheduleSync(gc, SCHEDULE_SHEET_KEY).sync()
@@ -346,3 +403,13 @@ def sync_contacts_test():
 def sync_enrollments():
     gc = authenticate()
     ScheduleEnrollmentSync(gc, SCHEDULE_ENROLLMENT_SHEET_KEY).sync()
+
+
+def sync_iyc_schedules():
+    gc = authenticate()
+    IYCScheduleSync(gc, SCHEDULE_IYC_SHEET_KEY).sync()
+
+
+def sync_siy_dec_2016():
+    gc = authenticate()
+    SIYDec2016Sync(gc, SIY_DEC_2016_SHEET_KEY).sync()

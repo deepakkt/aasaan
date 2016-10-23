@@ -71,7 +71,9 @@ class Command(BaseCommand):
             load_file = each_file
             break
 
-        row_headers = "sno,status,start,end,zone,center,program,donation,gender,language,total,m,n,e,a,i".split(",")
+        row_headers = "sno,status,start,end,zone,center,program,donation," \
+                      "gender,language,total,m,n,e,a,i," \
+                      "contactname,contactnbr1,contactnbr2,contactmail,joomlacode".split(",")
 
         schedule_reader = csv.reader(open(load_file))
 
@@ -120,10 +122,12 @@ class Command(BaseCommand):
                 new_schedule.primary_language = LanguageMaster.objects.get(name=current_row['language'].strip())
 
                 new_schedule.donation_amount = int(current_row['donation'])
-                new_schedule.status = 'RC'
-                new_schedule.contact_name = 'System Loaded'
-                new_schedule.contact_email = 'aasaanbot@aasaan.isha.in'
-                new_schedule.contact_phone1 = '9489045110'
+                new_schedule.status = 'RO'
+                new_schedule.contact_name = current_row['contactname']
+                new_schedule.contact_email = current_row['contactmail']
+                new_schedule.contact_phone1 = current_row['contactnbr1']
+                new_schedule.contact_phone2 = current_row['contactnbr2']
+                new_schedule.online_registration_code = current_row['joomlacode']
 
                 new_schedule.save()
 

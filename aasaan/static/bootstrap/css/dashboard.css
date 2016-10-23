@@ -25,6 +25,14 @@ body {
   border: 0;
 }
 
+.navbar-default {
+  background-color: #417690;
+}
+
+.navbar-right a {
+  color: #f5dd5d;
+}
+
 /*
  * Sidebar
  */

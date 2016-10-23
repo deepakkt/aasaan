@@ -1,6 +1,7 @@
 from requests import Request, Session
 from collections import OrderedDict
 import copy
+import json
 from functools import partial
 
 import re
@@ -120,6 +121,23 @@ class ORSInterface(object):
         #restore header from copy
         self.headers = headers_copy
 
+
+    def getprogramlist(self, postFilterString=None):
+        """Get program list from ORS.
+        Authenticate first! If no filter is used
+        it will list all programs. Potentially large!
+        """
+
+        programlist_url = "https://ors.isha.in/Program/RefreshProgram"
+        programlist = {'page': 1, 'size': 5000}
+        if postFilterString:
+            programlist['filter'] = postFilterString
+        self.postrequest(request_url=programlist_url, request_data=programlist,
+                         request_label = "Program List, called from class")
+
+        progjson = json.loads(self.last_response.text)
+        return progjson
+
     def create_new_program(self, program_schedule, configuration, dryrun=False):
         """Create a new program under ORS
         Warning: This program will happily create a new program even if
@@ -189,7 +207,7 @@ class ORSInterface(object):
             languages = {'English': 'E', 'Tamil': 'T', 'Hindi': 'H'}
 
             # Language, ORS supports only English, Tamil and Hindi. For others, mark English
-            create_data["LanguageCode"] = languages.get(program_schedule.primary_language) or "E"
+            create_data["LanguageCode"] = languages.get(program_schedule.primary_language.name) or "E"
 
             create_data["Gender"] = program_schedule.gender[0]
             create_data["ProgramStartDate"] = getformatdateddmmyy(program_schedule.start_date)
@@ -230,7 +248,8 @@ class ORSInterface(object):
             create_data["EmergencyContact"] = _parse_config_fallback("Emergency Contact", "N")
             create_data["SMSProfileID"] = configuration["ORS_PROGRAM_CREATE_SMS_PROFILE_ID"]
             create_data["SMSSenderID"] = configuration["ORS_PROGRAM_CREATE_SMS_SENDER_ID"]
-            create_data["ParticipantSMSMessage"] = configuration["ORS_PROGRAM_CREATE_PARTICIPANT_MSG"]
+            create_data["ParticipantSMSMessage"] = _parse_config_fallback("Participant SMS Message",
+                                                                          configuration["ORS_PROGRAM_CREATE_PARTICIPANT_MSG"])
             create_data["DonorSMSMessage"] = _parse_config_fallback("Donor SMS Message")
             create_data["SummarySMSMessage"] = _parse_config_fallback("Summary SMS Message")
             create_data["RPSummarySMSMessage"] = _parse_config_fallback("RP Summary SMS Message")
