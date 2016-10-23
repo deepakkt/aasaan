@@ -7,6 +7,7 @@ from django.utils.text import slugify
 from django.utils import timezone
 from django_markdown.models import MarkdownField
 
+
 class AgentMaster(models.Model):
     name = models.CharField(max_length=50, blank=True)
 
@@ -38,9 +39,9 @@ class TravelRequest(models.Model):
     status = models.CharField(max_length=6, choices=STATUS_VALUES, blank=False,
                               default=STATUS_VALUES[0][0])
     request_date = models.DateField(default=timezone.now)
-    total_fare = models.IntegerField(blank=True, null=True)
-    cancellation_charge = models.IntegerField(blank=True, null=True)
-    refund_amount = models.IntegerField(blank=True, null=True)
+    total_fare = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    cancellation_charge = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    refund_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     REQMODE_VALUES = (('SMS', 'SMS'),
                      ('CL', 'Call'),
                      ('EM', 'Email'),
@@ -89,8 +90,8 @@ class TravellerDetails(models.Model):
     request = models.ForeignKey(TravelRequest)
     traveller = models.ForeignKey(Contact, blank=True, null=True)
     non_ipc_contacts = models.CharField(max_length=150, blank=True, null=True)
-    fare = models.IntegerField(blank=True, null=True)
-    refund_amount = models.IntegerField(blank=True, null=True)
+    fare = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    refund_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     zone = models.ForeignKey(Zone, blank=True, null=True)
     schedule = models.ForeignKey(ProgramSchedule, blank=True, null=True)
     PURPOSE_VALUES = (('SC', 'Schedule'),
