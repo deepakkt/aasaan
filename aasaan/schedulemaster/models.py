@@ -181,6 +181,35 @@ class ProgramSchedule(SmartModel):
         verbose_name = 'Program Schedule'
         ordering = ['-start_date', 'center']
 
+    @property
+    def venue_address(self):
+        venues = self.programvenueaddress_set.all()
+        if venues:
+            current_venue = venues[0]
+
+            return "\n".join([current_venue.address_line_1,
+                             current_venue.address_line_2,
+                              current_venue.address_line_3])
+        else:
+            return ""
+
+    @property
+    def venue_city(self):
+        venues = self.programvenueaddress_set.all()
+        if venues:
+            return venues[0].city
+        else:
+            return ""
+
+    @property
+    def venue_name(self):
+        venues = self.programvenueaddress_set.all()
+        if venues:
+            return venues[0].venue_name
+        else:
+            return ""
+
+
     def clean(self):
         if self.end_date < self.start_date:
             raise ValidationError('End date cannot be before start date')
