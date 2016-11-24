@@ -68,7 +68,8 @@ INSTALLED_APPS += (
     'gsync',
     'brochures',
     'config',
-    'ipctravels'
+    'ipctravels',
+    'reports'
 )
 
 # third party apps

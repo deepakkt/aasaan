@@ -169,8 +169,8 @@ class Contact(SmartModel):
         # Check if status is being changed. Need to log note if so
         new_entry = False if self.id else True
 
-        self.first_name = _word_clean(self.first_name)
-        self.last_name = _word_clean(self.last_name)
+        self.first_name = self.first_name.title()
+        self.last_name = self.last_name.title()
 
         super().save(*args, **kwargs)
 
