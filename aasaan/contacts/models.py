@@ -405,6 +405,9 @@ class Center(models.Model):
     pre_center = models.BooleanField(default=False)
     parent_center = models.ForeignKey('self', null=True, blank=True)
 
+    latitude = models.CharField(max_length=15, blank=True)
+    longitude = models.CharField(max_length=15, blank=True)
+
     objects = models.Manager()
     main_centers = PreCenterManager()
 
