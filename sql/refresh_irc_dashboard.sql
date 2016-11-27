@@ -165,3 +165,19 @@ role_name = 'Sector Coordinator'
 order by 1, 2, 3, 4) a
 group by 1, 2
 order by 1, 2;
+
+delete from reports_ircdashboardcentermap;
+
+insert into reports_ircdashboardcentermap
+(zone_name, center_name, latitude, longitude, recent_program_count)
+select zone_name, center_name, latitude, longitude, sum(coalesce(x2.program_count, 0)) as program_count from
+(select zone_name, center_name, c.id, latitude, longitude
+from 
+contacts_zone z, contacts_center c
+where z.id = c.zone_id) x1
+LEFT OUTER JOIN
+(select center_id, 1 as program_count from
+schedulemaster_programschedule where end_date >= (current_date - 90)) x2
+on x1.id = x2.center_id
+group by 1, 2, 3, 4
+order by 1, 2, 3, 4;

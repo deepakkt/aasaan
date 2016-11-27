@@ -7,7 +7,8 @@ from django.db import connection
 from contacts.models import Zone, IndividualContactRoleZone
 from .models import IRCDashboardSectorCoordinators, \
         IRCDashboardMissingRoles, IRCDashboardProgramCounts, \
-        IRCDashboardZoneSummary, IRCDashboardRoleSummary
+        IRCDashboardZoneSummary, IRCDashboardRoleSummary, \
+        IRCDashboardCenterMap
 
 # Create your views here.
 
@@ -77,6 +78,17 @@ class IRCDashboard(View):
         teachers = [(x[0], x[1].title() + ' ' + x[2].title()) for x in teachers]
         return tuple(teachers)
 
+    def get_center_map(self):
+        center_map = dict()
+
+        center_map['data'] = list(IRCDashboardCenterMap.objects.all().values_list(
+            'zone_name', 'center_name', 'latitude', 'longitude', 'recent_program_count'
+        ))
+
+        center_map['columns'] = ('zone_name', 'center_name', 'latitude', 'longitude', 'recent_program_count')
+
+        return center_map
+
     def get(self, request, *args, **kwargs):
         zones = Zone.objects.all()
         result_set = {'sector_coordinators': self.get_sector_coordinators(),
@@ -84,6 +96,7 @@ class IRCDashboard(View):
                       'program_counts': self.get_program_counts(),
                       'teachers': self.get_teachers(),
                       'zone_summary': self.get_zone_summary(),
-                      'role_summary': self.get_role_summary()}
+                      'role_summary': self.get_role_summary(),
+                      'center_map': self.get_center_map()}
         return render(request, self.template, {'zones': zones,
                                                'result': json.dumps(result_set).replace("'", "\\u0027")})

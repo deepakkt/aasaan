@@ -1,19 +1,32 @@
 /**
  * Created by dpack on 22-11-2016.
  */
-google.charts.load('current', {'packages':['table', 'corechart', 'bar']});
+google.charts.load('current', {'packages':['table', 'corechart', 'bar', 'map']});
 google.charts.setOnLoadCallback(drawCharts);
 
-function filterRows(nestedArray, column, value) {
+function filterRows(nestedArray, column, value, notequals) {
     filteredArray = [];
 
-    for (i=0; i < nestedArray.length; i++) {
-        if (nestedArray[i][column] == value) {
-            filteredArray.push(nestedArray[i]);
+    if (notequals === undefined) {
+        for (i = 0; i < nestedArray.length; i++) {
+            if (nestedArray[i][column] == value) {
+                filteredArray.push(nestedArray[i]);
+            }
         }
+
+        return filteredArray;
     }
 
-    return filteredArray;
+    if (notequals === true) {
+        for (i = 0; i < nestedArray.length; i++) {
+            if (nestedArray[i][column] != value) {
+                filteredArray.push(nestedArray[i]);
+            }
+        }
+
+        return filteredArray;
+    }
+
 }
 
 function stripColumns(nestedArray, columns) {
@@ -57,6 +70,8 @@ function drawCharts() {
 
     drawProgramChart(zone_name);
     drawProgramFutureChart(zone_name);
+    drawCenterMapChart(zone_name);
+    drawCenterListChart(zone_name);
     drawRoleChart(zone_name);
     drawRoleTableChart(zone_name);
     drawTeacherChart(zone_name);
@@ -115,6 +130,69 @@ function drawProgramFutureChart(zone) {
       };
 
     var chart = new google.visualization.ColumnChart(document.getElementById("program-future-chart"));
+    chart.draw(data, options);
+}
+
+
+function drawCenterListChart(zone) {
+ var data = new google.visualization.DataTable();
+    data.addColumn('string', 'center name');
+
+    centerData = aasaan_irc_dashboard.dashboard_data.center_map.data;
+    centerData = filterRows(centerData, 0, zone);
+    centerData = stripColumns(centerData, [0, 2, 3, 4]);
+
+    data.addRows(centerData);
+
+    var table = new google.visualization.Table(document.getElementById('center-list-chart'));
+
+    var options = {
+        cssClassNames: {
+            tableRow: 'table-text-style',
+            oddTableRow: 'table-text-style'
+        },
+        showRowNumber: true,
+        width: '100%',
+        height: '100%'
+        };
+
+    table.draw(data, options);
+}
+
+function drawCenterMapChart(zone) {
+    var data = new google.visualization.DataTable();
+    data.addColumn('number', 'latitude');
+    data.addColumn('number', 'longitude');
+    data.addColumn('string', 'center summary');
+
+    programBaseData = aasaan_irc_dashboard.dashboard_data.center_map.data;
+    programBaseData = filterRows(programBaseData, 0, zone);
+    programBaseData = stripColumns(programBaseData, [0]);
+
+    programCenterMap = [];
+
+    for (i=0; i < programBaseData.length; i++) {
+        var currentCenter;
+        if (programBaseData[i][3] === 0) {
+            currentCenter = programBaseData[i][0] + " - No programs in the last 90 days";
+        }
+        else {
+            currentCenter = programBaseData[i][0] + " - " + programBaseData[i][3] +  " program(s) in the last 90 days";
+        }
+        programCenterMap.push([parseFloat(programBaseData[i][1]),
+        parseFloat(programBaseData[i][2]), currentCenter]);
+    }
+
+    data.addRows(filterRows(programCenterMap, 0, "", true));
+
+    var options = {
+      showTooltip: true,
+      showInfoWindow: true,
+        mapType: 'normal'
+    };
+
+
+    var chart = new google.visualization.Map(document.getElementById("center-map-chart"));
     chart.draw(data, options);
 }
 

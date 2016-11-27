@@ -48,3 +48,14 @@ class IRCDashboardRoleSummary(models.Model):
 
     class Meta:
         ordering = ['zone_name', 'role_name']
+
+
+class IRCDashboardCenterMap(models.Model):
+    zone_name = models.CharField(max_length=100)
+    center_name = models.CharField(max_length=100)
+    latitude = models.CharField(max_length=25)
+    longitude = models.CharField(max_length=25)
+    recent_program_count = models.IntegerField()
+
+    class Meta:
+        ordering = ['zone_name', 'center_name']
