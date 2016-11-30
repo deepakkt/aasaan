@@ -190,6 +190,8 @@ class ScheduleSync(SheetSync):
         _date_fmt = lambda x: "-".join([str(x.day), str(months[x.month][:3]),
                                         str(x.year)])
 
+        _program_name = lambda: instance.event_name if instance.program.name == "Special Event" else instance.program.name
+
         # build a value list
         schedule_values = [_worksheet_row,
                            instance.center.zone.zone_name,
@@ -197,7 +199,7 @@ class ScheduleSync(SheetSync):
                            _date_fmt(instance.end_date),
                            instance.center.center_name,
                            instance.center.parent_center.center_name if instance.center.pre_center else "",
-                           instance.program.name,
+                           _program_name(),
                            timing_codes,
                            instance.get_gender_display(),
                            instance.primary_language.name,
@@ -312,6 +314,8 @@ class ScheduleEnrollmentSync(SheetSync):
         _date_fmt = lambda x: "-".join([str(x.day), str(months[x.month][:3]),
                                         str(x.year)])
 
+        _program_name = lambda: instance.event_name if instance.program.name == "Special Event" else instance.program.name
+
         # build a value list
         schedule_enrollment_values = [_worksheet_row,
                            instance.center.zone.zone_name,
@@ -319,7 +323,7 @@ class ScheduleEnrollmentSync(SheetSync):
                            _date_fmt(instance.end_date),
                            instance.center.center_name,
                            instance.center.parent_center.center_name if instance.center.pre_center else "",
-                           instance.program.name,
+                           _program_name(),
                            timing_codes,
                            instance.get_gender_display(),
                            instance.primary_language.name,

@@ -100,6 +100,8 @@ class ProgramCountMaster(models.Model):
 
 class ProgramSchedule(SmartModel):
     program = models.ForeignKey(ProgramMaster)
+    event_name = models.CharField(max_length=100, blank=True)
+
     center = models.ForeignKey(Center)
     program_location = models.CharField(max_length=100)
 
@@ -217,6 +219,10 @@ class ProgramSchedule(SmartModel):
         if bool(self.contact_phone1.strip().find(' ') + 1) or \
                 bool(self.contact_phone2.strip().find(' ') + 1):
             raise ValidationError('Do not use spaces for contact number')
+
+        if self.program_name == "Special Event":
+            if not self.event_name:
+                raise ValidationError("Event name is required for special events")
 
     def save(self, *args, **kwargs):
         changed_fields = self.changed_fields()
