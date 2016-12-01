@@ -163,7 +163,7 @@ class ProgramSchedule(SmartModel):
     zone = property(_zone_name)
 
     def _program_name(self):
-        return self.program.name
+        return self.event_name if self.program.name == "Special Event" else self.program.name
     program_name = property(_program_name)
 
     def _cancelled(self, field_value):
