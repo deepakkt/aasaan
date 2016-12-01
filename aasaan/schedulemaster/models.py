@@ -163,7 +163,10 @@ class ProgramSchedule(SmartModel):
     zone = property(_zone_name)
 
     def _program_name(self):
-        return self.event_name if self.program.name == "Special Event" else self.program.name
+        try:
+            return self.event_name or self.program.name
+        except:
+            return ""
     program_name = property(_program_name)
 
     def _cancelled(self, field_value):
@@ -213,12 +216,14 @@ class ProgramSchedule(SmartModel):
 
 
     def clean(self):
-        if self.end_date < self.start_date:
-            raise ValidationError('End date cannot be before start date')
+        if (self.end_date and self.start_date):
+            if self.end_date < self.start_date:
+                raise ValidationError('End date cannot be before start date')
 
-        if bool(self.contact_phone1.strip().find(' ') + 1) or \
-                bool(self.contact_phone2.strip().find(' ') + 1):
-            raise ValidationError('Do not use spaces for contact number')
+        if (self.contact_phone1):
+            if bool(self.contact_phone1.strip().find(' ') + 1) or \
+                    bool(self.contact_phone2.strip().find(' ') + 1):
+                raise ValidationError('Do not use spaces for contact number')
 
         if self.program_name == "Special Event":
             if not self.event_name:

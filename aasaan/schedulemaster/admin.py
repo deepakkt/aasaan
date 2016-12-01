@@ -235,8 +235,9 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
     actions = ['mark_hidden', 'mark_unhidden', 'make_schedule_copy']
 
     class Media:
-        js = ('/static/schedulemaster/js/new_schedule_default_batches.js',
-              '/static/aasaan/js/disable_notes_v2.js',)
+        js = ('/static/aasaan/schedulemaster/js/new_schedule_default_batches.js',
+              '/static/aasaan/js/disable_notes_v2.js',
+              '/static/aasaan/schedulemaster/js/validate_event.js')
 
     def mark_hidden(self, request, queryset):
         if not request.user.is_superuser:
