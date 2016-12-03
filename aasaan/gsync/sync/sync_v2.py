@@ -4,7 +4,8 @@ import json
 from django.core.exceptions import ImproperlyConfigured
 
 from schedulemaster.models import ProgramSchedule, ProgramCountMaster
-from contacts.models import IndividualContactRoleCenter, IndividualContactRoleZone
+from contacts.models import IndividualContactRoleCenter, \
+    IndividualContactRoleZone, Center
 
 from .sheets_api import open_workbook, delete_worksheets, update_header_row, \
     update_cell, update_row, authenticate
@@ -357,6 +358,10 @@ class SIYDec2016Sync(SheetSync):
     target_columns = [siy_dec_2016_header]
     filters = [None]
 
+    def __init__(self, *args, **kwargs):
+        self.center_map = {x.center_name: x.zone.zone_name for x in Center.objects.all()}
+        super().__init__(*args, **kwargs)
+
     def get_programschedule_queryset(self):
         ors_interface = ORSInterface(settings.ORS_USER, settings.ORS_PASSWORD)
         ors_interface.authenticate()
@@ -366,7 +371,9 @@ class SIYDec2016Sync(SheetSync):
         siy_programs_dict = dict(siy_programs)
         _venue = lambda x: x.split('-')[1].strip()
 
-        siy_programs_list = [(z['ProgramID'], _venue(z['ProgramName']), 1000 - z['SeatAvailability'])
+        siy_programs_list = [(z['ProgramID'], _venue(z['ProgramName']),
+                              self.center_map[_venue(z['ProgramName'])],
+                              1000 - z['SeatAvailability'])
                              for z in siy_programs_dict['data']
                              if (z['ProgramName'].find('17-Dec-2016') > 0 and _venue(z['ProgramName']) != 'Adi Yogi Aalayam')]
         siy_programs_list_dict = {x[1]: x for x in siy_programs_list}
