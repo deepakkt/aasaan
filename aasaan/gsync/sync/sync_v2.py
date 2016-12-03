@@ -381,7 +381,7 @@ class SIYDec2016Sync(SheetSync):
         siy_programs_list_dict_keys = sorted(siy_programs_list_dict_keys)
         siy_programs_list = [siy_programs_list_dict[x] for x in siy_programs_list_dict_keys]
         total_enrollment = sum([x[-1] for x in siy_programs_list])
-        siy_programs_list.append(('', 'Total Enrollment', total_enrollment))
+        siy_programs_list.append(('', '', 'Total Enrollment', total_enrollment))
         return siy_programs_list
 
     def translate_programschedule(self, instance):
