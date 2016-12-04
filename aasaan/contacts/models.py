@@ -400,6 +400,7 @@ class Center(models.Model):
     """Center definitions. All centers should be mapped to sectors and zones"""
     zone = models.ForeignKey(Zone)
     center_name = models.CharField(max_length=50)
+    city = models.CharField(max_length=50, blank=True)
     center_category = models.CharField(max_length=1, choices=CENTER_CATEGORY_VALUES,
                                        default=CENTER_CATEGORY_VALUES[0][0])
     pre_center = models.BooleanField(default=False)

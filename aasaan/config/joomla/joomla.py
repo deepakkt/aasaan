@@ -301,6 +301,8 @@ class JoomlaInterface(object):
         'feedata': """[{"id":"5131","amount":"1000","quota":"0","name":""},{"amount":"<input type="text" id="fAmount" name="fAmount" value="">","quota":"<input type="text" id="fQuota" name="fQuota" value="">","name":"<input type="text" id="fName" name="fName" value="">"}]"""
            }
 
+        additional_joomla_settings = program_schedule.joomla_configurations
+
         base_fields['title'] = " - ".join([program_schedule.program.name,
                                            str(program_schedule.id)])
         base_fields['isha_title'] = ""
@@ -314,10 +316,15 @@ class JoomlaInterface(object):
         base_fields['language'] = program_schedule.primary_language.name.lower()
         base_fields['c_email_1'] = program_schedule.contact_email
         base_fields['c_phone_1'] = program_schedule.contact_phone1
+        base_fields['c_phone_2'] = program_schedule.contact_phone2
         base_fields['name'] = program_schedule.venue_name
-        base_fields['locale'] = ""
+        base_fields['locale'] = program_schedule.center.center_name
+        base_fields['intro_time'] = additional_joomla_settings.get('JOOMLA_INTRO_TIME') or ""
+        base_fields['custom_text'] = additional_joomla_settings.get('JOOMLA_CUSTOM_TEXT') or ""
+        base_fields['override_session_timings'] = additional_joomla_settings.get('JOOMLA_SESSION_TIME') or ""
+        base_fields['eflyer_url'] = additional_joomla_settings('JOOMLA_EFLYER_URL') or ""
         base_fields['address'] = program_schedule.venue_address
-        base_fields['city'] = program_schedule.venue_city or program_schedule.program_location
+        base_fields['city'] = program_schedule.center.city
 
         feedata_create = feedata_create.replace('***donationamount***', str(program_schedule.donation_amount))
         feedata_update = feedata_update.replace('***donationamount***', str(program_schedule.donation_amount))

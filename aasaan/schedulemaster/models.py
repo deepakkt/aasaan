@@ -214,6 +214,12 @@ class ProgramSchedule(SmartModel):
         else:
             return ""
 
+    @property
+    def joomla_configurations(self):
+        configurations = self.programadditionalinformation_set.all()
+
+        return {x.key: x.value for x in configurations if x.key.startswith('JOOMLA')}
+
 
     def clean(self):
         if (self.end_date and self.start_date):
