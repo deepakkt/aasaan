@@ -245,7 +245,7 @@ class JoomlaInterface(object):
         'language': '**tofill**',
         'gender': 'unspecified',
         'show_language': '1',
-        'no_free_talk_first_day': '1',
+        'no_free_talk_first_day': '',
         'intro_time': '',
         'first_session_time': '',
         'x_intro1_details': "",
@@ -328,6 +328,7 @@ class JoomlaInterface(object):
         base_fields['eflyer_url'] = "" if _eflyer_url == "None" else _eflyer_url
         base_fields['address'] = program_schedule.venue_address
         base_fields['city'] = _city
+        base_fields['no_free_talk_first_day'] = {'1': '1', 'Yes': ''}[_parse_config_fallback('free intro enabled', '1')]
 
         feedata_create = feedata_create.replace('***donationamount***', str(program_schedule.donation_amount))
         feedata_update = feedata_update.replace('***donationamount***', str(program_schedule.donation_amount))
