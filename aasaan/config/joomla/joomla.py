@@ -318,13 +318,16 @@ class JoomlaInterface(object):
         base_fields['c_phone_1'] = program_schedule.contact_phone1
         base_fields['c_phone_2'] = program_schedule.contact_phone2
         base_fields['name'] = program_schedule.venue_name
-        base_fields['locale'] = program_schedule.center.center_name
+        _city = program_schedule.center.city
+        _center = program_schedule.center.center_name
+        _eflyer_url = additional_joomla_settings.get('JOOMLA_EFLYER_URL') or ""
+        base_fields['locale'] = "" if _center == _city else _center
         base_fields['intro_time'] = additional_joomla_settings.get('JOOMLA_INTRO_TIME') or ""
         base_fields['custom_text'] = additional_joomla_settings.get('JOOMLA_CUSTOM_TEXT') or ""
         base_fields['override_session_timings'] = additional_joomla_settings.get('JOOMLA_SESSION_TIME') or ""
-        base_fields['eflyer_url'] = additional_joomla_settings('JOOMLA_EFLYER_URL') or ""
+        base_fields['eflyer_url'] = "" if _eflyer_url == "None" else _eflyer_url
         base_fields['address'] = program_schedule.venue_address
-        base_fields['city'] = program_schedule.center.city
+        base_fields['city'] = _city
 
         feedata_create = feedata_create.replace('***donationamount***', str(program_schedule.donation_amount))
         feedata_update = feedata_update.replace('***donationamount***', str(program_schedule.donation_amount))
