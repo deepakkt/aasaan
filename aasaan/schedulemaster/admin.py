@@ -207,7 +207,7 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
         # and de-dupe them!
         all_schedules = all_schedules.distinct()
 
-        return all_schedules.filter(hidden=False).filter(program__admin=False)
+        return all_schedules.filter(program__admin=False)
 
     list_display = ['is_cancelled', 'program_name', 'center',
                     'start_date', 'end_date',
