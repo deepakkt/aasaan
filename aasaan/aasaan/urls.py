@@ -11,6 +11,7 @@ urlpatterns = patterns('',
     url(r'^markdown/', include('django_markdown.urls')),
     url(r'^accounts/', include('allauth.urls')),
     url(r'^comm/', include('iconnect.urls')),
+    url(r'^travels/', include('ipctravels.urls')),
     url(r'^admin/lookups/', include(ajax_select_urls)),
     url(r'^admin/brochures/', include('brochures.urls', namespace='brochures')),
 

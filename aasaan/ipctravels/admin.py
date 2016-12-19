@@ -3,7 +3,13 @@ from .models import TravelRequest, AgentMaster, TravelModeMaster, BudgetCodeMast
     TicketDetails, AddtionalDetails
 from daterange_filter.filter import DateRangeFilter
 from django.utils.text import slugify
-
+from import_export import resources
+from import_export.admin import ImportExportModelAdmin, ImportExportActionModelAdmin
+from import_export.admin import ImportExportMixin, ExportActionModelAdmin, ExportMixin
+from import_export.formats import base_formats
+from import_export import fields
+from import_export.widgets import ForeignKeyWidget
+import tablib
 class BookingDetailsInline(admin.StackedInline):
     model = BookingDetails
     extra = 1
@@ -41,7 +47,38 @@ class AddtionalDetailsInline(admin.TabularInline):
     max_num = 1
 
 
-class TravelRequestAdmin(admin.ModelAdmin):
+def send_email(modeladmin, request, queryset):
+    email_list = []
+    for qs in queryset:
+        t = TravellerDetails.objects.get(request__pk=qs.pk)
+        email_list.append(t.traveller.primary_email)
+    print(email_list)
+send_email.short_description = "Send Email"
+
+
+class TravelRequestResource(resources.ModelResource):
+    formats = base_formats.XLS
+    zone = fields.Field(column_name='zone', attribute='travellerdetails',
+                            widget=ForeignKeyWidget(TravellerDetails, 'zone'))
+    #
+    # def export(self, queryset=None):
+    #     if queryset is None:
+    #         queryset = self.get_queryset()
+    #     headers = self.get_export_headers()
+    #     data = tablib.Dataset(headers=headers)
+    #     for obj in queryset.iterator():
+    #             data.append(self.export_resource(obj))
+    #     return data
+    class Meta:
+        model = TravelRequest
+        fields = ('zone', )
+
+        # widgets = {
+        #         'request_date': {'format': '%d.%m.%Y'},
+        #         }
+
+
+class TravelRequestAdmin(ImportExportActionModelAdmin):
     fieldsets = (
         ('',
          {
@@ -56,6 +93,10 @@ class TravelRequestAdmin(admin.ModelAdmin):
     list_filter = ('status', 'travellerdetails__zone', ('bookingdetails__date_of_booking', DateRangeFilter),
                    ('bookingdetails__date_of_journey', DateRangeFilter), ('request_date', DateRangeFilter), 'bookingdetails__booked_by',
                    'bookingdetails__travel_mode')
+    actions = [send_email]
+    formats = [base_formats.XLS,]
+    to_encoding = 'utf-8'
+    resource_class = TravelRequestResource
 
 admin.site.register(AgentMaster, admin.ModelAdmin)
 admin.site.register(TravelModeMaster, admin.ModelAdmin)
