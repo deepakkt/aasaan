@@ -100,6 +100,8 @@ class ProgramCountMaster(models.Model):
 
 class ProgramSchedule(SmartModel):
     program = models.ForeignKey(ProgramMaster)
+    event_name = models.CharField(max_length=100, blank=True)
+
     center = models.ForeignKey(Center)
     program_location = models.CharField(max_length=100)
 
@@ -161,7 +163,10 @@ class ProgramSchedule(SmartModel):
     zone = property(_zone_name)
 
     def _program_name(self):
-        return self.program.name
+        try:
+            return self.event_name or self.program.name
+        except:
+            return ""
     program_name = property(_program_name)
 
     def _cancelled(self, field_value):
@@ -181,13 +186,54 @@ class ProgramSchedule(SmartModel):
         verbose_name = 'Program Schedule'
         ordering = ['-start_date', 'center']
 
-    def clean(self):
-        if self.end_date < self.start_date:
-            raise ValidationError('End date cannot be before start date')
+    @property
+    def venue_address(self):
+        venues = self.programvenueaddress_set.all()
+        if venues:
+            current_venue = venues[0]
 
-        if bool(self.contact_phone1.strip().find(' ') + 1) or \
-                bool(self.contact_phone2.strip().find(' ') + 1):
-            raise ValidationError('Do not use spaces for contact number')
+            return "\n".join([current_venue.address_line_1,
+                             current_venue.address_line_2,
+                              current_venue.address_line_3])
+        else:
+            return ""
+
+    @property
+    def venue_city(self):
+        venues = self.programvenueaddress_set.all()
+        if venues:
+            return venues[0].city
+        else:
+            return ""
+
+    @property
+    def venue_name(self):
+        venues = self.programvenueaddress_set.all()
+        if venues:
+            return venues[0].venue_name
+        else:
+            return ""
+
+    @property
+    def joomla_configurations(self):
+        configurations = self.programadditionalinformation_set.all()
+
+        return {x.key: x.value for x in configurations if x.key.startswith('JOOMLA')}
+
+
+    def clean(self):
+        if (self.end_date and self.start_date):
+            if self.end_date < self.start_date:
+                raise ValidationError('End date cannot be before start date')
+
+        if (self.contact_phone1):
+            if bool(self.contact_phone1.strip().find(' ') + 1) or \
+                    bool(self.contact_phone2.strip().find(' ') + 1):
+                raise ValidationError('Do not use spaces for contact number')
+
+        if self.program_name == "Special Event":
+            if not self.event_name:
+                raise ValidationError("Event name is required for special events")
 
     def save(self, *args, **kwargs):
         changed_fields = self.changed_fields()

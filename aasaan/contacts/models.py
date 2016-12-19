@@ -169,8 +169,8 @@ class Contact(SmartModel):
         # Check if status is being changed. Need to log note if so
         new_entry = False if self.id else True
 
-        self.first_name = _word_clean(self.first_name)
-        self.last_name = _word_clean(self.last_name)
+        self.first_name = self.first_name.title()
+        self.last_name = self.last_name.title()
 
         super().save(*args, **kwargs)
 
@@ -400,10 +400,14 @@ class Center(models.Model):
     """Center definitions. All centers should be mapped to sectors and zones"""
     zone = models.ForeignKey(Zone)
     center_name = models.CharField(max_length=50)
+    city = models.CharField(max_length=50, blank=True)
     center_category = models.CharField(max_length=1, choices=CENTER_CATEGORY_VALUES,
                                        default=CENTER_CATEGORY_VALUES[0][0])
     pre_center = models.BooleanField(default=False)
     parent_center = models.ForeignKey('self', null=True, blank=True)
+
+    latitude = models.CharField(max_length=15, blank=True)
+    longitude = models.CharField(max_length=15, blank=True)
 
     objects = models.Manager()
     main_centers = PreCenterManager()

@@ -77,6 +77,6 @@ schedule_enrollment_sync_rows.extend(['ID', 'Last Modified'])
 schedule_enrollment_header = namedtuple('ScheduleEnrollment', [slugify(x).replace("-", "_")
                                                                for x in schedule_enrollment_sync_rows])
 
-siy_dec2016_sync_rows = ['SNo', 'ORS Code', 'Venue', 'Enrollment']
+siy_dec2016_sync_rows = ['SNo', 'ORS Code', 'Venue', 'Zone', 'Enrollment']
 
 siy_dec_2016_header = namedtuple('SIYDec2016', [slugify(x).replace("-", "_") for x in siy_dec2016_sync_rows])

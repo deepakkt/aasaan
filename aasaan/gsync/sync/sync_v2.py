@@ -4,7 +4,8 @@ import json
 from django.core.exceptions import ImproperlyConfigured
 
 from schedulemaster.models import ProgramSchedule, ProgramCountMaster
-from contacts.models import IndividualContactRoleCenter, IndividualContactRoleZone
+from contacts.models import IndividualContactRoleCenter, \
+    IndividualContactRoleZone, Center
 
 from .sheets_api import open_workbook, delete_worksheets, update_header_row, \
     update_cell, update_row, authenticate
@@ -197,7 +198,7 @@ class ScheduleSync(SheetSync):
                            _date_fmt(instance.end_date),
                            instance.center.center_name,
                            instance.center.parent_center.center_name if instance.center.pre_center else "",
-                           instance.program.name,
+                           instance.program_name,
                            timing_codes,
                            instance.get_gender_display(),
                            instance.primary_language.name,
@@ -312,6 +313,8 @@ class ScheduleEnrollmentSync(SheetSync):
         _date_fmt = lambda x: "-".join([str(x.day), str(months[x.month][:3]),
                                         str(x.year)])
 
+        _program_name = lambda: instance.event_name if instance.program.name == "Special Event" else instance.program.name
+
         # build a value list
         schedule_enrollment_values = [_worksheet_row,
                            instance.center.zone.zone_name,
@@ -319,7 +322,7 @@ class ScheduleEnrollmentSync(SheetSync):
                            _date_fmt(instance.end_date),
                            instance.center.center_name,
                            instance.center.parent_center.center_name if instance.center.pre_center else "",
-                           instance.program.name,
+                           instance.program_name,
                            timing_codes,
                            instance.get_gender_display(),
                            instance.primary_language.name,
@@ -355,6 +358,10 @@ class SIYDec2016Sync(SheetSync):
     target_columns = [siy_dec_2016_header]
     filters = [None]
 
+    def __init__(self, *args, **kwargs):
+        self.center_map = {x.center_name: x.zone.zone_name for x in Center.objects.all()}
+        super().__init__(*args, **kwargs)
+
     def get_programschedule_queryset(self):
         ors_interface = ORSInterface(settings.ORS_USER, settings.ORS_PASSWORD)
         ors_interface.authenticate()
@@ -364,7 +371,9 @@ class SIYDec2016Sync(SheetSync):
         siy_programs_dict = dict(siy_programs)
         _venue = lambda x: x.split('-')[1].strip()
 
-        siy_programs_list = [(z['ProgramID'], _venue(z['ProgramName']), 1000 - z['SeatAvailability'])
+        siy_programs_list = [(z['ProgramID'], _venue(z['ProgramName']),
+                              self.center_map[_venue(z['ProgramName'])],
+                              1000 - z['SeatAvailability'])
                              for z in siy_programs_dict['data']
                              if (z['ProgramName'].find('17-Dec-2016') > 0 and _venue(z['ProgramName']) != 'Adi Yogi Aalayam')]
         siy_programs_list_dict = {x[1]: x for x in siy_programs_list}
@@ -372,7 +381,7 @@ class SIYDec2016Sync(SheetSync):
         siy_programs_list_dict_keys = sorted(siy_programs_list_dict_keys)
         siy_programs_list = [siy_programs_list_dict[x] for x in siy_programs_list_dict_keys]
         total_enrollment = sum([x[-1] for x in siy_programs_list])
-        siy_programs_list.append(('', 'Total Enrollment', total_enrollment))
+        siy_programs_list.append(('', '', 'Total Enrollment', total_enrollment))
         return siy_programs_list
 
     def translate_programschedule(self, instance):
