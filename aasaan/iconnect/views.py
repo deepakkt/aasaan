@@ -13,7 +13,7 @@ class MessageView(FormView):
             initial={'reason': 'TESTING - IPC Communication system', 'subject': 'Test Message',
                      'communication_type': 'Email',
                      'message': 'Namaskaram, IPC Communication system test message. Pranam'})
-        return render(request, 'iconnect/travel_report.html', {'form': form})
+        return render(request, 'iconnect/mailer.html', {'form': form})
 
 
 class RecipientView(FormView):
