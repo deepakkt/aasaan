@@ -3,7 +3,9 @@ from django.db.models.query import QuerySet
 from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from import_export.admin import ImportExportMixin, ExportActionModelAdmin, ExportMixin
+from import_export.widgets import ForeignKeyWidget
 from import_export.formats import base_formats
+from import_export.fields import Field
 from .models import Contact, ContactNote, \
     ContactAddress, ContactRoleGroup, RoleGroup, Zone, \
     Center, IndividualRole, IndividualContactRoleCenter, \
@@ -143,13 +145,14 @@ class IndividualContactRoleZoneInline(admin.TabularInline):
 
 class ContactResource(resources.ModelResource):
 
-
+    zone = Field(column_name=None, attribute=None, widget=ForeignKeyWidget(Zone, 'zone_name'), readonly=True)
     formats = base_formats.XLS
 
     class Meta:
         model = Contact
-        fields = ('id', 'first_name', 'last_name', 'primary_email', 'date_of_birth')
+        fields = ('id', 'first_name', 'last_name', 'cug_mobile', 'other_mobile_1', 'whatsapp_number', 'primary_email', 'date_of_birth', 'zone')
         ordering = 'first_name'
+        export_order = fields
         widgets = {
                 'date_of_birth': {'format': '%d.%m.%Y'},
                 }
