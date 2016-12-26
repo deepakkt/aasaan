@@ -43,6 +43,29 @@ class CenterMaterial(models.Model):
     center = models.ForeignKey(Center)
     item = models.ForeignKey(ItemMaster)
     quantity = models.SmallIntegerField()
+    date_of_purchase = models.DateField(blank=True, null=True)
+    ACCOUNTING_YEAR = (('2000/01', '2000/01'),
+                     ('2001/02', '2001/02'),
+                     ('2002/03', '2002/03'),
+                     ('2003/04', '2003/04'),
+                     ('2004/05', '2004/05'),
+                    ('2005/06', '2005/06'),
+                       ('2006/07', '2006/07'),
+                       ('2007/08', '2007/08'),
+                       ('2008/09', '2008/09'),
+                       ('2009/10', '2009/10'),
+                       ('2010/11', '2010/11'),
+                       ('2011/12', '2011/12'),
+                       ('2012/13', '2012/13'),
+                       ('2013/14', '2013/14'),
+                       ('2014/15', '2014/15'),
+                       ('2015/16', '2015/16'),
+                       ('2016/17', '2016/17'),)
+    accounting_year = models.CharField(max_length=10, blank=True,
+                                       choices=ACCOUNTING_YEAR)
+    fixed_asset_number = models.CharField(max_length=20, blank=True)
+    vendor = models.CharField(max_length=30, blank=True)
+    amount = models.DecimalField(max_digits=7, decimal_places=2, blank=True, null=True)
     remarks = models.CharField(max_length=100, blank=True)
     STATUS_VALUES = (('ACTV', 'Active'),
                      ('DMGD', 'Damaged'),

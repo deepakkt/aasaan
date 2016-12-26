@@ -11,7 +11,7 @@ class CenterItemNotesInline(admin.TabularInline):
         return False
 
 
-class CenterMaterialInline(admin.TabularInline):
+class CenterMaterialInline(admin.StackedInline):
     model = CenterMaterial
     extra = 1
 
