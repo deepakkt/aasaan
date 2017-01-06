@@ -76,6 +76,7 @@ function drawCharts() {
     drawRoleTableChart(zone_name);
     drawTeacherChart(zone_name);
     drawSectorChart(zone_name);
+    drawCenterMaterialChart(zone_name);
     drawMissingRolesChart(zone_name);
 }
 
@@ -310,6 +311,58 @@ function  drawSectorChart(zone) {
     data.addRows(sectorCoordinatorsBaseData);
 
     var table = new google.visualization.Table(document.getElementById('sector-chart'));
+
+    var options = {
+        cssClassNames: {
+            tableRow: 'table-text-style',
+            oddTableRow: 'table-text-style'
+        },
+        showRowNumber: true,
+        width: '100%',
+        height: '100%'
+        };
+
+    table.draw(data, options);
+
+}
+
+function drawCenterMaterialChart(zone) {
+    var data = new google.visualization.DataTable();
+
+    centerMaterialsBaseData = aasaan_irc_dashboard.dashboard_data.item_summary.data;
+    centerMaterialsBaseData = filterRows(centerMaterialsBaseData, 0, zone);
+    centerMaterialsBaseData = stripColumns(centerMaterialsBaseData, [0]);
+    centerMaterialsBaseColumns = aasaan_irc_dashboard.dashboard_data.item_summary.columns;
+    centerMaterialsBaseColumns = centerMaterialsBaseColumns.slice(1);
+
+    data.addColumn('string', 'center');
+
+    for (i=0; i < centerMaterialsBaseColumns.length; i++) {
+        data.addColumn('number', centerMaterialsBaseColumns[i]);
+    }
+
+    centerMaterialsTableData = [];
+    rollingLimit = centerMaterialsBaseColumns.length;
+    rollingNow = 0;
+    currentCenterData = [];
+
+    for (i=0; i < centerMaterialsBaseData.length; i++) {
+        if (rollingNow === 0) {
+            currentCenterData = [centerMaterialsBaseData[i][0]];
+        }
+
+        currentCenterData.push(centerMaterialsBaseData[i][2]);
+        rollingNow += 1;
+
+        if (rollingNow === rollingLimit) {
+            rollingNow = 0;
+            centerMaterialsTableData.push(currentCenterData);
+        }
+    }
+
+    data.addRows(centerMaterialsTableData);
+
+    var table = new google.visualization.Table(document.getElementById('center-materials-chart'));
 
     var options = {
         cssClassNames: {

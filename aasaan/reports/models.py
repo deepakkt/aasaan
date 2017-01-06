@@ -59,3 +59,13 @@ class IRCDashboardCenterMap(models.Model):
 
     class Meta:
         ordering = ['zone_name', 'center_name']
+
+
+class IRCDashboardCenterMaterial(models.Model):
+    zone_name = models.CharField(max_length=100)
+    center_name = models.CharField(max_length=100)
+    item_name = models.CharField(max_length=100)
+    quantity = models.IntegerField()
+
+    class Meta:
+        ordering = ['zone_name', 'center_name', 'item_name']

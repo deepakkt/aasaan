@@ -8,7 +8,8 @@ from contacts.models import Zone, IndividualContactRoleZone
 from .models import IRCDashboardSectorCoordinators, \
         IRCDashboardMissingRoles, IRCDashboardProgramCounts, \
         IRCDashboardZoneSummary, IRCDashboardRoleSummary, \
-        IRCDashboardCenterMap
+        IRCDashboardCenterMap, IRCDashboardCenterMaterial
+from config.models import get_configuration as get_config
 
 # Create your views here.
 
@@ -89,14 +90,31 @@ class IRCDashboard(View):
 
         return center_map
 
+    def get_item_summary(self):
+        item_summary = dict()
+        materials_chart_items = get_config('REPORTS_IRC_DASHBOARD_CENTER_MATERIALS_LIST')
+        materials_chart_items = materials_chart_items.split('\r\n')
+        materials_chart_items.insert(0, 'Center')
+
+        item_summary['data'] = list(IRCDashboardCenterMaterial.objects.values_list(
+            'zone_name', 'center_name', 'item_name', 'quantity'
+        ))
+
+        item_summary['columns'] = tuple(materials_chart_items)
+
+        return item_summary
+
     def get(self, request, *args, **kwargs):
         zones = Zone.objects.all()
+
         result_set = {'sector_coordinators': self.get_sector_coordinators(),
                       'missing_roles': self.get_missing_roles(),
                       'program_counts': self.get_program_counts(),
                       'teachers': self.get_teachers(),
                       'zone_summary': self.get_zone_summary(),
                       'role_summary': self.get_role_summary(),
-                      'center_map': self.get_center_map()}
+                      'center_map': self.get_center_map(),
+                      'item_summary': self.get_item_summary()}
+
         return render(request, self.template, {'zones': zones,
                                                'result': json.dumps(result_set).replace("'", "\\u0027")})
