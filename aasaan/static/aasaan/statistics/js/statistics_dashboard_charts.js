@@ -48,10 +48,13 @@ refresh_reports = null;
         pageHeader = document.getElementsByClassName("page-header")[0];
         pageHeader.innerText = "Statistics Dashboard - " + clickedZoneName;
 
-        drawVisualization();
+        drawVisualization(clickedZoneName);
     }
     refresh_reports = refreshReports;
-    function drawVisualization() {
+    function drawVisualization(zone) {
+
+        if(zone==undefined || zone=='undefined')
+            zone='Tamil Nadu'
 
         var options = {
           title : '',
@@ -61,22 +64,26 @@ refresh_reports = null;
           series: {5: {type: 'line'}},
           colors: ['#1b9e77', '#d95f02', '#7570b3', '5D6D7E', '#FA1705']
         };
+        stats_data = aasaan_stats_dashboard.dashboard_data.statistics;
+        if (zone=='Tamil Nadu'){
+            ie_data = google.visualization.arrayToDataTable(stats_data.TN_IE)
+            other_prg_data = google.visualization.arrayToDataTable(stats_data.TN_OTHER)
+            program_avg = google.visualization.arrayToDataTable(stats_data.TN_AVG)
+        }
+        else if (zone=='Outside Tamilnadu'){
+            ie_data = google.visualization.arrayToDataTable(stats_data.OTN_IE_PROGRAMS)
+            other_prg_data = google.visualization.arrayToDataTable(stats_data.OTN_OTHER_PROGRAMS)
+            program_avg = google.visualization.arrayToDataTable(stats_data.OTN_AVG)
+        }
 
-        programBaseData = aasaan_stats_dashboard.dashboard_data.statistics.TN_IE
-        var tn_ie_data = google.visualization.arrayToDataTable(programBaseData);
         var chart = new google.visualization.ComboChart(document.getElementById('tn-ie-chart'));
-        chart.draw(tn_ie_data, options);
-
-        programBaseData = aasaan_stats_dashboard.dashboard_data.statistics.TN_OTHER
-        var tn_other_data = google.visualization.arrayToDataTable(programBaseData);
+        chart.draw(ie_data, options);
         var chart = new google.visualization.ComboChart(document.getElementById('tn-other-chart'));
-        chart.draw(tn_other_data, options);
-
+        chart.draw(other_prg_data, options);
         var table = new google.visualization.Table(document.getElementById('tn-ie-table'));
-        table.draw(tn_ie_data, {showRowNumber: true, width: '100%', height: '100%'});
-
+        table.draw(ie_data, {showRowNumber: true, width: '100%', height: '100%'});
         var table = new google.visualization.Table(document.getElementById('tn-other-table'));
-        table.draw(tn_other_data, {showRowNumber: true, width: '100%', height: '100%'});
+        table.draw(other_prg_data, {showRowNumber: true, width: '100%', height: '100%'});
 
         var class_average_options = {
             title : '',
@@ -97,10 +104,9 @@ refresh_reports = null;
             selectionMode: 'multiple',
             tooltip: {trigger: 'selection'},
         };
-        programBaseData = aasaan_stats_dashboard.dashboard_data.statistics.TN_AVG
-        tn_class_data = google.visualization.arrayToDataTable(programBaseData);
+
         var chart = new google.visualization.ComboChart(document.getElementById('tn-class-average'));
-        chart.draw(tn_class_data, class_average_options);
+        chart.draw(program_avg, class_average_options);
 
     }
 })(jQuery);
