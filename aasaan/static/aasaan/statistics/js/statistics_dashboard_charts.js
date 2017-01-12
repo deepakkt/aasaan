@@ -75,6 +75,11 @@ refresh_reports = null;
             other_prg_data = google.visualization.arrayToDataTable(stats_data.OTN_OTHER_PROGRAMS)
             program_avg = google.visualization.arrayToDataTable(stats_data.OTN_AVG)
         }
+         else if (zone=='Isha Yoga Center'){
+            ie_data = google.visualization.arrayToDataTable(stats_data.IYC_IE_PROGRAMS)
+            other_prg_data = google.visualization.arrayToDataTable(stats_data.IYC_OTHER_PROGRAMS)
+            program_avg = google.visualization.arrayToDataTable(stats_data.IYC_AVG)
+        }
 
         var chart = new google.visualization.ComboChart(document.getElementById('tn-ie-chart'));
         chart.draw(ie_data, options);
