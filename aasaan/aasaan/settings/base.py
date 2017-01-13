@@ -70,7 +70,7 @@ INSTALLED_APPS += (
     'config',
     'ipctravels',
     'reports',
-    'statistics'
+    'misc'
 )
 
 # third party apps
