@@ -1,5 +1,6 @@
 import contacts.urls
 import reports.urls
+import misc.urls
 from ajax_select import urls as ajax_select_urls
 from django.conf import settings
 from django.conf.urls import patterns, include, url
@@ -10,12 +11,12 @@ urlpatterns = patterns('',
     url(r'^', include(admin.site.urls)),
     url(r'^contacts/', include(contacts.urls, namespace='contacts')),
     url(r'^reports/', include(reports.urls, namespace='reports')),
+    url(r'^misc/', include(misc.urls, namespace='misc')),
     url(r'^markdown/', include('django_markdown.urls')),
     url(r'^accounts/', include('allauth.urls')),
     url(r'^comm/', include('iconnect.urls')),
     url(r'^admin/lookups/', include(ajax_select_urls)),
     url(r'^admin/brochures/', include('brochures.urls', namespace='brochures')),
-
 )
 
 if settings.ASYNC:

@@ -1,0 +1,306 @@
+﻿{% extends 'common/base_dashboard.html' %}
+
+{% block title %}Local Events & Happenings{% endblock %}
+
+{% block scripts %}
+    <style type="text/css">
+        .table-text-style {
+            text-align: left;
+        }
+
+        .message-text {
+            color: red;
+        }
+
+    </style>
+    <link href="/static/misc/css/local_events.css" rel="stylesheet">
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script type="text/javascript">
+		myzones_json = '{% autoescape off %}{{ zones }}{% endautoescape %}';
+        myzones = JSON.parse(myzones_json);
+    </script>
+{% endblock %}
+
+{% block pagetitle %}
+    Local Events & Happenings
+{% endblock pagetitle %}
+
+{% block main %}
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="message-text"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+ <form id="userForm" action="{% url 'misc:misc_local_events' %}" method="post" class="form-horizontal">
+{% csrf_token %}
+
+        <div class="row">
+           <div class="col-md-offset-3 col-md-9">
+              <span class="text-muted"><i class="glyphicon glyphicon-asterisk"></i>These fields are required</span>
+           </div>
+        </div>
+
+        <br><br>
+
+        <div class="form-group">
+          <label class="control-label col-md-3" for="id_zone">Your Region
+             <span><i class="glyphicon glyphicon-asterisk"></i></span>
+          </label>
+          <div class="col-md-9">
+              <select class="form-control custom-select" id="id_zone" name="zone"
+                      onchange="configureDropDownLists(this,document.getElementById('id_center'))"
+                      autofocus required="required">
+              </select>
+           </div>
+         </div>
+
+         <div class="form-group">
+          <label class="control-label col-md-3" for="id_center"> Center
+             <span><i class="glyphicon glyphicon-asterisk"></i></span>
+          </label>
+          <div class="col-md-9">
+              <select class="form-control custom-select" id="id_center" name="center" required="required">
+                  <option value="" selected>Please choose from above</option>
+              </select>
+           </div>
+         </div>
+
+         <div class="form-group">
+           <label for="id_submitter_name" class="control-label col-md-3"> Your Name
+              <span><i class="glyphicon glyphicon-asterisk"></i></span>
+           </label>
+             <div class="col-md-9">
+                <input type="text" class="form-control" id="id_submitter_name" name="submitter_name" placeholder="Your answer" required="required">
+             </div>
+         </div>
+
+         <div class="form-group">
+             <label for="id_submitter_mobile" class="control-label col-md-3"> Your Mobile No
+                <span><i class="glyphicon glyphicon-asterisk"></i></span>
+             </label>
+             <div class="col-md-9">
+               <input type="text" class="form-control" id="id_submitter_mobile" placeholder="Your answer"
+                      aria-describedby="mobNumberHelpBlock" pattern="^\d{10}$"
+                      oninvalid="invalidMsg(this);" oninput="invalidMsg(this);"
+                      required="required" name="submitter_mobile" />
+                <p id="mobNumberHelpBlock" class="form-text text-muted">
+                  (Please enter a valid 10-digit mobile number)
+               </p>
+             </div>
+         </div>
+
+         <div class="form-group">
+             <label class="control-label col-md-3" for="id_event_category">  Event Category
+                 <span><i class="glyphicon glyphicon-asterisk"></i></span>
+             </label>
+             <div class="col-md-9">
+                  <select class="form-control" id="id_event_category" name="event_category" required="required">
+                     <option value="" selected>Choose</option>
+                     <option>Public</option>
+                     <option>Private</option>
+                     <option>Educational Institutionals</option>
+                     <option>Corporate</option>
+                     <option>Govt.</option>
+                     <option>Religious</option>
+                 </select>
+              </div>
+         </div>
+
+         <div class="form-group">
+           <label for="id_event_name" class="control-label col-md-3">Event Name
+               <span><i class="glyphicon glyphicon-asterisk"></i></span>
+           </label>
+           <div class="col-md-9">
+              <input type="text" class="form-control" id="id_event_name" name="event_name" placeholder="Your answer" aria-describedby="enameHelpBlock" required="required">
+              <p id="enameHelpBlock" class="form-text text-muted">
+                  Please enter name of event - temple kumbhabhishekam /
+                  trade fair / book fair / exhibition / get together /
+                  family meet / marriage , etc.,
+             </p>
+           </div>
+         </div>
+
+         <div class="form-group">
+           <label for="id_number_of_people" class="control-label col-md-3"> No of people expected
+              <span><i class="glyphicon glyphicon-asterisk"></i></span>
+           </label>
+           <div class="col-md-9">
+               <input type="text" class="form-control" id="id_number_of_people" name="number_of_people"
+                      pattern="^\d{1,50}$" placeholder="Your answer" required="required"
+                      oninvalid="invalidMsg(this);" oninput="invalidMsg(this);"/>
+           </div>
+         </div>
+
+         <div class="form-group">
+             <label class="control-label col-md-3" for="id_people_category"> Category of people expected
+                <span><i class="glyphicon glyphicon-asterisk"></i></span>
+             </label>
+             <div class="col-md-9">
+                 <select class="form-control" id="id_people_category" name="people_category" aria-describedby="sel3HelpBlock" required="required">
+                    <option value="" selected>Choose</option>
+                    <option>Isha meditator</option>
+                    <option>General public</option>
+                    <option>Devotees</option>
+                    <option>Corporate</option>
+                    <option>Students</option>
+                    <option>Vip's</option>
+                 </select>
+                 <p id="sel3HelpBlock" class="form-text text-muted">If others, please provide information in remarks column</p>
+             </div>
+         </div>
+
+         <div class="form-group">
+           <label for="id_event_details" class="control-label col-md-3"> Event details
+               <span><i class="glyphicon glyphicon-asterisk"></i></span>
+           </label>
+           <div class="col-md-9">
+               <textarea class="form-control scroll" rows="5" id="id_event_details" name="event_details" placeholder="Your answer">
+               </textarea>
+               <!--<input type="text" class="form-control" id="edetails" placeholder="Your answer" required="required">-->
+            </div>
+         </div>
+
+         <div class="form-group">
+           <label for="id_isha_aspect" class="control-label col-md-3"> Isha aspect which would best suit this event
+               <span><i class="glyphicon glyphicon-asterisk"></i></span>
+           </label>
+           <div class="col-md-9">
+               <input type="text" class="form-control" id="id_isha_aspect" name="isha_aspect" placeholder="Your answer"
+                      aria-describedby="iaspectHelpBlock" required="required">
+               <p id="iaspectHelpBlock" class="form-text text-muted">
+                  Eg: Saplings / Forest Flower / Books / Temple Promotion / Isha Vidhya etc.,
+               </p>
+           </div>
+         </div>
+
+         <div class="form-group">
+           <label for="id_event_start_date" class="control-label col-md-3"> Start Date
+               <span><i class="glyphicon glyphicon-asterisk"></i></span>
+           </label>
+           <div class="col-md-9">
+               <input class="form-control" id="id_event_start_date" name="event_start_date" placeholder="yyyy-mm-dd format or use date picker" required="required">
+           </div>
+         </div>
+
+         <div class="form-group">
+           <label for="id_event_end_date" class="control-label col-md-3"> End Date </label>
+           <div class="col-md-9">
+              <input class="form-control" id="id_event_end_date" name="event_end_date" placeholder="yyyy-mm-dd format or use date picker">
+           </div>
+         </div>
+
+         <div class="form-group">
+           <label for="id_event_timing" class="control-label col-md-3"> Event timing </label>
+           <div class="col-md-9">
+              <input type="text" class="form-control" id="id_event_timing" name="event_timing" placeholder="Your answer" aria-describedby="etimingHelpBlock">
+              <p id="etimingHelpBlock" class="form-text text-muted">
+                Enter the timing of the event on each day
+              </p>
+           </div>
+         </div>
+
+          <div class="form-group">
+            <label for="id_event_venue" class="control-label col-md-3"> Venue
+                <span><i class="glyphicon glyphicon-asterisk"></i></span>
+            </label>
+            <div class="col-md-9">
+                <input type="text" class="form-control" id="id_event_venue" name="event_venue" placeholder="Your answer" required="required">
+            </div>
+         </div>
+
+          <div class="form-group">
+           <label for="id_event_city" class="control-label col-md-3"> City
+              <span><i class="glyphicon glyphicon-asterisk"></i></span>
+           </label>
+           <div class="col-md-9">
+              <input type="text" class="form-control" id="id_event_city" name="event_city" placeholder="Your answer" required="required">
+           </div>
+         </div>
+
+         <div class="form-group">
+             <label class="control-label col-md-3" for="id_event_entry_category"> Entry
+                 <span><i class="glyphicon glyphicon-asterisk"></i></span>
+             </label>
+             <div class="col-md-9">
+               <select class="form-control" id="id_event_entry_category" name="event_entry_category" required="required">
+                  <option value="" selected>Choose</option>
+                  <option>Free</option>
+                  <option>Walk-in</option>
+                  <option>RSVP</option>
+                  <option>Paid Registration</option>
+                  <option>By Invite only</option>
+               </select>
+             </div>
+         </div>
+
+         <div class="form-group">
+           <label for="id_event_organizer_contact" class="control-label col-md-3">Event Organizers Contact No</label>
+           <div class="col-md-9">
+              <input type="text" class="form-control" id="id_event_organizer_contact" placeholder="Your answer"
+                     pattern="^\d{10}$" aria-describedby="eomobHelpBlock" name="event_organizer_contact"
+                     oninvalid="invalidMsg(this);" oninput="invalidMsg(this);"/>
+              <p id="eomobHelpBlock" class="form-text text-muted">
+                  (Please enter a valid 10-digit mobile number)
+               </p>
+           </div>
+         </div>
+
+         <div class="form-group">
+           <label for="id_event_url" class="control-label col-md-3"> Event URL </label>
+           <div class="col-md-9">
+               <input type="text" class="form-control" id="id_event_url" name="event_url" placeholder="Your answer">
+           </div>
+         </div>
+
+         <div class="form-group">
+           <label for="id_ashram_contact_name" class="control-label col-md-3"> Point of contact for ashram departments - Name
+                <span><i class="glyphicon glyphicon-asterisk"></i></span>
+           </label>
+           <div class="col-md-9">
+               <input type="text" class="form-control" id="id_ashram_contact_name" name="ashram_contact_name" placeholder="Your answer" required="required">
+           </div>
+         </div>
+
+         <div class="form-group">
+           <label for="id_ashram_contact_mobile" class="control-label col-md-3"> Point of contact for ashram departments - Mobile No
+               <span><i class="glyphicon glyphicon-asterisk"></i></span>
+           </label>
+           <div class="col-md-9">
+               <input type="text" class="form-control" id="id_ashram_contact_mobile" placeholder="Your answer"
+                       pattern="^\d{10}$" aria-describedby="pocmobHelpBlock" name="ashram_contact_mobile"
+                       oninvalid="invalidMsg(this);" oninput="invalidMsg(this);"
+                       required="required">
+              <p id="pocmobHelpBlock" class="form-text text-muted">
+                  (Please enter a valid 10-digit mobile number)
+               </p>
+           </div>
+         </div>
+
+         <div class="form-group">
+           <label for="id_final_remarks" class="control-label col-md-3"> Remarks </label>
+           <div class="col-md-9">
+               <textarea class="form-control scroll" rows="5" id="id_final_remarks" name="final_remarks" placeholder="Your answer" aria-describedby="rmarkHelpBlock">
+               </textarea>
+               <p id="rmarkHelpBlock" class="form-text text-muted">
+                 Any information about this event not captured above
+               </p>
+           </div>
+         </div>
+
+         <div class="col-md-9 col-md-offset-3">
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Submit</button>
+         </div>
+         <br><br>
+   </form>
+
+{% endblock main %}
+
+{% block end_scripts %}
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.5.3/js/bootstrapValidator.min.js"> </script>
+    <script type="text/javascript" src="/static/misc/js/local_events.js"></script>
+{% endblock %}

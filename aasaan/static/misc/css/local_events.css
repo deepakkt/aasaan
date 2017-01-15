@@ -1,0 +1,54 @@
+
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+  padding-top: 50px;
+}
+
+/*
+ * Top navigation
+ * Hide default border to remove 1px line.
+ */
+.navbar-fixed-top {
+  border: 0;
+}
+
+.navbar-default {
+  background-color: #417690; 
+  
+}
+
+.navbar-right a {
+  color: #f5dd5d;
+}
+
+/*
+ * Main content
+ */
+
+.main {
+  padding: 20px;
+}
+@media (min-width: 768px) {
+  .main {
+    padding-right: 40px;
+    padding-left: 40px;
+  }
+}
+.main .page-header {
+  margin-top: 0;
+}
+
+
+.scroll::-webkit-scrollbar {
+    display: none;
+ }
+.glyphicon-asterisk{
+    color:red;
+font-size:smaller;
+}
+.form-horizontal{
+    padding-bottom: 40px;
+}
+
+
+    
