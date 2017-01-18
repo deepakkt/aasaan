@@ -182,15 +182,20 @@
                <span><i class="glyphicon glyphicon-asterisk"></i></span>
            </label>
            <div class="col-md-9">
-               <input class="form-control" id="id_event_start_date" name="event_start_date" placeholder="yyyy-mm-dd format or use date picker" required="required">
-           </div>
+               <input type="text" class="form-control" id="id_event_start_date" name="event_start_date"
+					  pattern="^\d{4}-\d{2}-\d{2}$" oninvalid="invalidMsg(this);"
+					  placeholder="yyyy-mm-dd format or use date picker" required="required"/>
+		   </div>
          </div>
 
          <div class="form-group">
            <label for="id_event_end_date" class="control-label col-md-3"> End Date </label>
            <div class="col-md-9">
-              <input class="form-control" id="id_event_end_date" name="event_end_date" placeholder="yyyy-mm-dd format or use date picker">
-           </div>
+              <input type="text" class="form-control" id="id_event_end_date" name="event_end_date"
+				     pattern="^\d{4}-\d{2}-\d{2}$" oninvalid="invalidMsg(this);"
+					 placeholder="yyyy-mm-dd format or use date picker">
+			        <span id="id_enddate" class="enddate_style"></span>
+		   </div>
          </div>
 
          <div class="form-group">
@@ -241,10 +246,10 @@
            <label for="id_event_organizer_contact" class="control-label col-md-3">Event Organizers Contact No</label>
            <div class="col-md-9">
               <input type="text" class="form-control" id="id_event_organizer_contact" placeholder="Your answer"
-                     pattern="^\d{10}$" aria-describedby="eomobHelpBlock" name="event_organizer_contact"
+                     pattern="^\d{8,15}$" aria-describedby="eomobHelpBlock" name="event_organizer_contact"
                      oninvalid="invalidMsg(this);" oninput="invalidMsg(this);"/>
               <p id="eomobHelpBlock" class="form-text text-muted">
-                  (Please enter a valid 10-digit mobile number)
+                  (Please enter a valid contact number)
                </p>
            </div>
          </div>
