@@ -191,17 +191,19 @@
          <div class="form-group">
            <label for="id_event_end_date" class="control-label col-md-3"> End Date </label>
            <div class="col-md-9">
-              <input type="text" class="form-control" id="id_event_end_date" name="event_end_date"
-				     pattern="^\d{4}-\d{2}-\d{2}$" oninvalid="invalidMsg(this);"
-					 placeholder="yyyy-mm-dd format or use date picker">
-			        <span id="id_enddate" class="enddate_style"></span>
+              <input type="text" class="form-control" id="id_event_end_date" name="event_end_date" 
+				      pattern="^\d{4}-\d{2}-\d{2}$" oninvalid="invalidMsg(this);"
+				      placeholder="yyyy-mm-dd format or use date picker">
+				  <span id="id_enddate" class="enddate_style">
+					  End date must be after Begin date...
+				  </span>
 		   </div>
          </div>
 
          <div class="form-group">
            <label for="id_event_timing" class="control-label col-md-3"> Event timing </label>
            <div class="col-md-9">
-              <input type="text" class="form-control" id="id_event_timing" name="event_timing" placeholder="Your answer" aria-describedby="etimingHelpBlock">
+              <input type="text" class="form-control" id="id_event_timing" name="event_timing" placeholder="Your answer" aria-describedby="etimingHelpBlock" required="required">			  
               <p id="etimingHelpBlock" class="form-text text-muted">
                 Enter the timing of the event on each day
               </p>
@@ -246,7 +248,7 @@
            <label for="id_event_organizer_contact" class="control-label col-md-3">Event Organizers Contact No</label>
            <div class="col-md-9">
               <input type="text" class="form-control" id="id_event_organizer_contact" placeholder="Your answer"
-                     pattern="^\d{8,15}$" aria-describedby="eomobHelpBlock" name="event_organizer_contact"
+                     pattern="^\d{8,15}$" aria-describedby="eomobHelpBlock" name="event_organizer_contact" required="required"
                      oninvalid="invalidMsg(this);" oninput="invalidMsg(this);"/>
               <p id="eomobHelpBlock" class="form-text text-muted">
                   (Please enter a valid contact number)

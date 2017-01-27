@@ -49,6 +49,7 @@ font-size:smaller;
     padding-bottom: 40px;
 }
 .enddate_style{
-	float: right;
-	color: red;
+	display: none;
+	  float: right;
+	  color: red;
 }
