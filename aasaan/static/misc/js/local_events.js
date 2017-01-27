@@ -9,13 +9,14 @@ jQuery(function($){
 			  
 		if(endD==null){				 
 			$('#id_event_end_date').val($('#id_event_start_date').val());
-			return false;
-		}	  
-	    if (begD > endD) {
-			$( "#id_enddate").text( "End date must be after Begin date..." ).show();
+			return;
+		}	
+        if (begD > endD) {
+			$( "#id_enddate").show();
 			event.preventDefault();
 			$( "#id_event_end_date" ).focus();
-		}	  
+		}	
+	    	  
 				
 	});
 		   
