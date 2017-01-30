@@ -7,31 +7,6 @@ refresh_reports = null;
     google.charts.load('current', {'packages':['corechart', 'table']});
     google.charts.setOnLoadCallback(drawVisualization);
 
-    function filterRows(nestedArray, column, value, notequals) {
-        filteredArray = [];
-
-        if (notequals === undefined) {
-            for (i = 0; i < nestedArray.length; i++) {
-                if (nestedArray[i][column] == value) {
-                    filteredArray.push(nestedArray[i]);
-                }
-            }
-
-            return filteredArray;
-        }
-
-        if (notequals === true) {
-            for (i = 0; i < nestedArray.length; i++) {
-                if (nestedArray[i][column] != value) {
-                    filteredArray.push(nestedArray[i]);
-                }
-            }
-
-            return filteredArray;
-        }
-
-    }
-
     function refreshReports(r_zone) {
         var currentZone = document.getElementById(aasaan_stats_dashboard.report_zone).innerText;
         var clickedZone = r_zone;
@@ -79,6 +54,21 @@ refresh_reports = null;
             ie_data = google.visualization.arrayToDataTable(stats_data.IYC_IE_PROGRAMS)
             other_prg_data = google.visualization.arrayToDataTable(stats_data.IYC_OTHER_PROGRAMS)
             program_avg = google.visualization.arrayToDataTable(stats_data.IYC_AVG)
+        }
+        else if (zone=='Overseas'){
+            ie_data = google.visualization.arrayToDataTable(stats_data.OVS_IE_PROGRAMS)
+            other_prg_data = google.visualization.arrayToDataTable(stats_data.OVS_OTHER_PROGRAMS)
+            program_avg = google.visualization.arrayToDataTable(stats_data.OVS_AVG)
+        }
+        else if (zone=='Training'){
+            ie_data = google.visualization.arrayToDataTable(stats_data.TRAINING)
+            other_prg_data = google.visualization.arrayToDataTable(stats_data.TRAINING)
+            program_avg = google.visualization.arrayToDataTable(stats_data.TRAINING)
+        }
+        else if (zone=='Uyir Nokkam'){
+            ie_data = google.visualization.arrayToDataTable(stats_data.UN)
+            other_prg_data = google.visualization.arrayToDataTable(stats_data.UN)
+            program_avg = google.visualization.arrayToDataTable(stats_data.UN)
         }
 
         var chart = new google.visualization.ComboChart(document.getElementById('tn-ie-chart'));
