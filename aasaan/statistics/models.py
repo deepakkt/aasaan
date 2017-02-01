@@ -33,14 +33,13 @@ class OverseasEnrollement(models.Model):
 
 
 class UyirNokkamEnrollement(models.Model):
-    start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
+    date = models.DateField(null=True, blank=True)
     zone = models.CharField(max_length=100, null=True, blank=True)
     no_of_classes = models.IntegerField(null=True, blank=True)
     no_of_participant = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return "%s - %s" % (self.end_date, self.zone)
+        return "%s - %s" % (self.date, self.zone)
 
 
 class TrainingStatistics(models.Model):

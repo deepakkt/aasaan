@@ -18,6 +18,7 @@ class StatisticsDashboard(View):
         self.otn_statistics(statistics, months)
         self.iyc_statistics(statistics, months)
         self.overseas_statistics(statistics, months)
+        self.uyirnokkam_statistics(statistics, months)
         return statistics
 
     def tn_statistics(self, statistics, months):
@@ -47,10 +48,11 @@ class StatisticsDashboard(View):
         set_statistics_data(months, tn_zone, monthly_list, statistics['TN_AVG'], participant_avg=1)
         statistics['TN_OTHER'] = []
         statistics['TN_OTHER'].append(title)
-
+        ie_un_programs = ie_programs
+        ie_un_programs.append('UyirNokkam')
         tn_other_list = list(
             StatisticsProgramCounts.objects.filter(program_window__in=months).filter(zone_name__in=tn_zone).filter(
-                ~Q(program_name__in=ie_programs)).order_by('zone_name', 'program_name').values_list('zone_name',
+                ~Q(program_name__in=ie_un_programs)).order_by('zone_name', 'program_name').values_list('zone_name',
                                                                                                     'program_name',
                                                                                                     'program_window',
                                                                                                     'participant_count',
@@ -165,6 +167,43 @@ class StatisticsDashboard(View):
         statistics['OVS_OTHER_PROGRAMS'].append(title)
         monthly_list = get_monthly_list(months, ovs_other_list)
         set_statistics_data(months, overseas_zone, monthly_list, statistics['OVS_OTHER_PROGRAMS'], participant_avg=0)
+
+    def uyirnokkam_statistics(self, statistics, months):
+        tn_zone = get_zones(get_configuration('STATISTICS_ZONE_TN'))
+        un_program = 'UyirNokkam'
+        tn_un_list = list(
+            StatisticsProgramCounts.objects.filter(program_window__in=months).filter(zone_name__in=tn_zone).filter(
+                program_name=un_program).order_by('zone_name', 'program_name').values_list('zone_name',
+                                                                                                'program_name',
+                                                                                                'program_window',
+                                                                                                'participant_count',
+                                                                                                'program_count'))
+        monthly_list = get_monthly_list(months, tn_un_list)
+
+        title = ['Month']
+        for zone in tn_zone:
+            title.append(zone)
+        title.append('Average')
+
+        statistics['TN_UN'] = []
+        statistics['TN_UN'].append(title)
+        set_statistics_data(months, tn_zone, monthly_list, statistics['TN_UN'], participant_avg=0)
+        statistics['TN_UN_AVG'] = []
+        statistics['TN_UN_AVG'].append(title)
+        set_statistics_data(months, tn_zone, monthly_list, statistics['TN_UN_AVG'], participant_avg=1)
+        statistics['TN_UN_OTHER'] = []
+        statistics['TN_UN_OTHER'].append(title)
+
+        tn_other_list = list(
+            StatisticsProgramCounts.objects.filter(program_window__in=months).filter(zone_name__in=tn_zone).filter(
+                ~Q(program_name=un_program)).order_by('zone_name', 'program_name').values_list('zone_name',
+                                                                                                    'program_name',
+                                                                                                    'program_window',
+                                                                                                    'participant_count',
+                                                                                                    'program_count'))
+        monthly_list = get_monthly_list(months, tn_other_list)
+        set_statistics_data(months, tn_zone, monthly_list, statistics['TN_UN_OTHER'], participant_avg=0)
+
 
     def get(self, request, *args, **kwargs):
         zones = Zone.objects.all()

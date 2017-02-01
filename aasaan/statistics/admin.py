@@ -22,8 +22,7 @@ class UyirNokkamEnrollmentResource(resources.ModelResource):
         model = UyirNokkamEnrollement
         ordering = 'zone'
         widgets = {
-                'start_date': {'format': '%d.%m.%Y'},
-                'end_date': {'format': '%d.%m.%Y'},
+                'date': {'format': '%d.%m.%Y'},
                 }
 
 

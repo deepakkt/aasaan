@@ -44,31 +44,60 @@ refresh_reports = null;
             ie_data = google.visualization.arrayToDataTable(stats_data.TN_IE)
             other_prg_data = google.visualization.arrayToDataTable(stats_data.TN_OTHER)
             program_avg = google.visualization.arrayToDataTable(stats_data.TN_AVG)
+            $("#row-tn-other-table").show()
+            $("#row-tn-ie-table").show()
+            $("#row-tn-other-chart").show()
+            $("#row-tn-ie-chart").show()
+            $("#row-tn-class-average").show()
         }
         else if (zone=='Outside Tamilnadu'){
             ie_data = google.visualization.arrayToDataTable(stats_data.OTN_IE_PROGRAMS)
             other_prg_data = google.visualization.arrayToDataTable(stats_data.OTN_OTHER_PROGRAMS)
             program_avg = google.visualization.arrayToDataTable(stats_data.OTN_AVG)
+            $("#row-tn-other-table").show()
+            $("#row-tn-ie-table").show()
+            $("#row-tn-other-chart").show()
+            $("#row-tn-ie-chart").show()
+            $("#row-tn-class-average").show()
         }
          else if (zone=='Isha Yoga Center'){
             ie_data = google.visualization.arrayToDataTable(stats_data.IYC_IE_PROGRAMS)
             other_prg_data = google.visualization.arrayToDataTable(stats_data.IYC_OTHER_PROGRAMS)
             program_avg = google.visualization.arrayToDataTable(stats_data.IYC_AVG)
+            $("#row-tn-other-table").show()
+            $("#row-tn-ie-table").show()
+            $("#row-tn-other-chart").show()
+            $("#row-tn-ie-chart").show()
+            $("#row-tn-class-average").show()
         }
         else if (zone=='Overseas'){
             ie_data = google.visualization.arrayToDataTable(stats_data.OVS_IE_PROGRAMS)
             other_prg_data = google.visualization.arrayToDataTable(stats_data.OVS_OTHER_PROGRAMS)
             program_avg = google.visualization.arrayToDataTable(stats_data.OVS_AVG)
+            $("#row-tn-other-table").show()
+            $("#row-tn-ie-table").show()
+            $("#row-tn-other-chart").show()
+            $("#row-tn-ie-chart").show()
+            $("#row-tn-class-average").show()
         }
         else if (zone=='Training'){
-            ie_data = google.visualization.arrayToDataTable(stats_data.TRAINING)
-            other_prg_data = google.visualization.arrayToDataTable(stats_data.TRAINING)
-            program_avg = google.visualization.arrayToDataTable(stats_data.TRAINING)
+//            ie_data = google.visualization.arrayToDataTable(stats_data.TRAINING)
+//            other_prg_data = google.visualization.arrayToDataTable(stats_data.TRAINING)
+//            program_avg = google.visualization.arrayToDataTable(stats_data.TRAINING)
+            $("#row-tn-other-table").hide()
+            $("#row-tn-ie-table").hide()
+            $("#row-tn-other-chart").hide()
+            $("#row-tn-ie-chart").hide()
+            $("#row-tn-class-average").hide()
         }
         else if (zone=='Uyir Nokkam'){
-            ie_data = google.visualization.arrayToDataTable(stats_data.UN)
-            other_prg_data = google.visualization.arrayToDataTable(stats_data.UN)
-            program_avg = google.visualization.arrayToDataTable(stats_data.UN)
+            ie_data = google.visualization.arrayToDataTable(stats_data.TN_UN)
+            other_prg_data = google.visualization.arrayToDataTable(stats_data.TN_UN_AVG)
+            $("#row-tn-other-table").hide()
+            $("#row-tn-ie-table").hide()
+            $("#row-tn-other-chart").hide()
+            $("#row-tn-ie-chart").show()
+            $("#row-tn-class-average").show()
         }
 
         var chart = new google.visualization.ComboChart(document.getElementById('tn-ie-chart'));
