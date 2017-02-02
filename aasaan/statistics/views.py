@@ -221,7 +221,7 @@ def set_statistics_data(months, zones, all_stats, statistics_data, participant_a
             except KeyError:
                 monthly_dict[month].append(0)
 
-        monthly_dict[month].append(round(sum((monthly_dict[month][1:])) / len((monthly_dict[month][1:])), 2))
+        monthly_dict[month].append(round(sum((monthly_dict[month][1:])) / len((monthly_dict[month][1:])), 0))
         statistics_data.append(monthly_dict[month])
 
 
@@ -233,7 +233,7 @@ def set_iyc_statistics_data(months, zones, all_stats, statistics_data, participa
             monthly_dict[month].append(all_stats[month][zones][participant_avg])
         except KeyError:
             monthly_dict[month].append(0)
-        monthly_dict[month].append(round(sum((monthly_dict[month][1:])) / len((monthly_dict[month][1:])), 2))
+        monthly_dict[month].append(round(sum((monthly_dict[month][1:])) / len((monthly_dict[month][1:])), 0))
         statistics_data.append(monthly_dict[month])
 
 

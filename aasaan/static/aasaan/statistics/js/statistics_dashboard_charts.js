@@ -37,6 +37,12 @@ refresh_reports = null;
           hAxis: {title: 'Month'},
           seriesType: 'bars',
           series: {5: {type: 'line'}},
+          chartArea: {
+                backgroundColor: {
+                    stroke: '#4322c0',
+                    strokeWidth: 3
+                }
+            },
           colors: ['#1b9e77', '#d95f02', '#7570b3', '5D6D7E', '#FA1705']
         };
         stats_data = aasaan_stats_dashboard.dashboard_data.statistics;
@@ -115,6 +121,12 @@ refresh_reports = null;
             hAxis: {title: 'Month'},
             seriesType: 'bars',
             series: {5: {type: 'line'}},
+            chartArea: {
+                backgroundColor: {
+                    stroke: '#4322c0',
+                    strokeWidth: 3
+                }
+            },
             annotations: {
                 boxStyle: {
                     stroke: '#888', strokeWidth: 1, rx: 10, ry: 10,
