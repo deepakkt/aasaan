@@ -1,0 +1,65 @@
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+  padding-top: 50px;
+}
+
+/*
+ * Top navigation
+ * Hide default border to remove 1px line.
+ */
+.navbar-fixed-top {
+  border: 0;
+}
+
+.navbar-default {
+  background-color: #417690; 
+  
+}
+
+.navbar-right a {
+  color: #f5dd5d;
+}
+
+/*
+ * Main content
+ */
+
+.main {
+  padding: 20px;
+}
+@media (min-width: 768px) {
+  .main {
+    padding-right: 40px;
+    padding-left: 40px;
+  }
+}
+.main .page-header {
+  margin-top: 0;
+}
+.form-horizontal{
+    padding-bottom: 80px;
+}
+/*
+ * Messages 
+ */
+.success{	
+	  float: left;
+	  color: #008000;
+  font-size: 14px;
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+.progress {	
+	  float: left;
+	  color: #FFA500;
+  font-size: 14px;
+  margin-top: 5px;
+  margin-bottom: 0;
+}
+.error {
+   float: left;
+   color: #ff0000;
+   font-size: 14px;
+   margin-top: 5px;
+   margin-bottom: 0;
+}
