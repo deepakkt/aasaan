@@ -38,28 +38,36 @@ body {
 }
 .form-horizontal{
     padding-bottom: 80px;
+	clear: both;
 }
 /*
  * Messages 
  */
-.success{	
-	  float: left;
+.success{	      
+	 border: solid 1px #c3c3c3;   	
+     width : 100%;
+	padding: 10px;	  
 	  color: #008000;
   font-size: 14px;
-  margin-top: 5px;
-  margin-bottom: 0;
+ margin-top: 5px;
+ margin-bottom: 5px;
+         
 }
-.progress {	
-	  float: left;
+.running {	
+	 border: solid 1px #c3c3c3;
+     width : 100%;
+	padding: 10px;	  
 	  color: #FFA500;
   font-size: 14px;
-  margin-top: 5px;
-  margin-bottom: 0;
+ margin-top: 5px;
+margin-bottom: 5px; 
 }
 .error {
-   float: left;
-   color: #ff0000;
-   font-size: 14px;
-   margin-top: 5px;
-   margin-bottom: 0;
+   border: solid 1px #c3c3c3;
+     width : 100%;
+	padding: 10px;	  
+	  color: #ff0000;
+  font-size: 14px;
+ margin-top: 5px;
+margin-bottom: 5px; 
 }

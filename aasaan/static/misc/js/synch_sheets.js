@@ -26,22 +26,18 @@ $(document).ready(function(){
         function(data,status){
             console.log('------Start Response------');
             console.log("Data: " + data + "\nStatus: " + status);
-            console.log('------End   Response------');            
-            $("#"+span_ID).html(data);
-            status='success';
-            if(status=='success'){              
-              $('#'+span_ID).addClass('success');
-              alert("Data: " + data + "\nStatus: " + status);
-            }else if(status=='error'){
-              $('#'+span_ID).addClass('error');
-              alert("Data: " + data + "\nStatus: " + status);
-            }else if(status=='progress'){
-              $('#'+span_ID).addClass('progress');
-              alert("Data: " + data + "\nStatus: " + status);
-            }
-            else{
-              alert("Data: " + data + "\nStatus: " + status);
-            }
+            console.log('------End   Response------');
+            
+            if(status=='success'){		  
+			  $("#"+span_ID).html(data).addClass('success').slideUp("slow").slideDown("slow");		  
+			}else if(status=='error'){		  
+			  $("#"+span_ID).html(data).addClass('error').slideUp("slow").slideDown("slow");		  
+			}else if(status=='running'){          	
+			  $("#"+span_ID).html(data).addClass('running').slideUp("slow").slideDown("slow");		  
+			}
+			else{
+			  $("#"+span_ID).html(data).slideUp("slow").slideDown("slow");		  
+			}
         });
     });
 });
