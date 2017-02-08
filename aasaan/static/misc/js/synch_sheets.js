@@ -17,7 +17,7 @@ $(document).ready(function(){
    }  
    $('button[type="submit"]').on('click', function() {   		
 	    console.log('------Start jQuery on click method------');
-        console.log('Command  :->'+cmd);
+        console.log('Command  :->'+CMD);
         console.log('------End   jQuery on click method------');
         var result = $.ajax({
             url: URL,
