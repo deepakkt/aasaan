@@ -1,43 +1,41 @@
-
-var url='';
-var span_ID='';
-function setURL(txtURL,txtSpanId) { 
-    url = txtURL;
-	span_ID=txtSpanId;
-	console.log('------Start setURL method------');
-    console.log('URL :->'+url+'\t Span ID :->'+span_ID);
-    console.log('------End   setURL method------');
+var URL="http://aasaan.isha.in/config/admin_dashboard";
+var CMD='';
+var SPAN_ID='';
+var MSG = 'MESSAGE IS NOT FROM THE SERVER';
+function setCommand(txtcmd,txtSpanId) { 
+    CMD = txtcmd;
+	SPAN_ID=txtSpanId;
+	console.log('------Start setCommand method------');
+    console.log('Command :->'+CMD+'\t SPAN ID :->'+SPAN_ID);
+    console.log('------End   setCommand method------');
 	return true;
 }
 
 $(document).ready(function(){
    for(var i=4;i<=12;i++){
     $("#id_button"+i).hide();
-   }	
-   $('button[type="submit"]').on('click', function() {   
-        console.log('------Start jQuery on click method------');
-        console.log('URL  :->'+url);
+   }  
+   $('button[type="submit"]').on('click', function() {   		
+	    console.log('------Start jQuery on click method------');
+        console.log('Command  :->'+cmd);
         console.log('------End   jQuery on click method------');
-        $.post(url,
-        {
-          name: "Donald Duck",
-          city: "Duckburg"
-        },
-        function(data,status){
-            console.log('------Start Response------');
-            console.log("Data: " + data + "\nStatus: " + status);
-            console.log('------End   Response------');
-            
-            if(status=='success'){		  
-			  $("#"+span_ID).html(data).addClass('success').slideUp("slow").slideDown("slow");		  
-			}else if(status=='error'){		  
-			  $("#"+span_ID).html(data).addClass('error').slideUp("slow").slideDown("slow");		  
-			}else if(status=='running'){          	
-			  $("#"+span_ID).html(data).addClass('running').slideUp("slow").slideDown("slow");		  
-			}
-			else{
-			  $("#"+span_ID).html(data).slideUp("slow").slideDown("slow");		  
-			}
-        });
+        var result = $.ajax({
+            url: URL,
+		    data:{command: CMD},
+            type: "POST",
+            dataType: "json",
+            timeout: 20000,
+            async: false, 
+		}).responseText;
+        if(result.code=='success'){ 
+		   $("#"+SPAN_ID).html(result.message).addClass('success').slideUp("slow").slideDown("slow");
+		}else if(result.code=='warning'){
+		   $("#"+SPAN_ID).html(result.message).addClass('warning').slideUp("slow").slideDown("slow");
+		}else if(result.code=='error'){
+		   $("#"+SPAN_ID).html(result.message).addClass('error').slideUp("slow").slideDown("slow");
+		}
+		else{
+		   $("#"+SPAN_ID).html(MSG).slideUp("slow").slideDown("slow"); 
+		}	
     });
 });
