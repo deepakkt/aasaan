@@ -1,73 +1,60 @@
 /* Move down content because we have a fixed navbar that is 50px tall */
-body {
-  padding-top: 50px;
+ body {
+     padding-top: 50px;
 }
-
-/*
- * Top navigation
- * Hide default border to remove 1px line.
- */
-.navbar-fixed-top {
-  border: 0;
+/* Top navigation Hide default border to remove 1px line. */
+ .navbar-fixed-top {
+     border: 0;
 }
-
-.navbar-default {
-  background-color: #417690; 
-  
+ .navbar-default {
+     background-color: #417690;
 }
-
-.navbar-right a {
-  color: #f5dd5d;
+ .navbar-right a {
+     color: #f5dd5d;
 }
-
-/*
- * Main content
- */
-
-.main {
-  padding: 20px;
+/* Main content */
+ .main {
+     padding: 20px;
 }
-@media (min-width: 768px) {
-  .main {
-    padding-right: 40px;
-    padding-left: 40px;
-  }
+ @media (min-width: 768px) {
+     .main {
+         padding-right: 40px;
+         padding-left: 40px;
+    }
 }
-.main .page-header {
-  margin-top: 0;
+ .main .page-header {
+     margin-top: 0;
 }
-.form-horizontal{
-    padding-bottom: 80px;
-	clear: both;
+ .form-horizontal{
+     padding-bottom: 80px;
+     clear: both;
 }
-/*
- * Messages 
- */
-.success{	      
-	 border: solid 1px #c3c3c3;   	
+/* Messages */
+ .success{
+     border: solid 1px #c3c3c3;
      width : 100%;
-	padding: 10px;	  
-	  color: #008000;
-  font-size: 14px;
- margin-top: 5px;
- margin-bottom: 5px;
-         
+     padding: 10px;
+     color: #008000;
+     font-size: 14px;
+     margin-top: 5px;
+     margin-bottom: 5px;
 }
-.running {	
-	 border: solid 1px #c3c3c3;
+ .warning {
+     border: solid 1px #c3c3c3;
      width : 100%;
-	padding: 10px;	  
-	  color: #FFA500;
-  font-size: 14px;
- margin-top: 5px;
-margin-bottom: 5px; 
+     padding: 10px;
+     color: #FFA500;
+     font-size: 14px;
+     margin-top: 5px;
+     margin-bottom: 5px;
 }
-.error {
-   border: solid 1px #c3c3c3;
+ .error {
+     border: solid 1px #c3c3c3;
      width : 100%;
-	padding: 10px;	  
-	  color: #ff0000;
-  font-size: 14px;
- margin-top: 5px;
-margin-bottom: 5px; 
+     padding: 10px;
+     color: #ff0000;
+     font-size: 14px;
+     margin-top: 5px;
+     margin-bottom: 5px;
 }
+ 
