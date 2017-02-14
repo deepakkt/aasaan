@@ -1,17 +1,30 @@
 import json
 from functools import partial
 from datetime import date
+import random
 
 from django.shortcuts import render
 from django.contrib import messages
 from django.views.generic import View
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse
 from django.core.urlresolvers import reverse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 
 from contacts.models import Zone, Center
 from .models import LocalEvents
 
 from .forms import LocalEventsForm
+
+from gsync.sync.sync_v2 import sync_schedules_test
+
+try:
+    import django_rq
+except (ImportError, ImproperlyConfigured):
+    pass
+
 
 # Create your views here.
 
@@ -74,3 +87,33 @@ class LocalEventsView(View):
             return render(request, self.template, self.get_context(request))
         else:
             print(event.errors)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AdminDashboardDispatch(View):
+    template = "misc/synch_sheets.html"
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template)
+
+    def trigger_async(self, func):
+        if settings.ASYNC:
+            job = django_rq.enqueue(func)
+            return {'message': 'Sync queued successfully with id ' % job.key,
+                    'code': 'success'}
+        else:
+            return {'message': 'RQ is not setup. Cannot queue sync',
+                    'code': 'error'}
+
+
+    def post(self, request, *args, **kwargs):
+        incoming_parms = request.POST
+
+        submitted_command = incoming_parms['command']
+
+        if submitted_command == "sync_schedules":
+            cmd_queue = self.trigger_async(sync_schedules_test)
+            return JsonResponse(cmd_queue)
+
+        return HttpResponse()
+

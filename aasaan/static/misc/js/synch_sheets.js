@@ -1,4 +1,4 @@
-var URL = "http://aasaan.isha.in/config/admin_dashboard";
+var URL = "/misc/admin-dashboard";
 var CMD = '';
 var SPAN_ID = '';
 var MSG = 'MESSAGE IS NOT FROM THE SERVER';
@@ -14,7 +14,7 @@ $(document).ready(function() {
         $("#id_button" + i).hide();
     }
     $('button[type="submit"]').on('click', function() {        
-        var result = $.ajax({
+        var json_result = $.ajax({
             url: URL,
             data: {
                 command: CMD
@@ -24,6 +24,9 @@ $(document).ready(function() {
             timeout: 20000,
             async: false,
         }).responseText;
+
+        result = JSON.parse(json_result);
+
         if (result.code == 'success') {
             $("#" + SPAN_ID).html(result.message).addClass('success').slideUp("slow").slideDown("slow");
         } else if (result.code == 'warning') {
