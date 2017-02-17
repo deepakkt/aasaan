@@ -99,7 +99,7 @@ class AdminDashboardDispatch(View):
     def trigger_async(self, func):
         if settings.ASYNC:
             job = django_rq.enqueue(func)
-            return {'message': 'Sync queued successfully with id ' % job.key,
+            return {'message': 'Sync queued successfully with id ' % job.id,
                     'code': 'success'}
         else:
             return {'message': 'RQ is not setup. Cannot queue sync',
