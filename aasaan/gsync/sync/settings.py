@@ -71,7 +71,9 @@ schedule_enrollment_sync_rows = ['SNo',
                                  'ORS Code',
                                  'Teacher']
 
-schedule_enrollment_sync_rows.extend(enrollment_count_categories)
+if enrollment_count_categories:
+	schedule_enrollment_sync_rows.extend(enrollment_count_categories)
+
 schedule_enrollment_sync_rows.extend(['ID', 'Last Modified'])
 
 schedule_enrollment_header = namedtuple('ScheduleEnrollment', [slugify(x).replace("-", "_")
