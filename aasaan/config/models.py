@@ -74,7 +74,7 @@ def get_configuration(key):
         x = Configuration.objects.get(configuration_key=key)
         return x.configuration_value
     except:
-        return None
+        return ""
 
 
 class Tag(models.Model):
