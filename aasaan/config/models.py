@@ -73,7 +73,7 @@ def get_configuration(key):
     try:
         x = Configuration.objects.get(configuration_key=key)
         return x.configuration_value
-    except ObjectDoesNotExist:
+    except:
         return None
 
 
