@@ -62,7 +62,7 @@ def authenticate():
     return gc
 
 
-def open_workbook(spreadsheet_key=DEFAULT_SHEET_KEY, gc_interface=authenticate()):
+def open_workbook(spreadsheet_key=DEFAULT_SHEET_KEY, gc_interface=None):
     try:
         return gc_interface.open_by_key(spreadsheet_key)
     except:
@@ -71,7 +71,7 @@ def open_workbook(spreadsheet_key=DEFAULT_SHEET_KEY, gc_interface=authenticate()
                                    "and oauth2 configuration to debug")
 
 
-def delete_worksheets(workbook=open_workbook(), first_sheet="Reference"):
+def delete_worksheets(workbook, first_sheet="Reference"):
     for each_worksheet in workbook.worksheets():
         if each_worksheet.title == first_sheet:
             pass
