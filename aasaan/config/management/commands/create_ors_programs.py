@@ -28,6 +28,10 @@ class Command(BaseCommand):
     help = "Create ORS programs for newly created Aasaan schedules"
 
     def handle(self, *args, **options):
+        # temporarily stop ORS Program creation to support prs migration
+        # 20-Mar-2017, Monday
+        return
+
         config_dict = get_configuration_dictionary()
 
         filter_programs = config_dict["ORS_PROGRAM_CREATION_PROGRAM_TYPES"]
