@@ -317,6 +317,7 @@ class JoomlaInterface(object):
         base_fields['c_email_1'] = program_schedule.contact_email
         base_fields['c_phone_1'] = program_schedule.contact_phone1
         base_fields['c_phone_2'] = program_schedule.contact_phone2
+        base_fields['zone'] = _parse_config_fallback('zone', "None")
         base_fields['name'] = program_schedule.venue_name
         _city = program_schedule.center.city
         _center = program_schedule.center.center_name
