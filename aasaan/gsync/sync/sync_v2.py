@@ -1,5 +1,7 @@
 from datetime import datetime, date
 import json
+import pickle
+from tempfile import NamedTemporaryFile as NTF
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -164,7 +166,74 @@ class SheetSync:
         update_cell(self.workbook.worksheet("Reference"), "A1", last_synced)
 
 
-class ScheduleSync(SheetSync):
+class SheetSyncCache(SheetSync):        
+    """
+    Functionality is similar to SheetSync. Except that all records fetched are cached
+    to a temporary file prior to working with gspread sheets.
+    This should avoid connection errors with Google Sheets because latency involved
+    with database are separated out
+    """
+
+    def sync(self):
+        _worksheet = -1
+        _worksheet_row = 0
+        _worksheet_start_row = 2
+        for model in self.model_map:
+            tempfile = NTF()
+            print("tempfile ==> ", tempfile.name)
+            for instance in self.model_map[model]['queryset']:
+                result = self.model_map[model]['translate'](instance)
+                if self.model_map[model]['filters']:
+                    result = self.filter(instance, result, self.model_map[model]['filters'])
+
+                if not result:
+                    continue
+
+                pickle.dump(tuple(result), tempfile)
+
+            last_result = result
+
+            tempfile.seek(0)
+            while 1:
+                try:
+                    result = pickle.load(tempfile)
+                    result = last_result._make(result)
+                except EOFError:
+                    break
+
+                try:
+                    pivot_value = eval('result.' + self.model_map[model]['pivot']) if self.model_map[model]['pivot'] else 'main'
+                except AttributeError:
+                    raise ImproperlyConfigured('class %s specifies a pivot field of %s.'
+                                               'The %s method however does not return this field.'
+                                               % (self.__class__.__name__,
+                                                   self.model_map[model]['pivot'],
+                                                  self.model_map[model]['translate']))
+
+                # check if this pivot value already has an entry. If not, create a new sheet
+                # and map it
+                if not self.pivot_map.get(pivot_value):
+                    self.pivot_map[pivot_value] = [_worksheet_start_row, self.workbook.add_worksheet(pivot_value, 1000, 26)]
+                    update_header_row(self.pivot_map[pivot_value][_worksheet],
+                                      values_list=self.__class__.titles)
+
+                # replace the default '0' for serial number with one in our pivot map
+                result = result._make((self.pivot_map[pivot_value][_worksheet_row] - 1,) +
+                                      result[1:])
+
+                update_row(worksheet=self.pivot_map[pivot_value][_worksheet],
+                           start_row=self.pivot_map[pivot_value][_worksheet_row],
+                           start_col=1,
+                           values_list=tuple(result))
+
+                self.pivot_map[pivot_value][_worksheet_row] += 1
+            tempfile.close()
+
+        last_synced = 'Last synced: ' + datetime.now().isoformat()
+        update_cell(self.workbook.worksheet("Reference"), "A1", last_synced)
+
+
+class ScheduleSync(SheetSyncCache):
     models = [ProgramSchedule]
     titles = schedule_sync_rows
     pivot_fields = ['zone']
