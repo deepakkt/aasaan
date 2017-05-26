@@ -37,3 +37,12 @@ def deploy():
         run("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/python manage.py migrate")
         run("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/python manage.py collectstatic --no-input")
 
+    with cd(os.path.join(_code_dir(), 'deploy')):
+        run("cp aasaan_sync_sheets ~/.virtualenvs/aasaan/bin")
+        run("cp aasaan_worker_start ~/.virtualenvs/aasaan/bin")
+        run("cp aasaan_backup_db ~/.virtualenvs/aasaan/bin")
+        run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_sync_sheets")
+        run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_worker_start")
+        run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_backup_db")
+        
+
