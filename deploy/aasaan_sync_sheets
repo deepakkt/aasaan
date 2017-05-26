@@ -1,0 +1,22 @@
+#!/bin/bash
+
+source /home/deepak/django/aasaan/.virtualenvs/aasaan/bin/aasaan_backup_db
+python /home/deepak/django/aasaan/.virtualenvs/aasaan/bin/database_backup_clean.py
+
+DJANGODIR=/home/deepak/django/aasaan/aasaan
+DJANGO_SETTINGS_MODULE=aasaan.settings.prod
+
+# Activate the virtual environment
+cd $DJANGODIR
+source /home/deepak/django/aasaan/.virtualenvs/aasaan/bin/activate
+export DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
+export PYTHONPATH=$DJANGODIR:$PYTHONPATH
+
+psql -f /home/deepak/django/aasaan/sql/refresh_irc_dashboard.sql
+python manage.py create_ors_programs
+python manage.py create_joomla_programs
+python manage.py close_past_programs
+python manage.py sync_iyc_schedules
+python manage.py sync_sheets
+python manage.py sync_enrollments
+python manage.py sync_contacts
