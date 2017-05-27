@@ -32,6 +32,7 @@ def deploy():
     push_to_git()
     with cd(_code_dir()):
         run("git pull")
+        run("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/pip install -r requirements.txt")
 
     with cd(os.path.join(_code_dir(), 'aasaan')):
         run("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/python manage.py migrate")
