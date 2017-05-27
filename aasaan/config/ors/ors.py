@@ -2,6 +2,7 @@ from requests import Request, Session
 from collections import OrderedDict
 import copy
 import json
+import pandas as pd
 from functools import partial
 
 import re
@@ -113,7 +114,8 @@ class ORSInterface(object):
 
         self.last_response = self.session.send(self.last_request, stream=True,
                                                verify=self.verify,
-                                               proxies=self.proxies)
+                                               proxies=self.proxies,)
+
         self.last_request_label = request_label
 
         self._append_request()
@@ -137,6 +139,260 @@ class ORSInterface(object):
 
         progjson = json.loads(self.last_response.text)
         return progjson
+
+
+    def getparticipantdetails(self, program_code=""):
+        """Pull participant details from ORS
+        The final list of columns might change over time
+        Query the returned data frame for column headers
+        """
+        base_url = r"https://ors.isha.in/Registration/ApplyFilterForDownload"
+        final_url = base_url + "/" + program_code
+        
+        download_fields = {"FilterDestination": "XLS",
+                           "SelectedFieldsValue" : "9034,9055,9056,9035,9036,9039,9040,9037,9038,9052,9044,9057,9047,9046,9048,9049,9050,9021,9051,9053,9058,9009,9010,9011,9012,9013,9014,9015,9059,9004,9005,9045,9006,9041,9007,9060,9032,9017,PID41,9018,9019,9061,9020,9033,9062,9022,9024,9063,9064,9065,9066,9067,9068,9054,9069,9070,9071,9072,9073,9074,9075,9076,9077,9078,9079,9080,9081,9082,9083,9084,9085,9086,9087,9088,9089,9090,9091,9092,9093,9001,9002,9003,9023,9098,9008,9016,9042,9043,9094,9095,9096,9097,9099,9100,PID01,PID02,PID03,PID04,PID05,PID06,PID07,PID08,PID09,PID10,PID11,PID12,PID13,PID14,PID15,PID16,PID17,PID18,PID19,PID20,PID21,PID22,PID23,PID24,PID25,PID26,PID27,PID28,PID29,PID30,PID31,PID32,PID33,PID34,PID35,PID36,PID37,PID38,PID39,PID40,PID42,PID43,PID44,PID45,PID46,PID47,PID48,PID49,PID50,PID51,PID52,PID53,PID54,PID55,PID56,PID57,PID58,PID59,PID60,PID61,PID62,PID63,"}
+        
+        # the above download fields asks for columns from ORS. The following
+        # columns are returned by the query. The next section trims this
+        # because we don't need so many. But we ask for everything because
+        # it makes it easy to manipulate by column headings instead of 
+        # column codes above
+        
+        # ReceiptNo
+        # DonationReceiptNoMode
+        # Donation Date
+        # DonationAmount
+        # Payment Mode
+        # InstrumentNo
+        # InstrumentDate
+        # BankName
+        # BranchName
+        # Transaction Reference No
+        # Additional ReceiptNo
+        # Additional DonationReceiptNo Mode
+        # AdditionalDonationDate
+        # AdditionalPaymentMode
+        # AdditionalInstrumentNo
+        # AdditionalInstrumentDate
+        # AdditionalBankName
+        # ParticipantEmail
+        # AdditionalBranchName
+        # Additional Transaction Reference No
+        # Donor Name
+        # Donor Address Line1
+        # Donor Address Line2
+        # Donor Address Line3
+        # Donor City
+        # Donor State
+        # Donor Country
+        # Donor Zipcode
+        # Donor Mobile CountryCode
+        # DonorMobileNumber
+        # DonorEmail
+        # AdditionalDonationAmount
+        # DiscountAmount
+        # TDSAmount
+        # Remarks
+        # Upgraded
+        # ParticipantInitial
+        # ParticipantName
+        # Name to be called
+        # Category
+        # SubCategory
+        # Participant Mobile CountryCode
+        # MobileNumber
+        # Participant Place
+        # ID CardNumber
+        # SeatNumber
+        # SeatStatus
+        # PID
+        # Date of Birth
+        # Age
+        # Programs Attended
+        # Other Programs
+        # Physical Ailments
+        # IntroducedBy
+        # ArrivalDate
+        # ArrivalTime
+        # DepartureDate
+        # DepartureTime
+        # Residential Address Line1
+        # Residential Address Line2
+        # Residential Address Line3
+        # Residential City
+        # Residential District
+        # Residential State
+        # Residential ZipCode
+        # HomePhone
+        # Participant Mobile Number
+        # Participant Communication Phone Number
+        # Participant EMail
+        # Participant Occupation
+        # Participant Company
+        # Work Address Line1
+        # Work Address Line2
+        # Work Address Line3
+        # Work City
+        # Work District
+        # Work State
+        # Work ZipCode
+        # Work Phone Number
+        # ID
+        # RegistrationDate
+        # ProgramID
+        # Complimentary
+        # ComplimentaryApprovedBy
+        # Registration Status
+        # LocationCode
+        # BookCode
+        # AdditionalBookCode
+        # Courier Name
+        # Courier Date
+        # Courier ReferenceNo
+        # Courier Remarks
+        # RP Name
+        # Centre Name
+        # Serial_No
+        # SeatNo
+        # Name
+        # Address_Line1
+        # Address_Line2
+        # Address_Line3
+        # City
+        # PostalCode
+        # HomePhone
+        # MobilePhone
+        # Email
+        # Occupation
+        # Company
+        # W_Address_Line1
+        # W_Address_Line2
+        # W_Address_Line3
+        # W_City
+        # W_PostalCode
+        # WorkPhone
+        # Gender
+        # Age
+        # VIFO
+        # IntroducedBy
+        # Remarks
+        # Donor
+        # DonorInformation
+        # VIP
+        # VIPInformation
+        # Program
+        # Start_Date
+        # End_Date
+        # Venue
+        # CreatedBy
+        # Teacher
+        # CoTeachers
+        # Languages
+        # Batch
+        # Batch_No
+        # Seating Pass
+        # Program Dates
+        # DonationReceiptUrl
+        # IntroduceOthers
+        # TakeAdvancedProgram
+        # SupportIshaActivity
+        # ProjectGreenHands
+        # Organizing
+        # PRandNetworking
+        # IshaVidhya
+        # Volunteering
+        # FundRaising
+        # RuralRejuvenation
+        # Teaching
+        # SoftwareDevelopment
+        # Administration
+        # Others
+        # OrganizeIshaKriyaforCompany
+        # OrganizeIshaKriyaforNeighborhood
+        # OrganizeIshaKriyaforOthers
+        # OrganizeIshaKriyaforOtherstext
+        # ReceiveTextMessage
+        # ReceiveIshaMagazine
+        # Absent
+        # 
+        
+        self.postrequest(request_url=final_url, request_data=download_fields,
+                         request_label = "Get participant details for %s" %(program_code), 
+del_headers=["X-Requested-With"], 
+headers={"Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"});
+
+        participant_list_xls = pd.ExcelFile(self.last_response.raw)
+        participant_list = participant_list_xls.parse("ContactSheet1")
+        participant_list = participant_list.rename(index=participant_list.ID)
+        
+        
+        participant_list = participant_list.loc[:, ['ProgramID', 'CreatedBy', 'Batch',
+                                                    'ReceiptNo',
+                                                    'DonationReceiptUrl', 'Donation Date', 
+                                                    'DonationAmount', 'Payment Mode',
+                                                    'Transaction Reference No', 
+                                                    'SeatStatus',
+                                                    'Donor Name', 'DonorEmail', 
+                                                    'ParticipantName', 
+                                                    'Gender',
+                                                    'Age',
+                                                    'HomePhone',
+                                                    'Participant Mobile Number', 
+                                                    'Participant EMail', 
+                                                    'Address_Line1', 
+                                                    'Address_Line2', 
+                                                    'Address_Line3', 
+                                                    'City', 'PostalCode',
+                                                    'Participant Occupation',
+                                                    'Participant Company',
+                                                    'Work Address Line1',
+                                                    'Work Address Line2',
+                                                    'Work Address Line3',
+                                                    'Work City',
+                                                    'Work ZipCode',
+                                                    'Work Phone Number',
+                                                    'IntroducedBy', 
+                                                    'Teacher',
+                                                    'CoTeachers',
+                                                    'Languages',
+                                                    'Batch', 
+                                                    'BatchNo',
+                                                    'IntroduceOthers',
+                                                    'TakeAdvancedProgram',
+                                                    'SupportIshaActivity',
+                                                    'ProjectGreenHands',
+                                                    'Organizing',
+                                                    'PRandNetworking',
+                                                    'IshaVidhya',
+                                                    'Volunteering',
+                                                    'FundRaising',
+                                                    'RuralRejuvenation',
+                                                    'Teaching',
+                                                    'SoftwareDevelopment',
+                                                    'Administration',
+                                                    'Others',
+                                                    'OrganizeIshaKriyaforCompany',
+                                                    'OrganizeIshaKriyaforNeighborhood',
+                                                    'OrganizeIshaKriyaforOthers',
+                                                    'OrganizeIshaKriyaforOtherstext',
+                                                    'ReceiveTextMessage',
+                                                    'ReceiveIshaMagazine',
+                                                    'Absent',]]
+                                                        
+                
+        return participant_list
+
+
+    def get_ors_summary(self, program_code):
+        try:
+            summary_pd = self.getparticipantdetails(program_code)
+        except:
+            return dict()
+
+
+        return {'Total': len(summary_pd[summary_pd["SeatStatus"] == "NEW"]),
+                'Absent': len(summary_pd[summary_pd["SeatStatus"] == "NEW"][summary_pd["Absent"] == "Yes"])}
+
 
     def create_new_program(self, program_schedule, configuration, dryrun=False):
         """Create a new program under ORS
