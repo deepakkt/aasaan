@@ -344,10 +344,13 @@ class ProgramScheduleNote(models.Model):
 class ProgramTeacher(models.Model):
     program = models.ForeignKey(ProgramSchedule)
 
-    TEACHER_VALUES = (('MT', 'Main Teacher'),
-                      ('CT', 'Co-Teacher'),
-                      ('OT', 'Observation Teacher'),
-                      ('O', 'Other'))
+    TEACHER_VALUES = (('MO', 'Morning'),
+                      ('NO', 'Noon'),
+                      ('EV', 'Evening'),
+                      ('MN', 'Morning and Noon'),
+                      ('ME', 'Morning and Evening'),
+                      ('NE', 'Noon and Evening'),
+                      ('AL', 'Morning, Noon and Evening'),)
 
     teacher_type = models.CharField(max_length=2, choices=TEACHER_VALUES,
                                     default=TEACHER_VALUES[0][0],
