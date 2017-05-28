@@ -126,6 +126,8 @@ class SheetSync:
         _worksheet = -1
         _worksheet_row = 0
         _worksheet_start_row = 2
+        _worksheet_columns = 30
+
         for model in self.model_map:
             for instance in self.model_map[model]['queryset']:
                 result = self.model_map[model]['translate'](instance)
@@ -147,7 +149,7 @@ class SheetSync:
                 # check if this pivot value already has an entry. If not, create a new sheet
                 # and map it
                 if not self.pivot_map.get(pivot_value):
-                    self.pivot_map[pivot_value] = [_worksheet_start_row, self.workbook.add_worksheet(pivot_value, 1000, 26)]
+                    self.pivot_map[pivot_value] = [_worksheet_start_row, self.workbook.add_worksheet(pivot_value, 1000, _worksheet_columns)]
                     update_header_row(self.pivot_map[pivot_value][_worksheet],
                                       values_list=self.__class__.titles)
 
@@ -332,7 +334,7 @@ class ContactSync(SheetSync):
         return contact_header(*contact_values)
 
 
-class ScheduleEnrollmentSync(SheetSync):
+class ScheduleEnrollmentSync(SheetSyncCache):
     models = [ProgramSchedule]
     titles = schedule_enrollment_sync_rows
     pivot_fields = ['zone']
