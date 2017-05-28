@@ -180,6 +180,8 @@ class SheetSyncCache(SheetSync):
         _worksheet = -1
         _worksheet_row = 0
         _worksheet_start_row = 2
+        _worksheet_columns = 30
+        
         for model in self.model_map:
             tempfile = NTF()
             print("tempfile ==> ", tempfile.name)
