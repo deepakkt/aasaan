@@ -350,7 +350,8 @@ class ProgramTeacher(models.Model):
                       ('MN', 'Morning and Noon'),
                       ('ME', 'Morning and Evening'),
                       ('NE', 'Noon and Evening'),
-                      ('AL', 'Morning, Noon and Evening'),)
+                      ('AL', 'Morning, Noon and Evening'),
+                      ('FD', 'Full Day'),)
 
     teacher_type = models.CharField(max_length=2, choices=TEACHER_VALUES,
                                     default=TEACHER_VALUES[0][0],
