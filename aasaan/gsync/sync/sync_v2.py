@@ -189,7 +189,6 @@ class SheetSyncCache(SheetSync):
                 result = self.model_map[model]['translate'](instance)
                 if self.model_map[model]['filters']:
                     result = self.filter(instance, result, self.model_map[model]['filters'])
-
                 if not result:
                     continue
 
@@ -380,7 +379,7 @@ class ScheduleEnrollmentSync(SheetSyncCache):
         timing_codes = '-'.join([x.batch.batch_code for x in instance.programbatch_set.all()])
 
         # get a list of teachers and their roles for this program as a comma separated field
-        program_teachers = '\n'.join([t.teacher.full_name + ' - ' + t.get_teacher_type_display()
+        program_teachers = '\n'.join([t.teacher.full_name + ' - ' + (t.get_teacher_type_display() or '')
                             for t in instance.programteacher_set.all()])
 
         _date_fmt = lambda x: "-".join([str(x.day), str(months[x.month][:3]),
