@@ -27,6 +27,7 @@ class Command(BaseCommand):
 
         ors_total = ProgramCountMaster.objects.get(count_category="ORS Participant Count")
         ors_absent = ProgramCountMaster.objects.get(count_category="ORS Absent Count")
+        ors_online = ProgramCountMaster.objects.get(count_category="ORS Online Count")
         ors_interface = ORSInterface(settings.ORS_USER, settings.ORS_PASSWORD)
         ors_interface.authenticate()
 
@@ -55,6 +56,7 @@ class Command(BaseCommand):
 
             ors_participant_count = _return_category("ORS Participant Count", schedule_categories)
             ors_absent_count = _return_category("ORS Absent Count", schedule_categories)
+            ors_online_count = _return_category("ORS Online Count", schedule_categories)
 
             if not ors_participant_count:
                 ors_participant_count = ProgramScheduleCounts()
@@ -68,7 +70,15 @@ class Command(BaseCommand):
                 ors_absent_count.category = ors_absent
             ors_absent_count.value = ors_summary["Absent"]
 
+            if not ors_online_count:
+                ors_online_count = ProgramScheduleCounts()
+                ors_online_count.program = each_schedule
+                ors_online_count.category = ors_online
+            ors_online_count.value = ors_summary["Online"]
+
+
             ors_participant_count.save()
             ors_absent_count.save()
+            ors_online_count.save()
 
 
