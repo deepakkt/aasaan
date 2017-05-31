@@ -389,8 +389,11 @@ headers={"Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image
         except:
             return dict()
 
-        _y = summary_pd['Transaction Reference No'].str.startswith('REG-', na=False)
-        _online = len(_y[_y==True])
+        try:
+            _y = summary_pd['Transaction Reference No'].str.startswith('REG-', na=False)
+            _online = len(_y[_y==True])
+        except:
+            _online = 0
 
 
         return {'Total': len(summary_pd[summary_pd["SeatStatus"] == "NEW"]),
