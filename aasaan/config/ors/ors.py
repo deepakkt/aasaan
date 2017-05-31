@@ -389,8 +389,12 @@ headers={"Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image
         except:
             return dict()
 
+        _y = summary_pd['Transaction Reference No'].str.startswith('REG-', na=False)
+        _online = len(_y[_y==True])
+
 
         return {'Total': len(summary_pd[summary_pd["SeatStatus"] == "NEW"]),
+                'Online': _online,
                 'Absent': len(summary_pd[summary_pd["SeatStatus"] == "NEW"][summary_pd["Absent"] == "Yes"])}
 
 
@@ -468,7 +472,7 @@ headers={"Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image
             create_data["Gender"] = program_schedule.gender[0]
             create_data["ProgramStartDate"] = getformatdateddmmyy(program_schedule.start_date)
             create_data["ProgramEndDate"] = getformatdateddmmyy(program_schedule.end_date)
-            create_data["Venue"] = program_schedule.program_location
+            create_data["Venue"] = program_schedule.center.center_name
             create_data["DisplayName"] = " - ".join([program_schedule.program.name,
                                                      program_schedule.center.center_name,
                                                      getformatteddate(program_schedule.start_date)])

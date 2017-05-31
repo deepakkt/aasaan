@@ -53,7 +53,8 @@ class ProgramTeacherAdmin(admin.TabularInline):
         if db_field.name == 'teacher':
             try:
                 teacher_role = IndividualRole.objects.get(role_name='Teacher', role_level='ZO')
-                kwargs["queryset"] = Contact.objects.filter(individualcontactrolezone__role=teacher_role)
+                _teacher_list = Contact.objects.filter(individualcontactrolezone__role=teacher_role)
+                kwargs["queryset"] = _teacher_list.distinct()
             except ObjectDoesNotExist:
                 kwargs["queryset"] = Contact.objects.none()
 
