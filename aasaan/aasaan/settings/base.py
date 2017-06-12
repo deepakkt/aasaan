@@ -67,9 +67,9 @@ INSTALLED_APPS += (
     'iconnect',
     'gsync',
     'brochures',
-    'config',
-    'ipctravels',
+    'config',    
     'reports',
+	'statistics',
     'misc'
 )
 

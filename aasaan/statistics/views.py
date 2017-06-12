@@ -12,7 +12,8 @@ class StatisticsDashboard(View):
 
     def get_program_counts(self):
         statistics = {}
-        months = ['2016-07', '2016-08', '2016-09', '2016-10', '2016-11', '2016-12']
+        months = get_configuration('STATISTICS_FILTER_MONTHS').split('#')
+        months = [x.strip(' ') for x in months]
         months.sort()
         self.tn_statistics(statistics, months)
         self.otn_statistics(statistics, months)
@@ -170,7 +171,7 @@ class StatisticsDashboard(View):
 
     def uyirnokkam_statistics(self, statistics, months):
         tn_zone = get_zones(get_configuration('STATISTICS_ZONE_TN'))
-        un_program = 'UyirNokkam'
+        un_program = 'Uyir Nokkam'
         tn_un_list = list(
             StatisticsProgramCounts.objects.filter(program_window__in=months).filter(zone_name__in=tn_zone).filter(
                 program_name=un_program).order_by('zone_name', 'program_name').values_list('zone_name',
