@@ -47,11 +47,12 @@ def deploy():
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_backup_db")
 
 
-def get_database_file():
+def get_database_file(local_path="/tmp"):
     with cd("/home/deepak/dropbox/aasaan/database-backups"):
         dbfile = run("ls -1t | head -1")
         print(dbfile)
-        get(dbfile, local_path="/tmp")
+        get(dbfile, local_path=local_path)
+    return os.path.join("/tmp", dbfile)
 
 
 def sync_schedules():
@@ -61,6 +62,14 @@ def sync_schedules():
 def sync_enrollments():
     with cd(os.path.join(_code_dir(), 'aasaan')):
         run("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/python manage.py sync_enrollments")
+
+@hosts('ubuntu@aasaan-lxc')
+def refresh_container_db():
+    print("getting latest db file")
+    dbfile = get_database_file(local_path="~/lxd/aasaan/tmp")
+
+    with cd("/home/ubuntu/aasaan/deploy"):
+        run("sudo -u postgres ./load_aasaan_database_lxc.sh")
 
 
 
