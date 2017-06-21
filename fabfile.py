@@ -23,7 +23,7 @@ def push_to_git():
     local("git push origin master")
 
 
-@hosts(os.environ['AASAAN_SUDO'] + '@' + os.environ['AASAAN_HOST'])
+@hosts(os.environ['AASAAN_SUDO_USER'] + '@' + os.environ['AASAAN_HOST'])
 def restart_aasaan():
     sudo('supervisorctl restart aasaan')
 
@@ -65,7 +65,14 @@ def sync_enrollments():
 
 @hosts('ubuntu@aasaan-lxc')
 def refresh_container_db():
-    run("sudo -u postgres ./home/ubuntu/aasaan/deploy/load_aasaan_database_lxc.sh")
+    run("sudo -u postgres /home/ubuntu/aasaan/deploy/load_aasaan_database_lxc.sh")
+
+
+def refresh_dashboards():
+    run("psql -f /home/deepak/django/aasaan/sql/refresh_irc_dashboard.sql")
+    run("psql -f /home/deepak/django/aasaan/sql/statistics_dashboard.sql")
+
+    
 
 
 
