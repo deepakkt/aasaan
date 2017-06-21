@@ -65,8 +65,7 @@ def sync_enrollments():
 
 @hosts('ubuntu@aasaan-lxc')
 def refresh_container_db():
-    with cd("/home/ubuntu/aasaan/deploy"):
-        run("sudo -u postgres ./load_aasaan_database_lxc.sh")
+    run("sudo -u postgres ./home/ubuntu/aasaan/deploy/load_aasaan_database_lxc.sh")
 
 
 
