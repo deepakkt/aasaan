@@ -65,9 +65,6 @@ def sync_enrollments():
 
 @hosts('ubuntu@aasaan-lxc')
 def refresh_container_db():
-    print("getting latest db file")
-    dbfile = get_database_file(local_path="~/lxd/aasaan/tmp")
-
     with cd("/home/ubuntu/aasaan/deploy"):
         run("sudo -u postgres ./load_aasaan_database_lxc.sh")
 
