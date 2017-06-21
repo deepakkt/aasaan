@@ -1,0 +1,103 @@
+{% extends 'common/base_stat_dashboard.html' %}
+
+{% block title %}Aasaan - Statistics Dashboard12321{% endblock %}
+
+{% block scripts %}
+<style type="text/css">
+    .table-text-style {
+    text-align: left;
+    }
+</style>
+<script src="http://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.js"></script>
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/css/bootstrap-datetimepicker.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/js/bootstrap-datetimepicker.min.js"></script>
+<script type="text/javascript">
+        var aasaan_stats_dashboard = {};
+        var dashboard_data = '{% autoescape off %}{{ result }}{% endautoescape %}';
+        aasaan_stats_dashboard.dashboard_data = JSON.parse(dashboard_data);
+        aasaan_stats_dashboard.report_zone = 'aTN';
+
+
+</script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript" src="/static/aasaan/statistics/js/statistics_dashboard_charts.js"></script>
+{% endblock %}
+
+{% block body_block %}
+
+{% block sidebar %}
+<ul class="nav nav-sidebar">
+    <li class="active"><a href="#" id="aTN" onclick="refresh_reports(this.id)">Tamil Nadu</a></li>
+    <li><a href="#" id="aOTN" onclick="refresh_reports(this.id)">Outside Tamilnadu</a></li>
+    <li><a href="#" id="aIYC" onclick="refresh_reports(this.id)">Isha Yoga Center</a></li>
+    <li><a href="#" id="aUN" onclick="refresh_reports(this.id)">Uyir Nokkam</a></li>
+    <li><a href="#" id="aOVS" onclick="refresh_reports(this.id)">Overseas</a></li>
+</ul>
+
+
+{% endblock sidebar %}
+
+
+{% block pagetitle %}
+Statistics Dashboard - Tamil Nadu
+{% endblock pagetitle %}
+
+{% block main %}
+<div class="container-fluid" style="border:1px solid #cecece;">
+    <div id="row-tn-ie-chart" class="row placeholders">
+        <div class="col-sm-12 col-md-6 placeholder">
+            <h4>Number of participants - Inner Engineering & Isha Yoga Program</h4>
+
+            <div style="width: 1400px; height: 500px;" id="tn-ie-chart">
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-sm-12 col-md-6 placeholder" align="middle">
+        <div id="tn-ie-table" style="width: 800px; border:1px solid #cecece;">
+        </div>
+    </div>
+
+
+</div>
+<div class="container-fluid" style="height:20px">
+
+</div>
+
+<div class="container-fluid" style="border:1px solid #cecece;">
+
+<div id="row-tn-other-chart" class="row placeholders centered">
+    <div class="col-sm-12 col-md-6 placeholder">
+        <h4>Number of participants - Other programs</h4>
+
+        <div id="tn-other-chart" style="width: 1400px; height: 500px;">
+        </div>
+    </div>
+</div>
+
+<div id="row-tn-other-table" class="row placeholders">
+    <div class="col-sm-12 col-md-6 placeholder">
+        <div id="tn-other-table" style="width: 800px; border:1px solid #cecece;">
+        </div>
+    </div>
+</div>
+</div>
+<div class="container-fluid" style="height:20px">
+
+</div>
+<div class="container-fluid" style="border:1px solid #cecece;">
+<div id="row-tn-class-average" class="row placeholders">
+    <div class="col-sm-12 col-md-6 placeholder">
+        <h4>No of classes</h4>
+
+        <div id="tn-class-average" style="width: 1400px; height: 500px;">
+        </div>
+    </div>
+</div>
+</div>
+{% endblock main %}
+
+{% endblock body_block %}
