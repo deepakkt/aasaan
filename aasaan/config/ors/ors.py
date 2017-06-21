@@ -449,12 +449,25 @@ headers={"Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image
 
             return config_value
 
+
+        def _get_excluded_centers(config):
+            config_value = config.get('ORS_PROGRAM_NAME_VENUE_OVERRIDE_CENTERS')
+
+            if not config_value:
+                return []
+
+            config_list = config_value.split('\r\n')
+
+            return config_list
+
         create_url = "https://ors.isha.in/Program/Save"
         create_data = dict()
 
         try:
             _program_name = program_schedule.program.name
             _program_zone_name = program_schedule.center.zone.zone_name
+            _program_center_name = program_schedule.center.center_name
+            _program_zone_center = "%s#%s" % (_program_zone_name, _program_center_name)
 
             _parse_config_only = partial(parse_config, configuration, _program_name, _program_zone_name)
             _parse_config_fallback = partial(parse_config, configuration, _program_name,
@@ -476,8 +489,14 @@ headers={"Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image
             create_data["ProgramStartDate"] = getformatdateddmmyy(program_schedule.start_date)
             create_data["ProgramEndDate"] = getformatdateddmmyy(program_schedule.end_date)
             create_data["Venue"] = program_schedule.center.center_name
+
+            if _program_zone_center in _get_excluded_centers(configuration):
+                _ors_program_location = program_schedule.program_location
+            else:
+                _ors_program_location = program_schedule.center.center_name
+
             create_data["DisplayName"] = " - ".join([program_schedule.program.name,
-                                                     program_schedule.center.center_name,
+                                                     _ors_program_location,
                                                      getformatteddate(program_schedule.start_date)])
             create_data["AdminUserID"] = ""
             create_data["LadiesSeats"] = ""
