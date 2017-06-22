@@ -10,8 +10,8 @@ def _aasaan_sudo():
 
 
 env.use_ssh_config = True
-env.hosts = ['aasaan.isha.in']
-env.user = "aasaan"
+env.hosts = [os.environ['AASAAN_HOST']]
+env.user = os.environ['AASAAN_USER']
 env.password = _aasaan_sudo()
 env.key_filename = "~/.ssh/id_rsa"
 
@@ -23,7 +23,7 @@ def push_to_git():
     local("git push origin master")
 
 
-@hosts('deepak@aasaan.isha.in')
+@hosts(os.environ['AASAAN_SUDO_USER'] + '@' + os.environ['AASAAN_HOST'])
 def restart_aasaan():
     sudo('supervisorctl restart aasaan')
 
@@ -45,5 +45,34 @@ def deploy():
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_sync_sheets")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_worker_start")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_backup_db")
-        
+
+
+def get_database_file(local_path="/tmp"):
+    with cd("/home/deepak/dropbox/aasaan/database-backups"):
+        dbfile = run("ls -1t | head -1")
+        print(dbfile)
+        get(dbfile, local_path=local_path)
+    return os.path.join("/tmp", dbfile)
+
+
+def sync_schedules():
+    with cd(os.path.join(_code_dir(), 'aasaan')):
+        run("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/python manage.py sync_sheets")
+    
+def sync_enrollments():
+    with cd(os.path.join(_code_dir(), 'aasaan')):
+        run("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/python manage.py sync_enrollments")
+
+@hosts('ubuntu@aasaan-lxc')
+def refresh_container_db():
+    run("sudo -u postgres /home/ubuntu/aasaan/deploy/load_aasaan_database_lxc.sh")
+
+
+def refresh_dashboards():
+    run("psql -f /home/deepak/django/aasaan/sql/refresh_irc_dashboard.sql")
+    run("psql -f /home/deepak/django/aasaan/sql/statistics_dashboard.sql")
+
+    
+
+
 

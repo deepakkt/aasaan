@@ -14,6 +14,7 @@ export DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
 export PYTHONPATH=$DJANGODIR:$PYTHONPATH
 
 psql -f /home/deepak/django/aasaan/sql/refresh_irc_dashboard.sql
+psql -f /home/deepak/django/aasaan/sql/statistics_dashboard.sql
 python manage.py create_ors_programs
 python manage.py create_joomla_programs
 python manage.py close_past_programs
