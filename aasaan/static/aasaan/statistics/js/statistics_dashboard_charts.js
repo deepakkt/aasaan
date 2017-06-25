@@ -110,6 +110,7 @@ refresh_tables = null;
                 $("#row-tn-ie-chart").show()
                 $("#row-tn-class-average").show()
                 $("#container2").hide()
+                $("#container4").show()
             }
             else{
                 $("#row-tn-other-table").show()
@@ -144,47 +145,86 @@ refresh_tables = null;
                 $("#container4").hide()
             }
          }
+        var ie_data_view = new google.visualization.DataView(ie_data);
+        setColumnDataValue(ie_data_view, zone)
 
-        var chart = new google.visualization.ComboChart(document.getElementById('tn-ie-chart'));
-        chart.draw(ie_data, options);
-        var chart = new google.visualization.ComboChart(document.getElementById('tn-other-chart'));
-        chart.draw(other_prg_data, options);
+        var chart_div = document.getElementById('tn-ie-chart');
+        var chart = new google.visualization.ComboChart(chart_div);
+          // Wait for the chart to finish drawing before calling the getImageURI() method.
+          google.visualization.events.addListener(chart, 'ready', function () {
+            chart_div.innerHTML = '<img src="' + chart.getImageURI() + '">';
+          });
+        chart.draw(ie_data_view, options);
+
+
+        if (zone=='Tamil Nadu' || zone=='Outside Tamilnadu' || zone=='Overseas' || zone=='Isha Yoga Center'){
+            var chart_other_div = document.getElementById('tn-other-chart');
+            var chart_other = new google.visualization.ComboChart(chart_other_div);
+            // Wait for the chart to finish drawing before calling the getImageURI() method.
+            google.visualization.events.addListener(chart_other, 'ready', function () {
+                chart_other_div.innerHTML = '<img src="' + chart_other.getImageURI() + '">';
+              });
+            var other_prg_data_view = new google.visualization.DataView(other_prg_data);
+            setColumnDataValue(other_prg_data_view, zone)
+            chart_other.draw(other_prg_data_view, options);
+        }
+
         var table = new google.visualization.Table(document.getElementById('tn-ie-table'));
         table.draw(ie_data, {showRowNumber: true, width: '100%', height: '100%'});
         var table = new google.visualization.Table(document.getElementById('tn-other-table'));
         table.draw(other_prg_data, {showRowNumber: true, width: '100%', height: '100%'});
 
-        var class_average_options = {
-            title : '',
-            vAxis: {title: 'Classes'},
-            hAxis: {title: 'Month'},
-            seriesType: 'bars',
-            series: {5: {type: 'line'}},
-            chartArea: {
-                backgroundColor: {
-                    stroke: '#4322c0',
-                    strokeWidth: 3
-                }
-            },
-            annotations: {
-                boxStyle: {
-                    stroke: '#888', strokeWidth: 1, rx: 10, ry: 10,
-                    gradient: {
-                        color1: '#fbf6a7', color2: '#33b679',
-                        x1: '0%', y1: '0%', x2: '100%', y2: '100%',
-                        useObjectBoundingBoxUnits: true
-                    }
-                },
-                alwaysOutside: true
-            },
-            selectionMode: 'multiple',
-            tooltip: {trigger: 'selection'},
-        };
-
-        var chart = new google.visualization.ComboChart(document.getElementById('tn-class-average'));
-        chart.draw(program_avg, options);
+        var chart_average_div = document.getElementById('tn-class-average');
+        var chart_average = new google.visualization.ComboChart(chart_average_div);
+        // Wait for the chart to finish drawing before calling the getImageURI() method.
+        google.visualization.events.addListener(chart_average, 'ready', function () {
+            chart_average_div.innerHTML = '<img src="' + chart_average.getImageURI() + '">';
+          });
+        var average_data_view = new google.visualization.DataView(program_avg);
+        setColumnDataValue(average_data_view, zone)
+        chart_average.draw(average_data_view, options);
         var table = new google.visualization.Table(document.getElementById('tn-other-table'));
         table.draw(program_avg, {showRowNumber: true, width: '100%', height: '100%'});
+    }
 
+    function setColumnDataValue(data_view, zone){
+         if (zone=='Tamil Nadu' || zone=='Outside Tamilnadu' || zone=='Overseas' || zone=='Uyir Nokkam') {
+                data_view.setColumns([0, 1,{ calc: "stringify",
+                         sourceColumn: 1,
+                         type: "string",
+                         role: "annotation" },
+                         2,{ calc: "stringify",
+                         sourceColumn: 2,
+                         type: "string",
+                         role: "annotation" },
+                         3, { calc: "stringify",
+                         sourceColumn: 3,
+                         type: "string",
+                         role: "annotation" },
+                         4, { calc: "stringify",
+                         sourceColumn: 4,
+                         type: "string",
+                         role: "annotation" },
+                         5, { calc: "stringify",
+                         sourceColumn: 5,
+                         type: "string",
+                         role: "annotation" },
+                         6, { calc: "stringify",
+                         sourceColumn: 6,
+                         type: "string",
+                         role: "annotation" },
+                       ]);
+        }
+        else{
+            data_view.setColumns([0, 1,{ calc: "stringify",
+                         sourceColumn: 1,
+                         type: "string",
+                         role: "annotation" },
+                         2,{ calc: "stringify",
+                         sourceColumn: 2,
+                         type: "string",
+                         role: "annotation" },
+                       ]);
+        }
     }
 })(jQuery);
