@@ -83,6 +83,7 @@ INSTALLED_APPS += (
     'allauth.socialaccount.providers.google',
     'ajax_select',
     'daterange_filter',
+    'braces',
     # 'allauth.socialaccount.providers.facebook',
 )
 

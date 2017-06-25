@@ -6,9 +6,15 @@ from contacts.models import Zone, IndividualContactRoleZone
 from statistics.models import StatisticsProgramCounts, OverseasEnrollement, UyirNokkamEnrollement, TrainingStatistics
 from django.db.models import Q
 from collections import Counter
+from django.views.generic import TemplateView
 
-class StatisticsDashboard(View):
+from braces.views import LoginRequiredMixin
+
+class StatisticsDashboard(LoginRequiredMixin, TemplateView):
     template = "statistics/statistics_dashboard.html"
+    template_name = "statistics/statistics_dashboard.html"
+
+    login_url = "/admin/login/?next=/"
 
     def get_program_counts(self):
         statistics = {}
