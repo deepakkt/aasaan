@@ -5,7 +5,7 @@ from config.models import get_configuration
 from contacts.models import Zone, IndividualContactRoleZone
 from statistics.models import StatisticsProgramCounts, OverseasEnrollement, UyirNokkamEnrollement, TrainingStatistics
 from django.db.models import Q
-
+from collections import Counter
 
 class StatisticsDashboard(View):
     template = "statistics/statistics_dashboard.html"
@@ -112,14 +112,14 @@ class StatisticsDashboard(View):
                                                                                                 'program_count'))
         statistics['IYC_IE_PROGRAMS'] = []
         statistics['IYC_IE_PROGRAMS'].append(title)
-        monthly_list = get_monthly_list(months, iyc_ie_list)
+        monthly_list = get_iyc_list(months, iyc_ie_list, iyc_zone)
         set_iyc_statistics_data(months, iyc_zone, monthly_list, statistics['IYC_IE_PROGRAMS'], participant_avg=0)
         statistics['IYC_AVG'] = []
         statistics['IYC_AVG'].append(title)
         set_iyc_statistics_data(months, iyc_zone, monthly_list, statistics['IYC_AVG'], participant_avg=1)
 
         iyc_other_list = list(
-            StatisticsProgramCounts.objects.filter(program_window__in=months).filter(zone_name__in=iyc_zone).filter(
+            StatisticsProgramCounts.objects.filter(program_window__in=months).filter(zone_name=iyc_zone).filter(
                 ~Q(program_name__in=ie_programs)).order_by('zone_name', 'program_name').values_list('zone_name',
                                                                                                     'program_name',
                                                                                                     'program_window',
@@ -127,7 +127,7 @@ class StatisticsDashboard(View):
                                                                                                     'program_count'))
         statistics['IYC_OTHER_PROGRAMS'] = []
         statistics['IYC_OTHER_PROGRAMS'].append(title)
-        monthly_list = get_monthly_list(months, iyc_other_list)
+        monthly_list = get_iyc_list(months, iyc_other_list, iyc_zone)
         set_iyc_statistics_data(months, iyc_zone, monthly_list, statistics['IYC_OTHER_PROGRAMS'], participant_avg=0)
 
     def overseas_statistics(self, statistics, months):
@@ -234,7 +234,10 @@ def set_iyc_statistics_data(months, zones, all_stats, statistics_data, participa
             monthly_dict[month].append(all_stats[month][zones][participant_avg])
         except KeyError:
             monthly_dict[month].append(0)
-        monthly_dict[month].append(round(sum((monthly_dict[month][1:])) / len((monthly_dict[month][1:])), 0))
+        try:
+            monthly_dict[month].append(round(all_stats[month][zones][0]/all_stats[month][zones][1], 0))
+        except ZeroDivisionError:
+            monthly_dict[month].append(0)
         statistics_data.append(monthly_dict[month])
 
 
@@ -253,4 +256,19 @@ def get_monthly_list(months, stats_list):
         mn = {}
         mn[s[0]] = [s[3], s[4]]
         monthly_list[s[2]].update(mn)
+    return monthly_list
+
+
+def get_iyc_list(months, stats_list, iyc_zone):
+    monthly_list = {}
+    x = Counter()
+    y = Counter()
+    for entry in stats_list:
+        x[entry[2]] += entry[3]
+        y[entry[2]] += entry[4]
+    for month in months:
+        monthly_list[month] = {}
+        mn = {}
+        mn[iyc_zone] =[x[month],y[month]]
+        monthly_list[month].update(mn)
     return monthly_list
