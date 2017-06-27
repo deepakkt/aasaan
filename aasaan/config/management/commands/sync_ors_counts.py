@@ -23,17 +23,31 @@ def _return_category(category_name, category_set):
 class Command(BaseCommand):
     help = "Set programs with past date as 'registration closed'"
 
-    def handle(self, *args, **options):
+    def add_arguments(self, parser):
+        parser.add_argument('year', nargs='?', type=int)
+        parser.add_argument('month', nargs='?', type=int)
 
+
+    def handle(self, *args, **options):
         ors_total = ProgramCountMaster.objects.get(count_category="ORS Participant Count")
         ors_absent = ProgramCountMaster.objects.get(count_category="ORS Absent Count")
         ors_online = ProgramCountMaster.objects.get(count_category="ORS Online Count")
         ors_interface = ORSInterface(settings.ORS_USER, settings.ORS_PASSWORD)
         ors_interface.authenticate()
 
-        reference_date = date.fromordinal(date.toordinal(date.today()) - 50)
+        if options['year']:
+            year = options['year']
+            month = options['month']
+            _start_date = date(year, month, 1)
+            _end_date = date.fromordinal(date(year, month + 1, 1).toordinal() - 1)
+            _schedules = ProgramSchedule.objects.filter(start_date__gte=_start_date,
+                                                        end_date__lte=_end_date)
+        else:
+            reference_date = date.fromordinal(date.toordinal(date.today()) - 50)
+            _schedules = ProgramSchedule.objects.filter(start_date__gte=reference_date)
 
-        for each_schedule in ProgramSchedule.objects.filter(start_date__gte=reference_date):
+
+        for each_schedule in _schedules:
             if not each_schedule.event_management_code:
                 continue
 
