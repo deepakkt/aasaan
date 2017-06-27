@@ -8,7 +8,7 @@
     text-align: left;
     }
 </style>
-<script src="http://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+<script src="/static/aasaan/statistics/js//jquery-ui.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.js"></script>
 <link rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/css/bootstrap-datetimepicker.min.css"/>
@@ -42,6 +42,64 @@
     <li><a href="#" id="t_aUN" onclick="refresh_tables(this.id)">Uyir Nokkam</a></li>
     <li><a href="#" id="t_aOVS" onclick="refresh_tables(this.id)">Overseas</a></li>
 </ul>
+
+
+<div class="container">
+    <div class="row placeholders">
+    <div class="col-sm-12 col-md-6 placeholder" style="width:200px;">
+        <h6>From Date</h6>
+        <div class="form-group">
+            <div class='input-group date' id='datetimepicker10'>
+                <input type='text' id="from_date" class="form-control" />
+                <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar">
+                    </span>
+                </span>
+            </div>
+        </div>
+    </div>
+    </div>
+     <div class="row placeholders">
+    <div class="col-sm-12 col-md-6 placeholder" style="width:200px;">
+        <h6>To Date</h6>
+        <div class="form-group">
+            <div class='input-group date' id='datetimepicker11'>
+                <input type='text' id="to_date" class="form-control" />
+                <span class="input-group-addon">
+                    <span class="glyphicon glyphicon-calendar">
+                    </span>
+                </span>
+            </div>
+        </div>
+    </div>
+    </div>
+
+<div class="row placeholders">
+    <div class="col-sm-12 col-md-6 placeholder" style="width:200px;">
+    <div>
+        <button id="btnSubmit" type="button" class="btn btn-primary" value="submit" onclick="button_submit(this)">Submit</button>
+    </div>
+    </div>
+</div>
+    <script type="text/javascript">
+    (function($) {
+        $(function () {
+            $('#datetimepicker10').datetimepicker({
+                viewMode: 'years',
+                format: 'YYYY-MM',
+                defaultDate: '2017-01',
+            });
+            $('#datetimepicker10').attr('readonly', true);
+            $('#datetimepicker11').datetimepicker({
+                viewMode: 'years',
+                format: 'YYYY-MM',
+                defaultDate: '2017-06',
+            });
+        });
+        })(jQuery);
+    </script>
+</div>
+
 {% endblock sidebar %}
 
 

@@ -10,11 +10,14 @@ from .models import IRCDashboardSectorCoordinators, \
         IRCDashboardZoneSummary, IRCDashboardRoleSummary, \
         IRCDashboardCenterMap, IRCDashboardCenterMaterial
 from config.models import get_configuration as get_config
+from braces.views import LoginRequiredMixin
+from django.views.generic import TemplateView
 
-# Create your views here.
 
-class IRCDashboard(View):
+class IRCDashboard(LoginRequiredMixin, TemplateView):
     template = "reports/irc_dashboard.html"
+    template_name = "reports/irc_dashboard.html"
+    login_url = "/admin/login/?next=/"
 
     def get_sector_coordinators(self):
         sector_coordinators = dict()

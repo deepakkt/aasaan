@@ -7,28 +7,44 @@ from statistics.models import StatisticsProgramCounts, OverseasEnrollement, Uyir
 from django.db.models import Q
 from collections import Counter
 from django.views.generic import TemplateView
-
+from django.http import JsonResponse
 from braces.views import LoginRequiredMixin
+from .utils import get_date_list, get_date_list_now
+
+
+def ajax_refresh(request):
+    if request.method == 'GET':
+        start_date = request.GET['start_date']
+        end_date = request.GET['end_date']
+
+    months = get_date_list(start_date, end_date)
+    statistics = {}
+    StatisticsDashboard.tn_statistics(statistics, months)
+    StatisticsDashboard.otn_statistics(statistics, months)
+    StatisticsDashboard.iyc_statistics(statistics, months)
+    StatisticsDashboard.overseas_statistics(statistics, months)
+    StatisticsDashboard.uyirnokkam_statistics(statistics, months)
+    return JsonResponse({'statistics': statistics, }, safe=False)
 
 class StatisticsDashboard(LoginRequiredMixin, TemplateView):
     template = "statistics/statistics_dashboard.html"
     template_name = "statistics/statistics_dashboard.html"
-
     login_url = "/admin/login/?next=/"
 
-    def get_program_counts(self):
+
+    @staticmethod
+    def get_program_counts():
         statistics = {}
-        months = get_configuration('STATISTICS_FILTER_MONTHS').split('#')
-        months = [x.strip(' ') for x in months]
-        months.sort()
-        self.tn_statistics(statistics, months)
-        self.otn_statistics(statistics, months)
-        self.iyc_statistics(statistics, months)
-        self.overseas_statistics(statistics, months)
-        self.uyirnokkam_statistics(statistics, months)
+        months = get_date_list_now()
+        StatisticsDashboard.tn_statistics(statistics, months)
+        StatisticsDashboard.otn_statistics(statistics, months)
+        StatisticsDashboard.iyc_statistics(statistics, months)
+        StatisticsDashboard.overseas_statistics(statistics, months)
+        StatisticsDashboard.uyirnokkam_statistics(statistics, months)
         return statistics
 
-    def tn_statistics(self, statistics, months):
+    @staticmethod
+    def tn_statistics(statistics, months):
         tn_zone = get_zones(get_configuration('STATISTICS_ZONE_TN'))
         ie_programs = get_configuration('STATISTICS_IE_PROGRAM').split('#')
         ie_programs = [x.strip(' ') for x in ie_programs]
@@ -67,7 +83,8 @@ class StatisticsDashboard(LoginRequiredMixin, TemplateView):
         monthly_list = get_monthly_list(months, tn_other_list)
         set_statistics_data(months, tn_zone, monthly_list, statistics['TN_OTHER'], participant_avg=0)
 
-    def otn_statistics(self, statistics, months):
+    @staticmethod
+    def otn_statistics(statistics, months):
 
         otn_zone = get_zones(get_configuration('STATISTICS_ZONE_OTN'))
         title = ['Month']
@@ -104,7 +121,8 @@ class StatisticsDashboard(LoginRequiredMixin, TemplateView):
         monthly_list = get_monthly_list(months, otn_other_list)
         set_statistics_data(months, otn_zone, monthly_list, statistics['OTN_OTHER_PROGRAMS'], participant_avg=0)
 
-    def iyc_statistics(self, statistics, months):
+    @staticmethod
+    def iyc_statistics(statistics, months):
         iyc_zone = 'Isha Yoga Center'
         title = ['Month', iyc_zone, 'Average']
         ie_programs = get_configuration('STATISTICS_IE_PROGRAM').split('#')
@@ -136,7 +154,8 @@ class StatisticsDashboard(LoginRequiredMixin, TemplateView):
         monthly_list = get_iyc_list(months, iyc_other_list, iyc_zone)
         set_iyc_statistics_data(months, iyc_zone, monthly_list, statistics['IYC_OTHER_PROGRAMS'], participant_avg=0)
 
-    def overseas_statistics(self, statistics, months):
+    @staticmethod
+    def overseas_statistics(statistics, months):
 
         overseas_zone = get_zones(get_configuration('STATISTICS_ZONE_OVS'))
         title = ['Month']
@@ -175,7 +194,8 @@ class StatisticsDashboard(LoginRequiredMixin, TemplateView):
         monthly_list = get_monthly_list(months, ovs_other_list)
         set_statistics_data(months, overseas_zone, monthly_list, statistics['OVS_OTHER_PROGRAMS'], participant_avg=0)
 
-    def uyirnokkam_statistics(self, statistics, months):
+    @staticmethod
+    def uyirnokkam_statistics(statistics, months):
         tn_zone = get_zones(get_configuration('STATISTICS_ZONE_TN'))
         un_program = 'Uyir Nokkam'
         tn_un_list = list(
@@ -278,3 +298,6 @@ def get_iyc_list(months, stats_list, iyc_zone):
         mn[iyc_zone] =[x[month],y[month]]
         monthly_list[month].update(mn)
     return monthly_list
+
+
+

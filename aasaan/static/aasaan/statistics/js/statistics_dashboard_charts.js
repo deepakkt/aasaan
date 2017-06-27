@@ -3,6 +3,7 @@
  */
 refresh_charts = null;
 refresh_tables = null;
+button_submit = null;
 
 (function($) {
     isChart = true;
@@ -11,6 +12,7 @@ refresh_tables = null;
     google.charts.setOnLoadCallback(drawVisualization);
 
     function refreshCharts(r_zone) {
+
         var currentZone = document.getElementById(aasaan_stats_dashboard.report_zone).innerText;
         var clickedZone = r_zone;
         var clickedZoneName = document.getElementById(r_zone).innerText;
@@ -18,6 +20,7 @@ refresh_tables = null;
             // active zone was clicked. no action is required
             return
         }
+
         isChartClicked = true
         refresh(clickedZone, clickedZoneName, r_zone, true);
     }
@@ -36,7 +39,8 @@ refresh_tables = null;
 
     function refresh(clickedZone, clickedZoneName, r_zone, isChart){
         document.getElementById(clickedZone).parentNode.className = "active";
-        document.getElementById(aasaan_stats_dashboard.report_zone).parentNode.className = "";
+        if (r_zone!=aasaan_stats_dashboard.report_zone)
+            document.getElementById(aasaan_stats_dashboard.report_zone).parentNode.className = "";
         aasaan_stats_dashboard.report_zone = r_zone;
         pageHeader = document.getElementsByClassName("page-header")[0];
         pageHeader.innerText = "Statistics Dashboard - " + clickedZoneName;
@@ -227,4 +231,26 @@ refresh_tables = null;
                        ]);
         }
     }
+    function refresh_data_ajax(btn){
+//        tmp_daterange = dateRange($('#from_date').val(), $('#to_date').val())
+        $.ajax({
+                    type: 'GET',
+                    url: '/statistics/ajax_refresh',
+                    data: {
+                            start_date: $('#from_date').val(),
+                            end_date: $('#to_date').val()
+                            },
+                    contentType: 'application/json; charset=utf-8',
+                    cache: false,
+                    success: function(data) {
+                        aasaan_stats_dashboard.dashboard_data = data;
+                        isChartClicked = false;
+                        refreshCharts('aTN')
+                    }
+                });
+    }
+
+
+    button_submit = refresh_data_ajax;
+
 })(jQuery);
