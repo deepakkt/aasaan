@@ -72,6 +72,10 @@ def refresh_dashboards():
     run("psql -f /home/deepak/django/aasaan/sql/refresh_irc_dashboard.sql")
     run("psql -f /home/deepak/django/aasaan/sql/statistics_dashboard.sql")
 
+
+def backup_db():
+    run("source /home/deepak/django/aasaan/.virtualenvs/aasaan/bin/aasaan_backup_db")
+
     
 
 
