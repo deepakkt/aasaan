@@ -124,7 +124,7 @@ class StatisticsDashboard(LoginRequiredMixin, TemplateView):
     @staticmethod
     def iyc_statistics(statistics, months):
         iyc_zone = 'Isha Yoga Center'
-        title = ['Month', iyc_zone, 'Average']
+        title = ['Month', 'Participants', 'Average']
         ie_programs = get_configuration('STATISTICS_IE_PROGRAM').split('#')
         ie_programs = [x.strip(' ') for x in ie_programs]
         iyc_ie_list = list(
@@ -139,8 +139,8 @@ class StatisticsDashboard(LoginRequiredMixin, TemplateView):
         monthly_list = get_iyc_list(months, iyc_ie_list, iyc_zone)
         set_iyc_statistics_data(months, iyc_zone, monthly_list, statistics['IYC_IE_PROGRAMS'], participant_avg=0)
         statistics['IYC_AVG'] = []
-        statistics['IYC_AVG'].append(title)
-        set_iyc_statistics_data(months, iyc_zone, monthly_list, statistics['IYC_AVG'], participant_avg=1)
+        statistics['IYC_AVG'].append(['Month', 'No of Classes'])
+        set_iyc_avg_statistics_data(months, iyc_zone, monthly_list, statistics['IYC_AVG'], participant_avg=1)
 
         iyc_other_list = list(
             StatisticsProgramCounts.objects.filter(program_window__in=months).filter(zone_name=iyc_zone).filter(
@@ -251,6 +251,15 @@ def set_statistics_data(months, zones, all_stats, statistics_data, participant_a
         monthly_dict[month].append(round(sum((monthly_dict[month][1:])) / len((monthly_dict[month][1:])), 0))
         statistics_data.append(monthly_dict[month])
 
+def set_iyc_avg_statistics_data(months, zones, all_stats, statistics_data, participant_avg):
+    monthly_dict = {}
+    for month in months:
+        monthly_dict[month] = [month, ]
+        try:
+            monthly_dict[month].append(all_stats[month][zones][participant_avg])
+        except KeyError:
+            monthly_dict[month].append(0)
+        statistics_data.append(monthly_dict[month])
 
 def set_iyc_statistics_data(months, zones, all_stats, statistics_data, participant_avg):
     monthly_dict = {}

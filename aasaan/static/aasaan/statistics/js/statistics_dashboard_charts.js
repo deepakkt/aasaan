@@ -67,7 +67,7 @@ button_submit = null;
                     strokeWidth: 3
                 }
             },
-          colors: ['#1b9e77', '#d95f02', '#7570b3', '5D6D7E', '#FA1705']
+//        colors: ['#1b9e77', '#d95f02', '#7570b3', '5D6D7E', '#FA1705']
         };
         stats_data = aasaan_stats_dashboard.dashboard_data.statistics;
         if (zone=='Tamil Nadu'){
@@ -155,9 +155,9 @@ button_submit = null;
         var chart_div = document.getElementById('tn-ie-chart');
         var chart = new google.visualization.ComboChart(chart_div);
           // Wait for the chart to finish drawing before calling the getImageURI() method.
-          google.visualization.events.addListener(chart, 'ready', function () {
-            chart_div.innerHTML = '<img src="' + chart.getImageURI() + '">';
-          });
+//          google.visualization.events.addListener(chart, 'ready', function () {
+//            chart_div.innerHTML = '<img src="' + chart.getImageURI() + '">';
+//          });
         chart.draw(ie_data_view, options);
 
 
@@ -185,12 +185,48 @@ button_submit = null;
             chart_average_div.innerHTML = '<img src="' + chart_average.getImageURI() + '">';
           });
         var average_data_view = new google.visualization.DataView(program_avg);
-        setColumnDataValue(average_data_view, zone)
-        chart_average.draw(average_data_view, options);
-        var table = new google.visualization.Table(document.getElementById('tn-other-table'));
-        table.draw(program_avg, {showRowNumber: true, width: '100%', height: '100%'});
-    }
+        if (zone=='Tamil Nadu' || zone=='Outside Tamilnadu' || zone=='Overseas' || zone=='Uyir Nokkam') {
+            setColumnDataValue(average_data_view, zone)
+        }
+        else{
+             average_data_view.setColumns([0, 1,{ calc: "stringify",
+                                                 sourceColumn: 1,
+                                                 type: "string",
+                                                 role: "annotation" },
+                                               ]);
+        }
+        var class_average_options = {
+            title : '',
+            vAxis: {title: 'Classes'},
+            hAxis: {title: 'Month'},
+            seriesType: 'bars',
+            series: {5: {type: 'line'}},
+            chartArea: {
+                backgroundColor: {
+                    stroke: '#4322c0',
+                    strokeWidth: 3
+                }
+            },
+//            annotations: {
+//                boxStyle: {
+//                    stroke: '#000', strokeWidth: 1, rx: 20, ry: 20,
+//                    gradient: {
+//                        color1: '#fbf6a7', color2: '#33b679',
+//                        x1: '0%', y1: '0%', x2: '100%', y2: '100%',
+//                        useObjectBoundingBoxUnits: true
+//                    }
+//                }
+//            },
+            selectionMode: 'multiple',
+            tooltip: {trigger: 'selection'},
+//            colors: ['#1b9e77', '#d95f02', '#7570b3', '5D6D7E', '#FA1705'],
+        };
 
+        chart_average.draw(average_data_view, class_average_options);
+//        var table = new google.visualization.Table(document.getElementById('tn-other-table'));
+//        table.draw(program_avg, {showRowNumber: true, width: '100%', height: '100%'});
+    }
+    // display data values in chart
     function setColumnDataValue(data_view, zone){
          if (zone=='Tamil Nadu' || zone=='Outside Tamilnadu' || zone=='Overseas' || zone=='Uyir Nokkam') {
                 data_view.setColumns([0, 1,{ calc: "stringify",
@@ -232,7 +268,6 @@ button_submit = null;
         }
     }
     function refresh_data_ajax(btn){
-//        tmp_daterange = dateRange($('#from_date').val(), $('#to_date').val())
         $.ajax({
                     type: 'GET',
                     url: '/statistics/ajax_refresh',
@@ -249,8 +284,5 @@ button_submit = null;
                     }
                 });
     }
-
-
     button_submit = refresh_data_ajax;
-
 })(jQuery);

@@ -8,11 +8,11 @@
     text-align: left;
     }
 </style>
-<script src="/static/aasaan/statistics/js//jquery-ui.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.js"></script>
+<script src="/static/bootstrap/js/jquery-ui.js"></script>
+<script src="/static/aasaan/js/moment.min.js"></script>
 <link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/css/bootstrap-datetimepicker.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.43/js/bootstrap-datetimepicker.min.js"></script>
+      href="/static/bootstrap/css/bootstrap-datetimepicker.min.css"/>
+<script src="/static/bootstrap/js/bootstrap-datetimepicker.min.js"></script>
 <script type="text/javascript">
         var aasaan_stats_dashboard = {};
         var dashboard_data = '{% autoescape off %}{{ result }}{% endautoescape %}';
@@ -155,7 +155,7 @@ Statistics Dashboard - Tamil Nadu
 <div id="container5" class="container-fluid" style="border:1px solid #cecece;">
 <div id="row-tn-class-average" class="row placeholders">
     <div class="col-sm-12 col-md-6">
-        <h4>No of classes</h4>
+        <h4>Number of classes</h4>
         <div id="tn-class-average" style="width: 1400px; height: 500px;">
         </div>
     </div>
