@@ -28,7 +28,8 @@ def restart_aasaan():
     sudo('supervisorctl restart aasaan')
 
 
-def deploy():    
+def deploy():
+    local("git pull")
     push_to_git()
     with cd(_code_dir()):
         run("git pull")
