@@ -17,19 +17,19 @@ class StatisticsProgramCounts(models.Model):
 
 
 class OverseasEnrollement(models.Model):
-    start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
-    country = models.CharField(max_length=100, null=True, blank=True)
+    program_month = models.DateField(default='2017-01-01')
+    program_start_date = models.DateField(default='2017-01-01')
+    country = models.CharField(max_length=100, default='USA')
     state = models.CharField(max_length=100, null=True, blank=True)
-    center_name = models.CharField(max_length=100, null=True, blank=True)
-    program_name = models.CharField(max_length=100, null=True, blank=True)
+    center_name = models.CharField(max_length=100, default='IIIS')
+    program_name = models.CharField(max_length=100, default='4DTLIE')
     no_of_day = models.IntegerField(null=True, blank=True)
-    total_participants = models.IntegerField(null=True, blank=True)
+    total_participants = models.IntegerField(default=0)
     teacher_name = models.CharField(max_length=100, null=True, blank=True)
     co_teacher = models.CharField(max_length=150, null=True, blank=True)
 
     def __str__(self):
-        return "%s - %s - %s" % (self.end_date, self.country, self.program_name)
+        return "%s - %s - %s" % (self.program_month, self.country, self.program_name)
 
 
 class UyirNokkamEnrollement(models.Model):

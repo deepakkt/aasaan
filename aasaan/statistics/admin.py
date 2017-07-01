@@ -4,7 +4,7 @@ from import_export import resources
 from import_export.admin import ImportExportModelAdmin
 from import_export.admin import ImportExportMixin
 from import_export.formats import base_formats
-
+from .forms import OverseasEnrollementForm
 
 class OverseasEnrollmentResource(resources.ModelResource):
     formats = base_formats.XLS
@@ -12,11 +12,12 @@ class OverseasEnrollmentResource(resources.ModelResource):
         model = OverseasEnrollement
         ordering = 'country'
         widgets = {
-                'start_date': {'format': '%d.%m.%Y'},
-                'end_date': {'format': '%d.%m.%Y'},
+                'start_date': {'format': '%Y-%m-%d'},
+                'end_date': {'format': '%Y-%m-%d'},
                 }
 
 class UyirNokkamEnrollmentResource(resources.ModelResource):
+    form = OverseasEnrollementForm
     formats = base_formats.XLS
     class Meta:
         model = UyirNokkamEnrollement
@@ -28,6 +29,7 @@ class UyirNokkamEnrollmentResource(resources.ModelResource):
 
 
 class OverseasEnrollmentAdmin(ImportExportMixin, admin.ModelAdmin):
+    form = OverseasEnrollementForm
     formats = [base_formats.XLS,]
     to_encoding = 'utf-8'
     resource_class = OverseasEnrollmentResource
