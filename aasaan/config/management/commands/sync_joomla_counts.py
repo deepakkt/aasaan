@@ -45,7 +45,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         _fields_to_update = ["Joomla Paid Count"]
-        joomla = joomla(settings.JOOMLA_USER, settings.JOOMLA_PASSWORD)
+        joomla = JoomlaInterface(settings.JOOMLA_USER, settings.JOOMLA_PASSWORD)
         joomla.authenticate()
 
         if options['year']:
