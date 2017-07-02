@@ -77,6 +77,13 @@ def refresh_dashboards():
 def backup_db():
     run("source /home/deepak/django/aasaan/.virtualenvs/aasaan/bin/aasaan_backup_db")
 
+def joomla_history_sync():
+    with cd(os.path.join(_code_dir(), 'aasaan')):
+        run("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/python manage.py sync_joomla_counts 2017 1")
+        run("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/python manage.py sync_joomla_counts 2017 2")
+        run("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/python manage.py sync_joomla_counts 2017 3")
+        run("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/python manage.py sync_joomla_counts 2017 4")
+        run("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/python manage.py sync_joomla_counts 2017 5")
     
 
 

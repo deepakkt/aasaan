@@ -376,7 +376,8 @@ class ScheduleEnrollmentSync(SheetSyncCache):
                            instance.get_gender_display(),
                            instance.primary_language.name,
                            instance.get_status_display(),
-                                      instance.event_management_code,
+                            instance.event_management_code,
+                            instance.online_registration_code,
                            program_teachers]
 
         schedule_enrollment_values.extend(_get_category_values())
