@@ -358,6 +358,36 @@ class JoomlaInterface(object):
             return 'FAILED-II'
 
         return joomla_code
+        
+
+    def get_paid_count(self, program_id):
+        paid_count_url = "https://www.ishafoundation.org/administrator/index.php?option=com_program&controller=prgregister"
+
+        filter_parms = {"process" : "filter",
+                        "task": "",
+                        "program_type": "",
+                        "status": "confirmed",
+                        "prg": str(program_id),
+                        "type": "",
+                        "start_date": "",
+                        "end_date": "",
+                        "location": "india",
+                        "limit": "0",
+                        "limitstart": "0"}
+
+        self.postrequest(request_url=paid_count_url,
+                         request_data=filter_parms,
+                         request_label="Filter paid count")
+                         
+        
+        if self.last_response.status_code != 200:
+            return False
+            
+        soup = BeautifulSoup(self.last_response.text, "html.parser")
+        
+        return len(soup.select(".adminlist")[0].find_all("tr")) - 2
+
+
 
 if __name__ == "__main__":
 
