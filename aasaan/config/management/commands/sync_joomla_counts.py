@@ -25,7 +25,7 @@ def _create_or_update(fields, values, schedule):
     categories = schedule.programschedulecounts_set.all()
 
     for field, value in _fvs:
-        _base_cat = ProgramScheduleCounts.objects.get(category__count_category=field)
+        _base_cat = ProgramCountMaster.objects.get(count_category=field)
         _model_cat = _return_category(field, categories) or ProgramScheduleCounts()
 
         _model_cat.program = schedule
