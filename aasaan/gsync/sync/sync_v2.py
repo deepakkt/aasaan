@@ -168,6 +168,7 @@ class SheetSync:
                 print("tempfile ==> ", tempfile.name)
 
             for instance in self.model_map[model]['queryset']:
+                print(instance)
                 result = self.model_map[model]['translate'](instance)
                 if self.model_map[model]['filters']:
                     result = self.filter(instance, result, self.model_map[model]['filters'])

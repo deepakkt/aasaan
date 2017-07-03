@@ -69,7 +69,8 @@ schedule_enrollment_sync_rows = ['SNo',
                                  'Language',
                                  'Status',
                                  'ORS Code',
-                                 'Teacher']
+                                 'Joomla Code',
+                                 'Teachers']
 
 if enrollment_count_categories[0]:
 	schedule_enrollment_sync_rows.extend(enrollment_count_categories)
