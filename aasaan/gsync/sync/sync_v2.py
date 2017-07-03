@@ -241,6 +241,11 @@ class ScheduleSync(SheetSyncCache):
         _date_fmt = lambda x: "-".join([str(x.day), str(months[x.month][:3]),
                                         str(x.year)])
 
+        if instance.online_registration_code:
+            _web_url = "http://www.ishayoga.org/en/component/program/?task=details&program_id=" + instance.online_registration_code
+        else:
+            _web_url = ""
+
         # build a value list
         schedule_values = [_worksheet_row,
                            instance.center.zone.zone_name,
@@ -257,6 +262,7 @@ class ScheduleSync(SheetSyncCache):
                             instance.online_registration_code,
                            instance.contact_phone1,
                            instance.contact_email,
+                           _web_url,
                            "" if not schedule_venue else schedule_venue[0].address,
                            instance.id,
                            instance.last_modified]

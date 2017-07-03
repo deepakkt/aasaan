@@ -35,6 +35,7 @@ schedule_sync_rows = ['SNo',
                       'Joomla Code',
                       'Contact No',
                       'Contact Email',
+                      'Registration URL',
                       'Venue',
                       'ID',
                       'Last Modified']
