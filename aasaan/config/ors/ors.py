@@ -357,6 +357,7 @@ headers={"Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image
                                                     'Languages',
                                                     'Batch', 
                                                     'BatchNo',
+                                                    'VIFO',
                                                     'IntroduceOthers',
                                                     'TakeAdvancedProgram',
                                                     'SupportIshaActivity',
@@ -395,10 +396,21 @@ headers={"Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image
         except:
             _online = 0
 
+        try:
+            _addr = summary_pd['Address_Line1']
+            _addr_items = list(_addr.items())
+            _addr_list = len([len(x[1]) for x in _addr_items if type(x[1]).__name__ == "str" and len(x[1]) >= 1])
+        except:
+            _addr_list = 0
+
+
 
         return {'Total': len(summary_pd[summary_pd["SeatStatus"] == "NEW"]),
                 'Online': _online,
-                'Absent': len(summary_pd[summary_pd["SeatStatus"] == "NEW"][summary_pd["Absent"] == "Yes"])}
+                'Absent': len(summary_pd[summary_pd["SeatStatus"] == "NEW"][summary_pd["Absent"] == "Yes"]),
+                'VIFO': len(summary_pd[summary_pd['VIFO'] == "EDIT"]),
+                'Address List': _addr_list
+                }
 
 
     def create_new_program(self, program_schedule, configuration, dryrun=False):
