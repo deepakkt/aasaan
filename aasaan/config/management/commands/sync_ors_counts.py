@@ -10,6 +10,7 @@ from django.core.management.base import BaseCommand
 from schedulemaster.models import ProgramSchedule, ProgramScheduleCounts, \
  ProgramCountMaster
 from config.ors.ors import ORSInterface
+from config.models import get_configuration
 from django.conf import settings
 
 
@@ -20,6 +21,21 @@ def _return_category(category_name, category_set):
 
     return None
 
+def _create_or_update(fields, values, schedule):
+    _fvs = zip(fields, values)
+    categories = schedule.programschedulecounts_set.all()
+
+    for field, value in _fvs:
+        _base_cat = ProgramCountMaster.objects.get(count_category=field)
+        _model_cat = _return_category(field, categories) or ProgramScheduleCounts()
+
+        _model_cat.program = schedule
+        _model_cat.category = _base_cat
+        _model_cat.value = value
+
+        _model_cat.save()
+
+
 class Command(BaseCommand):
     help = "Set programs with past date as 'registration closed'"
 
@@ -29,11 +45,12 @@ class Command(BaseCommand):
 
 
     def handle(self, *args, **options):
-        ors_total = ProgramCountMaster.objects.get(count_category="ORS Participant Count")
-        ors_absent = ProgramCountMaster.objects.get(count_category="ORS Absent Count")
-        ors_online = ProgramCountMaster.objects.get(count_category="ORS Online Count")
+        _fields_to_update = ["ORS Participant Count", "ORS Absent Count", "ORS Online Count"]
+        _workflow_fields_to_update = ["ORS Address List Count", "ORS VIFO Count"]
         ors_interface = ORSInterface(settings.ORS_USER, settings.ORS_PASSWORD)
         ors_interface.authenticate()
+
+        workflow_programs = get_configuration('ORS_WORKFLOW_PROGRAMS').split('\r\n')
 
         if options['year']:
             year = options['year']
@@ -66,33 +83,12 @@ class Command(BaseCommand):
 
             print(ors_summary)
 
-            schedule_categories = each_schedule.programschedulecounts_set.all()
+            _create_or_update(_fields_to_update, (ors_summary['Total'], ors_summary['Absent'],
+                                                    ors_summary['Online']), each_schedule)
 
-            ors_participant_count = _return_category("ORS Participant Count", schedule_categories)
-            ors_absent_count = _return_category("ORS Absent Count", schedule_categories)
-            ors_online_count = _return_category("ORS Online Count", schedule_categories)
+            if each_schedule.program.name in workflow_programs:
+                _create_or_update(_workflow_fields_to_update, (ors_summary['Address List'], 
+                                ors_summary['VIFO']),
+                                each_schedule)
 
-            if not ors_participant_count:
-                ors_participant_count = ProgramScheduleCounts()
-                ors_participant_count.program = each_schedule
-                ors_participant_count.category = ors_total
-            ors_participant_count.value = ors_summary["Total"]
-
-            if not ors_absent_count:
-                ors_absent_count = ProgramScheduleCounts()
-                ors_absent_count.program = each_schedule
-                ors_absent_count.category = ors_absent
-            ors_absent_count.value = ors_summary["Absent"]
-
-            if not ors_online_count:
-                ors_online_count = ProgramScheduleCounts()
-                ors_online_count.program = each_schedule
-                ors_online_count.category = ors_online
-            ors_online_count.value = ors_summary["Online"]
-
-
-            ors_participant_count.save()
-            ors_absent_count.save()
-            ors_online_count.save()
-
-
+            
