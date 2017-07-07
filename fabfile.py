@@ -86,5 +86,7 @@ def joomla_history_sync():
         run("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/python manage.py sync_joomla_counts 2017 5")
     
 
-
+def sync_ors_counts():
+    with cd(os.path.join(_code_dir(), 'aasaan')):
+        run("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/python manage.py sync_ors_counts")
 
