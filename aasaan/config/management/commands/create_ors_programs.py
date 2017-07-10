@@ -11,7 +11,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 
 from communication.api import stage_pushover, send_communication
-from schedulemaster.models import ProgramSchedule
+from schedulemaster.models import ProgramSchedule, ProgramAdditionalInformation
 from config.models import Configuration
 
 
@@ -58,8 +58,14 @@ class Command(BaseCommand):
             programs_created += 1
             program_code = ors_interface.create_new_program(each_schedule, config_dict)
 
-            each_schedule.event_management_code = program_code
+            each_schedule.event_management_code = program_code.get('code', "E9999999")
             each_schedule.save()
+
+            ors_note = ProgramAdditionalInformation()
+            ors_note.program = each_schedule
+            ors_note.key = "ORS_DISPLAY_NAME"
+            ors_note.value = program_code.get("display")
+            ors_note.save()
 
         send_communication("Pushover", stage_pushover(communication_message="%d ORS programs created! " % programs_created,
                                                       role_groups = ["Aasaan Admin"]))

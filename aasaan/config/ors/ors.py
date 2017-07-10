@@ -575,6 +575,8 @@ headers={"Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image
         if not dryrun:
             program_code_re = re.compile("E[0-9]{8}")
 
-            return program_code_re.findall(self.last_response.text)[0]
+            return {'code': program_code_re.findall(self.last_response.text)[0],
+                    'display': create_data["DisplayName"]}
         else:
-            return "E99999999"
+            return {'code': "E99999999",
+                    'display': "Unknown"}
