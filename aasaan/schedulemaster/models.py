@@ -56,6 +56,7 @@ class ProgramMaster(models.Model):
     name = models.CharField(max_length=50)
     active = models.BooleanField(default=True)
     admin = models.BooleanField(default=False)
+    abbreviation = models.CharField(max_length=10, blank=True)
 
     objects = models.Manager()
     active_objects = ActiveManager()
