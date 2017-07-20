@@ -7,6 +7,8 @@ from contacts.models import Center, Contact, Zone, Sector
 from config.models import SmartModel, Tag
 from django_markdown.models import MarkdownField
 
+from utils.datedeux import DateDeux
+
 
 class ActiveManager(models.Manager):
     def get_queryset(self):
@@ -220,6 +222,13 @@ class ProgramSchedule(SmartModel):
         configurations = self.programadditionalinformation_set.all()
 
         return {x.key: x.value for x in configurations if x.key.startswith('JOOMLA')}
+
+    @property
+    def tally_name(self):
+        return "%s - %s - %s - %d" % (self.program.abbreviation,
+                                    self.center.center_name,
+                                    DateDeux.frompydate(self.start_date).dateformat("dd-mmm-yyyy"),
+                                    self.id)
 
 
     def clean(self):
