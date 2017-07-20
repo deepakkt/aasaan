@@ -84,6 +84,7 @@ INSTALLED_APPS += (
     'ajax_select',
     'daterange_filter',
     'braces',
+    'tastypie',
     # 'allauth.socialaccount.providers.facebook',
 )
 

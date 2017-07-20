@@ -6,8 +6,15 @@ from django.conf import settings
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 import statistics.urls
+from api.aasaan_api import ScheduleResource
+from tastypie.api import Api
+
+
+aasaan_v1_api = Api(api_name='v1')
+aasaan_v1_api.register(ScheduleResource())
 
 urlpatterns = patterns('',
+    url(r'^aasaan_api/', include(aasaan_v1_api.urls)),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^', include(admin.site.urls)),
     url(r'^contacts/', include(contacts.urls, namespace='contacts')),

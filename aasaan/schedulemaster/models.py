@@ -231,6 +231,7 @@ class ProgramSchedule(SmartModel):
                                     self.id)
 
 
+
     def clean(self):
         if (self.end_date and self.start_date):
             if self.end_date < self.start_date:
