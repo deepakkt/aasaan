@@ -28,6 +28,16 @@ def restart_aasaan():
     sudo('supervisorctl restart aasaan')
 
 
+@hosts(os.environ['AASAAN_SUDO_USER'] + '@' + os.environ['AASAAN_HOST'])
+def cert_renew_test():
+    sudo('sudo certbot renew --dry-run')
+
+
+@hosts(os.environ['AASAAN_SUDO_USER'] + '@' + os.environ['AASAAN_HOST'])
+def cert_renew():
+    sudo('sudo certbot renew')
+
+
 def deploy():
     local("git pull")
     push_to_git()
