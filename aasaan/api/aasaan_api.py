@@ -9,7 +9,7 @@ class ScheduleResource(ModelResource):
     class Meta:
         forty_five_days_ago = DateDeux.today() - 45
         queryset =  ProgramSchedule.objects.filter(hidden=False,program__admin=False)
-        fields = ['start_date', 'center',
+        fields = ['start_date',
                 'event_management_code', 
                 'online_registration_code', 'id']
         authentication = ApiKeyAuthentication()
@@ -18,4 +18,6 @@ class ScheduleResource(ModelResource):
     def dehydrate(self, bundle):
         bundle.data['tally_name'] = bundle.obj.tally_name
         bundle.data['program_name'] = bundle.obj.program_name
+        bundle.data['center_name'] = bundle.obj.center.center_name
+        bundle.data['zone_name'] = bundle.obj.center.zone.zone_name
         return bundle
