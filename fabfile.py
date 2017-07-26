@@ -26,6 +26,7 @@ def push_to_git():
 @hosts(os.environ['AASAAN_SUDO_USER'] + '@' + os.environ['AASAAN_HOST'])
 def restart_aasaan():
     sudo('supervisorctl restart aasaan')
+    sudo('supervisorctl restart aasaan-worker')
 
 
 @hosts(os.environ['AASAAN_SUDO_USER'] + '@' + os.environ['AASAAN_HOST'])
