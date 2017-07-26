@@ -2,19 +2,29 @@ from collections import namedtuple
 from django.utils.text import slugify
 
 from schedulemaster.models import ProgramCountMaster
-from config.models import get_configuration
+from config.models import get_configuration, get_configurations
 
-SCHEDULE_SHEET_KEY = "12Zj8m8eHsiYLdX-EHUY_7jSOHupPjfqWWg225zaiOVI"
-SCHEDULE_SHEET_KEY_TEST = "1BegkkqiaA8TqCQLd2RJkKLLbmmdvFLJ14XkpweEgl28"
+gsync_configs = get_configurations('GSYNC')
 
-CONTACTS_SHEET_KEY = "1n5Iy-ewKheuX40T3UJZ1I0tYjhcm7n9w2vy-65m68GY"
-CONTACTS_SHEET_KEY_TEST = "1MvXoYjuZr95PAGcrm0-YTrGG7cmaJVWCxQc5r5tCfLQ"
+SCHEDULE_SHEET_KEY = gsync_configs.get("GSYNC_SCHEDULE_SHEET_KEY",
+                                        "12Zj8m8eHsiYLdX-EHUY_7jSOHupPjfqWWg225zaiOVI")
+SCHEDULE_SHEET_KEY_TEST = gsync_configs.get("GSYNC_SCHEDULE_SHEET_KEY_TEST",
+                                        "1BegkkqiaA8TqCQLd2RJkKLLbmmdvFLJ14XkpweEgl28")
 
-SCHEDULE_ENROLLMENT_SHEET_KEY = "1tCKRRU0OV_MXo8h3k6kNX8YXbOlDwLsjA_jW_iWoOvk"
+CONTACTS_SHEET_KEY = gsync_configs.get("GSYNC_CONTACTS_SHEET_KEY",
+                                         "1n5Iy-ewKheuX40T3UJZ1I0tYjhcm7n9w2vy-65m68GY")
+CONTACTS_SHEET_KEY_TEST = gsync_configs.get("GSYNC_CONTACTS_SHEET_KEY_TEST",
+                                         "1MvXoYjuZr95PAGcrm0-YTrGG7cmaJVWCxQc5r5tCfLQ")
 
-SCHEDULE_IYC_SHEET_KEY = "1iVexEphaCV6VmBGD1gidTdOfBRmgsxKmyuqC8Lp1Tsg"
 
-SIY_DEC_2016_SHEET_KEY = "1IEisF5tpaLZXmGxSvUY-h0M8bIGO14uV7OCqYrLHsKg"
+SCHEDULE_ENROLLMENT_SHEET_KEY = gsync_configs.get("GSYNC_SCHEDULE_ENROLLMENT_SHEET_KEY",
+                                                "1tCKRRU0OV_MXo8h3k6kNX8YXbOlDwLsjA_jW_iWoOvk")
+
+SCHEDULE_IYC_SHEET_KEY = gsync_configs.get("GSYNC_SCHEDULE_IYC_SHEET_KEY",
+                                            "1iVexEphaCV6VmBGD1gidTdOfBRmgsxKmyuqC8Lp1Tsg")
+
+SIY_DEC_2016_SHEET_KEY = gsync_configs.get("GSYNC_SIY_DEC_2016_SHEET_KEY",
+                                            "1IEisF5tpaLZXmGxSvUY-h0M8bIGO14uV7OCqYrLHsKg")
 
 DEFAULT_SHEET_KEY = SCHEDULE_SHEET_KEY_TEST
 
@@ -38,6 +48,7 @@ schedule_sync_rows = ['SNo',
                       'Registration URL',
                       'Venue',
                       'ID',
+                      'Display Name',
                       'Last Modified']
 
 schedule_header = namedtuple('Schedule', [slugify(x).replace("-", "_") for x in schedule_sync_rows])
@@ -56,7 +67,7 @@ contact_sync_rows = ['SNo',
 
 contact_header = namedtuple('Contact', [slugify(x).replace("-", "_") for x in contact_sync_rows])
 
-enrollment_count_categories = get_configuration("SYNC_ENROLLMENT_COUNT_CATEGORIES").split('\r\n')
+enrollment_count_categories = get_configuration("GSYNC_ENROLLMENT_COUNT_CATEGORIES").split('\r\n')
 
 schedule_enrollment_sync_rows = ['SNo',
                                  'Zone',

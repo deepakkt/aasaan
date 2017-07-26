@@ -77,6 +77,12 @@ def get_configuration(key):
         return ""
 
 
+def get_configurations(key_prefix):
+    return dict(((x.configuration_key, x.configuration_value)
+            for x in Configuration.objects.filter(configuration_key__startswith=key_prefix)))
+        
+
+
 class Tag(models.Model):
     tag_name = models.CharField(max_length=50, unique=True)
 

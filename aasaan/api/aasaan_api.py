@@ -3,11 +3,8 @@ from tastypie.resources import ModelResource
 from tastypie.authentication import BasicAuthentication, ApiKeyAuthentication
 from tastypie.cache import SimpleCache
 
-from utils.datedeux import DateDeux
-
 class ScheduleResource(ModelResource):
     class Meta:
-        forty_five_days_ago = DateDeux.today() - 45
         queryset =  ProgramSchedule.objects.filter(hidden=False,program__admin=False)
         fields = ['start_date',
                 'event_management_code', 
