@@ -145,6 +145,7 @@ class ProgramSchedule(SmartModel):
     status = models.CharField(max_length=2, choices=STATUS_VALUES,
                               default=STATUS_VALUES[0][0])
 
+    created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
 
     cancelled_date = models.DateField(null=True)
