@@ -100,6 +100,7 @@ def dispatch_notification(msg_from, msg_to, msg_subject, msg_body, connection):
         msg.set_html(msg_body)
 
         for each_to in msg_to:
+            print("sending email to ", each_to, " ...")
             msg.to = each_to
             connection.send(msg)
         return True
