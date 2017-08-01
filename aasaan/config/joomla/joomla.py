@@ -280,7 +280,7 @@ class JoomlaInterface(object):
         'city': '**tofill**',
         'state': '',
         'postalcode': '',
-        'country': 'India',
+        'country': 'IN',
         'location_note': '',
         'custom_map_url': '',
         'option': 'com_program',
