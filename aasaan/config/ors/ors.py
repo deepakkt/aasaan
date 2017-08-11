@@ -567,10 +567,14 @@ headers={"Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image
                                  request_label="Create - %s" %(create_data["DisplayName"]))
 
                 if self.last_response.status_code != 200:
-                    return "FAILED"
+                    return {'code': "FAILED ",
+                            'display': "Unknown"}
+
 
         except KeyError:
-            return "FAILED"
+            return {'code': "FAILED",
+                    'display': "Unknown"}
+
 
         if not dryrun:
             program_code_re = re.compile("E[0-9]{8}")
