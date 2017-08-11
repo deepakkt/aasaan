@@ -55,8 +55,11 @@ class Command(BaseCommand):
             if each_schedule.center.zone.zone_name in exclude_zones:
                 continue
 
+            print(each_schedule)
+
             programs_created += 1
             program_code = ors_interface.create_new_program(each_schedule, config_dict)
+            print(program_code)
 
             each_schedule.event_management_code = program_code.get('code', "E9999999")
             each_schedule.save()
