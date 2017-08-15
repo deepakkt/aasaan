@@ -14,6 +14,7 @@ import sendgrid
 def build_template_dict(schedule):
     _template_dict = dict()
 
+    _url_prefix = "http://www.ishayoga.org/en/component/program/?task=details&program_id=" if schedule.online_registration_code else ""
     _template_dict['TEMPLATE_START_DATE'] = DateDeux.frompydate(schedule.start_date).dateformat("dd-mmm-yyyy")
     _template_dict['TEMPLATE_ORS_CODE'] = schedule.event_management_code
     _template_dict['TEMPLATE_JOOMLA_CODE'] = schedule.online_registration_code
@@ -21,7 +22,7 @@ def build_template_dict(schedule):
     _template_dict['TEMPLATE_CONTACT'] = "%s @ %s, %s" % (schedule.contact_name,
                                                             schedule.contact_email,
                                                             schedule.contact_phone1)
-    _template_dict['TEMPLATE_WEB_URL'] = "http://www.ishayoga.org/en/component/program/?task=details&program_id=" + schedule.online_registration_code
+    _template_dict['TEMPLATE_WEB_URL'] =  _url_prefix + schedule.online_registration_code
     _template_dict['TEMPLATE_NOTIFICATION_TIMESTAMP'] = datetime.now().isoformat()
     _template_dict['TEMPLATE_PROGRAM_NAME'] = schedule.program.name
     _template_dict['TEMPLATE_LOCATION'] = "%s, %s" % (schedule.center.center_name,
