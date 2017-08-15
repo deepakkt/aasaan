@@ -247,6 +247,29 @@ class ProgramSchedule(SmartModel):
             if not self.event_name:
                 raise ValidationError("Event name is required for special events")
 
+        if self.id:
+            _template = "%s cannot be changed once set. "
+            _error_list = ""
+            _onetime_field_list = ["program", "center", "primary_language",
+                                    "start_date", "end_date", "donation_amount",
+                                    "event_management_code", "online_registration_code"]
+            _changed_fields = self.changed_fields()
+            print(_changed_fields)
+
+            for _field in _onetime_field_list:
+                if _field in _changed_fields:
+                    _field_display = " ".join([x.title() for x in _field.split("_")])
+                    _error_list += _template % _field_display
+
+            if "status" in _changed_fields:
+                if _changed_fields["status"][0] == "Cancelled":
+                    _error_list += "Cancelled program cannot be reinstated"
+
+            if _error_list:
+                raise ValidationError(_error_list)
+
+
+
     def save(self, *args, **kwargs):
         changed_fields = self.changed_fields()
 
