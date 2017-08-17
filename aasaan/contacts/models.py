@@ -426,6 +426,14 @@ class Center(models.Model):
         ordering = ['center_name']
         verbose_name = 'IPC Center'
 
+    @property
+    def google_map_url(self):
+        if not (self.latitude and self.longitude):
+            return ""
+
+        return "https://www.google.com/maps/?q=%s,%s" % (self.latitude, self.longitude)
+
+
     def clean(self):
         if self.pre_center:
             if not self.parent_center:

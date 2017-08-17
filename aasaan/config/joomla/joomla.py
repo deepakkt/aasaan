@@ -291,6 +291,7 @@ class JoomlaInterface(object):
         'events_id': '0',
         'session_up': '**tofill**',
         'session_down': '**tofill**',
+        'google_map_link': '**tofill**',
         'user_id': '7886',
         'fCurrency': '2',
         'fAmount': '',
@@ -327,6 +328,7 @@ class JoomlaInterface(object):
         base_fields['custom_text'] = additional_joomla_settings.get('JOOMLA_CUSTOM_TEXT') or ""
         base_fields['override_session_timings'] = additional_joomla_settings.get('JOOMLA_SESSION_TIME') or ""
         base_fields['eflyer_url'] = "" if _eflyer_url == "None" else _eflyer_url
+        base_fields['google_map_link'] = program_schedule.google_map_url
         base_fields['address'] = program_schedule.venue_address
         base_fields['city'] = _city
         base_fields['no_free_talk_first_day'] = {'1': '1', 'Yes': ''}[_parse_config_fallback('free intro enabled', '1')]
