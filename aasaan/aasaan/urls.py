@@ -1,6 +1,7 @@
 import contacts.urls
 import reports.urls
 import misc.urls
+import schedulemaster.urls
 from ajax_select import urls as ajax_select_urls
 from django.conf import settings
 from django.conf.urls import patterns, include, url
@@ -26,6 +27,7 @@ urlpatterns = patterns('',
     url(r'^admin/lookups/', include(ajax_select_urls)),
     url(r'^admin/brochures/', include('brochures.urls', namespace='brochures')),
 	url(r'^statistics/', include(statistics.urls, namespace='statistics')),
+    url(r'^schedules/', include(schedulemaster.urls, namespace='schedules')),
 )
 
 if settings.ASYNC:

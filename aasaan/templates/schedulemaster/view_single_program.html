@@ -1,0 +1,144 @@
+{% extends 'common/base_dashboard.html' %}
+{% load django_markdown %}
+
+{% block title %}{{ schedule.program }} at {{ schedule.center }}{% endblock %}
+
+{% block body_block %}
+
+    {% block pagetitle %}
+        
+    {% endblock %}
+
+    {% block main %}
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 style="display: inline-block">
+                    <span class="glyphicon glyphicon-tag" 
+                    style="padding-right: 40px; color: red;"></span>
+                </h4>
+                <h3 class="panel-title" 
+                style="display: inline-block; color: blue;
+                font-weight: bold; 
+                font-size: 1.25em">
+                    Program
+                </h3>
+            </div>
+            <div class="panel-body">
+                <span style="font-size: 1.15em">{{ schedule.program }}</span>
+            </div>
+        </div>
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 style="display: inline-block">
+                    <span class="glyphicon glyphicon-map-marker" 
+                    style="padding-right: 40px; color: red;"></span>
+                </h4>
+                <h3 class="panel-title" 
+                style="display: inline-block; color: blue;
+                font-weight: bold; 
+                font-size: 1.25em">
+                    Center and Zone
+                </h3>
+            </div>
+            <div class="panel-body">
+                <span style="font-size: 1.15em">{{ schedule.center }}, {{ schedule.zone }}</span>
+            </div>
+        </div>        
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 style="display: inline-block">
+                    <span class="glyphicon glyphicon-calendar" 
+                    style="padding-right: 40px; color: red;"></span>
+                </h4>
+                <h3 class="panel-title" 
+                style="display: inline-block; color: blue;
+                font-weight: bold; 
+                font-size: 1.25em">
+                    Date
+                </h3>
+            </div>
+            <div class="panel-body">
+                <span style="font-size: 1.15em">{{ schedule.start_date }} to {{ schedule.end_date }}</span>
+            </div>
+        </div>        
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 style="display: inline-block; color: red; 
+                font-size: 1.5em;
+                font-weight: bold;
+                padding-right: 40px;">
+                    &#8377;
+                </h4>
+                <h3 class="panel-title" 
+                style="display: inline-block; color: blue;
+                font-weight: bold; 
+                font-size: 1.25em">
+                    Program Fee
+                </h3>
+            </div>
+            <div class="panel-body">
+                <span style="font-size: 1.15em">{{ schedule.fee }}</span>
+            </div>
+        </div>        
+
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 style="display: inline-block">
+                    <span class="glyphicon glyphicon-file" 
+                    style="padding-right: 40px; color: red;"></span>
+                </h4>
+                <h3 class="panel-title" 
+                style="display: inline-block; color: blue;
+                font-weight: bold; 
+                font-size: 1.25em">
+                    ORS Code
+                </h3>
+            </div>
+            <div class="panel-body">
+                <span style="font-size: 1.15em">{{ schedule.offline_reg_code }}</span>
+            </div>
+        </div>        
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 style="display: inline-block">
+                    <span class="glyphicon glyphicon-globe" 
+                    style="padding-right: 40px; color: red;"></span>
+                </h4>
+                <h3 class="panel-title" 
+                style="display: inline-block; color: blue;
+                font-weight: bold; 
+                font-size: 1.25em">
+                    Joomla Code
+                </h3>
+            </div>
+            <div class="panel-body">
+                <span style="font-size: 1.15em">{{ schedule.online_reg_code }}</span>
+            </div>
+        </div>        
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 style="display: inline-block">
+                    <span class="glyphicon glyphicon-user" 
+                    style="padding-right: 40px; color: red;"></span>
+                </h4>
+                <h3 class="panel-title" 
+                style="display: inline-block; color: blue;
+                font-weight: bold; 
+                font-size: 1.25em">
+                    Contact
+                </h3>
+            </div>
+            <div class="panel-body">
+                <span style="font-size: 1.15em">{{ schedule.contact }}</span>
+            </div>
+        </div>
+        <p style="font-size: 0.85em; color: red;">Details as of {{ schedule.timestamp }}, IST</p>
+    {% endblock %}
+
+{% endblock %}
