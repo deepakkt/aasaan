@@ -251,8 +251,8 @@ class ProgramSchedule(SmartModel):
             _template = "%s cannot be changed once set. "
             _error_list = ""
             _onetime_field_list = ["program", "center", "primary_language",
-                                    "start_date", "end_date", "donation_amount",
-                                    "event_management_code", "online_registration_code"]
+                                    "start_date", "end_date", "donation_amount"]
+
             _changed_fields = self.changed_fields()
             print(_changed_fields)
 
