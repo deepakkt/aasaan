@@ -5,6 +5,7 @@ from .models import AccountsMaster, CourierDetails, TransactionNotes, VoucherMas
 class TransactionNotesInline(admin.StackedInline):
     model = TransactionNotes
     extra = 0
+    # deepak - where are you populating this field in save?
     exclude = ('created_by',)
 
     def has_delete_permission(self, request, obj=None):
@@ -31,6 +32,16 @@ class AccountsMasterAdmin(admin.ModelAdmin):
     #exclude = ('tracking_no',)
     #fields = ('tracking_no', 'voucher_status', 'entity_name', 'voucher_date', 'nature_of_voucher', 'center', 'expense_type',
               #'program_schedule', 'budget_code')
+
+    # deepak - add account type and entity.
+    # deepak - we also need a list filter based on voucher status
+    # deepak - we also need to integrate a permission framework
+    # deepak - basically, zones should see their vouchers only
+    # deepak - IPC NP Accounts should see all zones
+    # deepak - Thenmozhi akka should not see class vouchers
+    # deepak - IPC NP Accounts should not see teacher vouchers
+    # deepak - this should be configurable and not hard coded. Think of a logic
+    # deepak - entity, voucher master etc, should show only active objects              
     list_display = ('tracking_no', 'voucher_status', 'nature_of_voucher',)
 
     fieldsets = (
@@ -50,6 +61,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
     list_per_page = 30
 
     class Media:
+        # deepak - this is the wrong folder. create a separate folder for ipcaccounts. this folder is for generic code only 
         js = ('/static/aasaan/js/ipc_accounts.js',)
 
 

@@ -7,6 +7,8 @@ var aasaan = window.aasaan || {};
 var brochure_list = {};
 var custom_error = false;
 
+// deepak - you have to refactor a lot of the code. a lot of it is repeating
+// have account type selected to 'CLASS' by default
 
 (function($) {
 
