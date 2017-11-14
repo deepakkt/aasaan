@@ -65,6 +65,7 @@ INSTALLED_APPS += (
     'communication',
     'schedulemaster',
     'iconnect',
+    'ipcaccounts',
     'gsync',
     'brochures',
     'config',    
