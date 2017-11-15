@@ -1,12 +1,19 @@
 from django.contrib import admin
 from .models import AccountsMaster, CourierDetails, TransactionNotes, VoucherMaster, EntityMaster, VoucherStatusMaster
+from schedulemaster.models import ProgramSchedule
+from contacts.models import Contact, IndividualRole, Zone, Center
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class TransactionNotesInline(admin.StackedInline):
     model = TransactionNotes
     extra = 0
-    # deepak - where are you populating this field in save?
     exclude = ('created_by',)
+
+    def save_model(self, request, obj, form, change):
+        obj.created_by = request.user
+        obj.save()
+
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -29,20 +36,62 @@ class CourierDetailsInline(admin.StackedInline):
 
 
 class AccountsMasterAdmin(admin.ModelAdmin):
-    #exclude = ('tracking_no',)
-    #fields = ('tracking_no', 'voucher_status', 'entity_name', 'voucher_date', 'nature_of_voucher', 'center', 'expense_type',
-              #'program_schedule', 'budget_code')
 
-    # deepak - add account type and entity.
-    # deepak - we also need a list filter based on voucher status
-    # deepak - we also need to integrate a permission framework
-    # deepak - basically, zones should see their vouchers only
-    # deepak - IPC NP Accounts should see all zones
-    # deepak - Thenmozhi akka should not see class vouchers
-    # deepak - IPC NP Accounts should not see teacher vouchers
-    # deepak - this should be configurable and not hard coded. Think of a logic
-    # deepak - entity, voucher master etc, should show only active objects              
-    list_display = ('tracking_no', 'voucher_status', 'nature_of_voucher',)
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+
+        if db_field.name == 'voucher_status':
+            kwargs["queryset"] = VoucherStatusMaster.active_objects.all()
+
+        if db_field.name == 'nature_of_voucher':
+            kwargs["queryset"] = VoucherMaster.active_objects.all()
+
+        if db_field.name == 'entity_name':
+            kwargs["queryset"] = EntityMaster.active_objects.all()
+
+        if not request.user.is_superuser and db_field.name == 'center':
+            user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
+            user_zone_centers = [x.id for x in Center.objects.filter(zone__in=user_zones)]
+            user_centers = [x.center.id for x in request.user.aasaanusercenter_set.all()] +\
+                user_zone_centers
+            user_centers = list(set(user_centers))
+            kwargs["queryset"] = Center.objects.filter(pk__in=user_centers)
+
+        if not request.user.is_superuser and db_field.name == 'program_schedule':
+            user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
+            user_zone_centers = [x.id for x in Center.objects.filter(zone__in=user_zones)]
+            user_centers = [x.center.id for x in request.user.aasaanusercenter_set.all()] + \
+                           user_zone_centers
+            user_centers = list(set(user_centers))
+            kwargs["queryset"] = ProgramSchedule.objects.filter(center__in=user_centers)
+
+        if db_field.name == 'teacher':
+            try:
+                teacher_role = IndividualRole.objects.get(role_name='Teacher', role_level='ZO')
+                _teacher_list = Contact.objects.filter(individualcontactrolezone__role=teacher_role)
+                kwargs["queryset"] = _teacher_list.distinct()
+            except ObjectDoesNotExist:
+                kwargs["queryset"] = Contact.objects.none()
+
+        return super(AccountsMasterAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+    # filter accounts records based on user permissions
+    def get_queryset(self, request):
+
+        qs = super(AccountsMasterAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        user_centers = [x.center for x in request.user.aasaanusercenter_set.all()]
+        user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
+        center_schedules = AccountsMaster.objects.filter(center__in=user_centers)
+        center_zonal_schedules = AccountsMaster.objects.filter(center__zone__in=user_zones)
+        all_schedules = center_schedules | center_zonal_schedules
+        all_schedules = all_schedules.distinct()
+
+        return all_schedules
+
+
+    list_display = ('__str__', 'tracking_no', 'amount', 'payment_date', 'utr_no', 'approval_status')
+    list_filter = ('account_type', 'entity_name', 'voucher_status', 'nature_of_voucher')
 
     fieldsets = (
         ('', {
@@ -52,8 +101,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
         ('Approval', {'fields': (('approval_sent_date', 'approved_date', 'approval_status'),), 'classes': ['collapse', 'has-cols', 'cols-3']}),
 
         ('Finance', {'fields': (('finance_submission_date','movement_sheet_no',), ('payment_date', 'utr_no',)), 'classes': ['collapse', 'has-cols', 'cols-3']}),
-    )
-    #readonly_fields = ('tracking_no',)
+           )
     inlines = [CourierDetailsInline, TransactionNotesInline]
 
     save_on_top = True
@@ -61,9 +109,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
     list_per_page = 30
 
     class Media:
-        # deepak - this is the wrong folder. create a separate folder for ipcaccounts. this folder is for generic code only 
-        js = ('/static/aasaan/js/ipc_accounts.js',)
-
+        js = ('/static/aasaan/ipcaccounts/ipc_accounts.js',)
 
 
 admin.site.register(AccountsMaster, AccountsMasterAdmin)

@@ -7,19 +7,27 @@ var aasaan = window.aasaan || {};
 var brochure_list = {};
 var custom_error = false;
 
-// deepak - you have to refactor a lot of the code. a lot of it is repeating
-// have account type selected to 'CLASS' by default
 
 (function($) {
 
     $(function() {
         $('#id_tracking_no').prop("readonly", true);
-        if($("#id_entity_name").val()=='')
+        if($("#id_account_type").find('option')[0].value=='')
+            $("#id_account_type").find('option')[0].remove()
+        if($("#id_entity_name").find('option')[0].value=='')
             $("#id_entity_name").find('option')[0].remove()
-        if($("#id_voucher_status").val()=='')
+        if($("#id_voucher_status").find('option')[0].value=='')
             $("#id_voucher_status").find('option')[0].remove()
-        if($("#id_nature_of_voucher").val()=='')
+        if($("#id_nature_of_voucher").find('option')[0].value=='')
             $("#id_nature_of_voucher").find('option')[0].remove()
+
+        if ($('#id_voucher_date').val()!=''){
+            $("#id_account_type").prop("disabled", true);
+        }
+
+        $("form").submit(function( event ) {
+            $("#id_account_type").prop("disabled", false);
+        });
 
         if($("#id_account_type").val()=='CLASS'){
                 $('.field-teacher').hide()
@@ -29,6 +37,7 @@ var custom_error = false;
                 $('.field-budget_code').show()
                 $('.field-party_name').show()
         }
+        toggleVerified($("#id_account_type").val())
 
         $("#id_account_type").change(function() {
             toggleVerified($(this).val());
