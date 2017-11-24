@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.postgres.fields import JSONField
 from contacts.models import Center, Contact, IndividualContactRoleZone
 from schedulemaster.models import ProgramSchedule
 from django_markdown.models import MarkdownField
@@ -43,6 +42,34 @@ class VoucherStatusMaster(models.Model):
 
     def __str__(self):
         return "%s" % self.name
+
+
+class ClassExpensesTypeMaster(models.Model):
+    name = models.CharField(max_length=100)
+    active = models.BooleanField(default=True)
+
+    objects = models.Manager()
+    active_objects = ActiveManager()
+
+    def __str__(self):
+        return "%s" % self.name
+
+    class Meta:
+        verbose_name = 'Class Expenses'
+
+
+class TeacherExpensesTypeMaster(models.Model):
+    name = models.CharField(max_length=100)
+    active = models.BooleanField(default=True)
+
+    objects = models.Manager()
+    active_objects = ActiveManager()
+
+    def __str__(self):
+        return "%s" % self.name
+
+    class Meta:
+        verbose_name = 'Teacher Expenses'
 
 
 class AccountsMaster(models.Model):
@@ -107,6 +134,10 @@ class AccountsMaster(models.Model):
     def __str__(self):
         return "%s - %s - %s - %s" % (self.entity_name, self.voucher_date, self.center if self.center else self.teacher, self.voucher_status)
 
+    class Meta:
+        ordering = ['account_type', 'entity_name']
+        verbose_name = 'Voucher Approval Tracking'
+
 
 class CourierDetails(models.Model):
     accounts_master = models.ForeignKey(AccountsMaster)
@@ -127,11 +158,12 @@ class VoucherDetails(models.Model):
     nature_of_voucher = models.ForeignKey(VoucherMaster)
     voucher_status = models.ForeignKey(VoucherStatusMaster)
     voucher_date = models.DateField()
-    head_of_expenses = models.CharField(max_length=100, blank=True)
+    ca_head_of_expenses = models.ForeignKey(ClassExpensesTypeMaster, blank=True, null=True, verbose_name='Head of Expenses')
+    ta_head_of_expenses = models.ForeignKey(TeacherExpensesTypeMaster, blank=True, null=True, verbose_name='Head of Expenses')
     expenses_description = models.CharField(max_length=100, blank=True)
     party_name = models.CharField(max_length=100, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
-    delayed_approval =  models.BooleanField(default=True)
+    delayed_approval =  models.BooleanField(default=False)
 
     class Meta:
         ordering = ['nature_of_voucher',]

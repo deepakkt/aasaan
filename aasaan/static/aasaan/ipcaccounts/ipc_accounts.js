@@ -11,61 +11,63 @@ var custom_error = false;
 (function($) {
 
     $(function() {
-//        $('#id_tracking_no').prop("readonly", true);
+
         if($("#id_account_type").find('option')[0].value=='')
             $("#id_account_type").find('option')[0].remove()
         if($("#id_entity_name").find('option')[0].value=='')
             $("#id_entity_name").find('option')[0].remove()
-//        if($("#id_voucher_status").find('option')[0].value=='')
-//            $("#id_voucher_status").find('option')[0].remove()
-//        if($("#id_nature_of_voucher").find('option')[0].value=='')
-//            $("#id_nature_of_voucher").find('option')[0].remove()
 
-//        if ($('#id_voucher_date').val()!=''){
-//            $("#id_account_type").prop("disabled", true);
-//        }
-//
-//        $("form").submit(function( event ) {
-//            $("#id_account_type").prop("disabled", false);
-//        });
 
         if($("#id_account_type").val()=='CA'){
-                $('.field-teacher').hide()
-//                $('.field-head_of_expenses').hide()
-                $('.field-program_schedule').show()
-                $('.field-center').show()
-                $('.field-budget_code').show()
-//                $('.field-party_name').show()
+            $('.field-teacher').hide()
+            $('.field-program_schedule').show()
+            $('.field-center').show()
+            $('.field-budget_code').show()
+            $('.field-ca_head_of_expenses').show()
+            $('.field-ta_head_of_expenses').hide()
+            $('.field-party_name').show()
         }
         toggleVerified($("#id_account_type").val())
 
         $("#id_account_type").change(function() {
             toggleVerified($(this).val());
         })
+
         function toggleVerified(value) {
             if($("#id_account_type").val()=='TA'){
                 $('.field-program_schedule').hide()
                 $('.field-center').hide()
                 $('.field-budget_code').hide()
-//                $('.field-party_name').hide()
                 $('.field-teacher').show()
-//                $('.field-head_of_expenses').show()
+                $('.field-ca_head_of_expenses').hide()
+                $('.field-ta_head_of_expenses').show()
+                $('.field-party_name').hide()
             }
             else if($("#id_account_type").val()=='CA'){
                 $('.field-teacher').hide()
-//                $('.field-head_of_expenses').hide()
                 $('.field-program_schedule').show()
                 $('.field-center').show()
                 $('.field-budget_code').show()
-//                $('.field-party_name').show()
+                $('.field-ca_head_of_expenses').show()
+                $('.field-ta_head_of_expenses').hide()
+                $('.field-party_name').show()
             }
             else {
                 $('.field-teacher').hide()
-//                $('.field-head_of_expenses').hide()
                 $('.field-program_schedule').hide()
                 $('.field-center').hide()
                 $('.field-budget_code').show()
-//                $('.field-party_name').show()
+                $('.field-ca_head_of_expenses').show()
+                $('.field-ta_head_of_expenses').hide()
+                $('.field-party_name').show()
+            }
+        }
+
+        function validateVoucherInline(){
+            var no_of_item = parseInt($('#id_voucherdetails_set-TOTAL_FORMS').val())
+            var item_array = [];
+            for (var i=0; i<no_of_item; i++){
+                $('.field-ca_head_of_expenses').hide()
             }
         }
     });

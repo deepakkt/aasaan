@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AccountsMaster, CourierDetails, TransactionNotes, VoucherMaster, EntityMaster, VoucherStatusMaster, VoucherDetails
+from .models import AccountsMaster, CourierDetails, TransactionNotes, VoucherMaster, EntityMaster, VoucherStatusMaster, VoucherDetails, ClassExpensesTypeMaster, TeacherExpensesTypeMaster
 from schedulemaster.models import ProgramSchedule
 from contacts.models import Contact, IndividualRole, Zone, Center, ContactRoleGroup, RoleGroup, IndividualContactRoleZone
 from django.core.exceptions import ObjectDoesNotExist
@@ -29,13 +29,14 @@ class VoucherDetailsInline(admin.StackedInline):
     fieldsets = (
         ('', {
             'fields': ('nature_of_voucher', 'voucher_status', 'voucher_date',
-                       'head_of_expenses', 'expenses_description', 'party_name', 'amount', 'delayed_approval'),
+                       'ca_head_of_expenses', 'ta_head_of_expenses', 'expenses_description', 'party_name', 'amount', 'delayed_approval'),
 
         }),
     )
 
     def has_delete_permission(self, request, obj=None):
         return False
+
 
 class CourierDetailsInline(admin.StackedInline):
     model = CourierDetails
@@ -158,5 +159,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
 admin.site.register(AccountsMaster, AccountsMasterAdmin)
 admin.site.register(VoucherMaster, admin.ModelAdmin)
 admin.site.register(EntityMaster, admin.ModelAdmin)
+admin.site.register(ClassExpensesTypeMaster, admin.ModelAdmin)
+admin.site.register(TeacherExpensesTypeMaster, admin.ModelAdmin)
 admin.site.register(VoucherStatusMaster, admin.ModelAdmin)
 
