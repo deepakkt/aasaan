@@ -63,7 +63,7 @@ class Configuration(models.Model):
 
     def save(self, *args, **kwargs):
         self.configuration_key = self.configuration_key.upper().rstrip()
-        super().save(self, *args, **kwargs)
+        super(Configuration, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ['configuration_key']
@@ -81,7 +81,6 @@ def get_configurations(key_prefix):
     return dict(((x.configuration_key, x.configuration_value)
             for x in Configuration.objects.filter(configuration_key__startswith=key_prefix)))
         
-
 
 class Tag(models.Model):
     tag_name = models.CharField(max_length=50, unique=True)
