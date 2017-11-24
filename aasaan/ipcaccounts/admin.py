@@ -1,8 +1,12 @@
 from django.contrib import admin
-from .models import AccountsMaster, CourierDetails, TransactionNotes, VoucherMaster, EntityMaster, VoucherStatusMaster
+from .models import AccountsMaster, CourierDetails, TransactionNotes, VoucherMaster, EntityMaster, VoucherStatusMaster, VoucherDetails
 from schedulemaster.models import ProgramSchedule
-from contacts.models import Contact, IndividualRole, Zone, Center
+from contacts.models import Contact, IndividualRole, Zone, Center, ContactRoleGroup, RoleGroup, IndividualContactRoleZone
 from django.core.exceptions import ObjectDoesNotExist
+from datetime import timedelta
+from django.utils import timezone
+from AasaanUser.models import AasaanUserContact
+from django.contrib.auth.models import User
 
 
 class TransactionNotesInline(admin.StackedInline):
@@ -14,10 +18,24 @@ class TransactionNotesInline(admin.StackedInline):
         obj.created_by = request.user
         obj.save()
 
-
     def has_delete_permission(self, request, obj=None):
         return False
 
+
+class VoucherDetailsInline(admin.StackedInline):
+    model = VoucherDetails
+    extra = 1
+
+    fieldsets = (
+        ('', {
+            'fields': ('nature_of_voucher', 'voucher_status', 'voucher_date',
+                       'head_of_expenses', 'expenses_description', 'party_name', 'amount', 'delayed_approval'),
+
+        }),
+    )
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 class CourierDetailsInline(admin.StackedInline):
     model = CourierDetails
@@ -56,13 +74,18 @@ class AccountsMasterAdmin(admin.ModelAdmin):
             user_centers = list(set(user_centers))
             kwargs["queryset"] = Center.objects.filter(pk__in=user_centers)
 
-        if not request.user.is_superuser and db_field.name == 'program_schedule':
-            user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
-            user_zone_centers = [x.id for x in Center.objects.filter(zone__in=user_zones)]
-            user_centers = [x.center.id for x in request.user.aasaanusercenter_set.all()] + \
-                           user_zone_centers
-            user_centers = list(set(user_centers))
-            kwargs["queryset"] = ProgramSchedule.objects.filter(center__in=user_centers)
+        if db_field.name == 'program_schedule':
+            time_threshold = timezone.now() - timedelta(days=60)
+            qs = ProgramSchedule.objects.filter(end_date__gte=time_threshold)
+            if not request.user.is_superuser:
+                user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
+                user_zone_centers = [x.id for x in Center.objects.filter(zone__in=user_zones)]
+                user_centers = [x.center.id for x in request.user.aasaanusercenter_set.all()] + \
+                               user_zone_centers
+                user_centers = list(set(user_centers))
+                kwargs["queryset"] = qs.filter(center__in=user_centers)
+            else:
+                kwargs["queryset"] = qs
 
         if db_field.name == 'teacher':
             try:
@@ -82,27 +105,47 @@ class AccountsMasterAdmin(admin.ModelAdmin):
             return qs
         user_centers = [x.center for x in request.user.aasaanusercenter_set.all()]
         user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
-        center_schedules = AccountsMaster.objects.filter(center__in=user_centers)
-        center_zonal_schedules = AccountsMaster.objects.filter(center__zone__in=user_zones)
-        all_schedules = center_schedules | center_zonal_schedules
-        all_schedules = all_schedules.distinct()
+        center_accounts = AccountsMaster.objects.filter(center__in=user_centers)
+        center_zonal_accounts = AccountsMaster.objects.filter(center__zone__in=user_zones)
+        all_accounts = center_accounts | center_zonal_accounts
+        all_accounts = all_accounts.distinct()
 
-        return all_schedules
+        cfg_trs_role_group = 'Teachers Vouchers'
+        cfg_acc_role_group = 'IPC Accounts Vouchers'
 
+        login_user = User.objects.get(username=request.user.username)
+        contact = AasaanUserContact.objects.get(user=login_user)
+        trs_role_group = RoleGroup.objects.filter(role_name=cfg_trs_role_group)
+        acc_role_group = RoleGroup.objects.filter(role_name=cfg_acc_role_group)
+        try:
+            contact_role_group = ContactRoleGroup.objects.filter(contact=contact.contact)
+        except ObjectDoesNotExist:
+            return AccountsMaster.objects.none()
+        if contact_role_group.get(role=trs_role_group):
+            trs_account = all_accounts.filter(account_type='TEACH')
+        if contact_role_group.get(role=acc_role_group):
+            class_accounts = all_accounts.filter(account_type='CLASS')
+        if contact_role_group.get(role=acc_role_group) and contact_role_group.get(role=trs_role_group):
+            all_accounts = trs_account | class_accounts
+            all_accounts = all_accounts.distinct()
 
-    list_display = ('__str__', 'tracking_no', 'amount', 'payment_date', 'utr_no', 'approval_status')
-    list_filter = ('account_type', 'entity_name', 'voucher_status', 'nature_of_voucher')
+        return all_accounts
+
+    list_display = ('account_type', '__str__', 'tracking_no', 'payment_date', 'utr_no', 'approval_status')
+    list_filter = ('account_type', 'entity_name', )
 
     fieldsets = (
         ('', {
-            'fields': ('account_type', 'tracking_no', 'entity_name', 'voucher_status', 'nature_of_voucher', 'voucher_date', 'center',
-            'program_schedule', 'budget_code', 'teacher', 'head_of_expenses', 'expenses_description', 'party_name', 'amount')
+            'fields': ('account_type', 'entity_name', 'budget_code', 'center',
+            'program_schedule', 'teacher',)
         }),
         ('Approval', {'fields': (('approval_sent_date', 'approved_date', 'approval_status'),), 'classes': ['collapse', 'has-cols', 'cols-3']}),
 
         ('Finance', {'fields': (('finance_submission_date','movement_sheet_no',), ('payment_date', 'utr_no',)), 'classes': ['collapse', 'has-cols', 'cols-3']}),
            )
-    inlines = [CourierDetailsInline, TransactionNotesInline]
+    fieldsets_and_inlines_order = ('f', 'i', 'f', 'f', 'i', 'i')
+
+    inlines = [VoucherDetailsInline, CourierDetailsInline, TransactionNotesInline]
 
     save_on_top = True
 
@@ -116,3 +159,4 @@ admin.site.register(AccountsMaster, AccountsMasterAdmin)
 admin.site.register(VoucherMaster, admin.ModelAdmin)
 admin.site.register(EntityMaster, admin.ModelAdmin)
 admin.site.register(VoucherStatusMaster, admin.ModelAdmin)
+

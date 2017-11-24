@@ -48,6 +48,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # core django apps
 INSTALLED_APPS = (
+    'django_ifo',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

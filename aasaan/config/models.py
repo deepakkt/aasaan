@@ -63,7 +63,7 @@ class Configuration(models.Model):
 
     def save(self, *args, **kwargs):
         self.configuration_key = self.configuration_key.upper().rstrip()
-        super().save(self, *args, **kwargs)
+        super(Configuration, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ['configuration_key']
