@@ -1,9 +1,11 @@
 from django.db import models
-from contacts.models import Center, Contact, IndividualContactRoleZone
+from contacts.models import Center, Contact, IndividualContactRoleZone, Zone
 from schedulemaster.models import ProgramSchedule
 from django_markdown.models import MarkdownField
 import json
-from config.models import Configuration
+from config.models import Configuration, SmartModel
+from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 
 
 class ActiveManager(models.Manager):
@@ -72,7 +74,7 @@ class TeacherExpensesTypeMaster(models.Model):
         verbose_name = 'Teacher Expenses'
 
 
-class AccountsMaster(models.Model):
+class AccountsMaster(SmartModel):
 
     ACCOUNT_TYPE_VALUES = (('TA', 'Teachers Accounts'),
                            ('CA', 'Classes Accounts'),
@@ -84,10 +86,10 @@ class AccountsMaster(models.Model):
 
     entity_name = models.ForeignKey(EntityMaster)
     center = models.ForeignKey(Center, blank=True, null=True)
+    zone = models.ForeignKey(Zone, blank=True, null=True)
     teacher = models.ForeignKey(Contact, blank=True, null=True)
     budget_code = models.CharField(max_length=100, blank=True)
     program_schedule = models.ForeignKey(ProgramSchedule, blank=True, null=True)
-    tracking_no = models.CharField(max_length=100, blank=True)
     approval_sent_date = models.DateField(blank=True, null=True)
     approved_date = models.DateField(blank=True, null=True)
     APPROVAL_STATUS_VALUES = (('SENT', 'Sent for Approval'), ('NOT', 'Not Approved'),
@@ -106,33 +108,25 @@ class AccountsMaster(models.Model):
     objects = models.Manager()
     active_objects = ActiveManager()
 
-    def save(self, *args, **kwargs):
+    def clean(self):
 
-        if self.pk is None:
-            cft = Configuration.objects.get(configuration_key='IPC_ACCOUNTS_TRACKING_CONST')
-            data = json.loads(cft.configuration_value)
-            if self.account_type == 'CA':
-                key = data[self.center.zone.zone_name]['ca_key']
-                prefix = data[self.center.zone.zone_name]['prefix']
-                tracking_no = 'CA' + prefix + str(key).zfill(10)
-                data[self.center.zone.zone_name]['ca_key'] = key + 1
-                cft.configuration_value = json.dumps(data)
-                cft.save()
+        if self.id:
+            _template = "%s cannot be changed once set. "
+            _error_list = ""
+            _onetime_field_list = ["account_type", "entity_name"]
 
-            if self.account_type == 'TA':
-                contact_role_zone = IndividualContactRoleZone.objects.get(contact=self.teacher)
-                key = data[contact_role_zone.zone.zone_name]['ta_key']
-                prefix = data[contact_role_zone.zone.zone_name]['prefix']
-                tracking_no = 'TA'+ prefix + str(key).zfill(10)
-                data[contact_role_zone.zone.zone_name]['ta_key'] = key + 1
-                cft.configuration_value = json.dumps(data)
-                cft.save()
+            _changed_fields = self.changed_fields()
 
-        self.tracking_no = tracking_no
-        super(AccountsMaster, self).save(*args, **kwargs)
+            for _field in _onetime_field_list:
+                if _field in _changed_fields:
+                    _field_display = " ".join([x.title() for x in _field.split("_")])
+                    _error_list += _template % _field_display
+
+            if _error_list:
+                raise ValidationError(_error_list)
 
     def __str__(self):
-        return "%s - %s - %s - %s" % (self.entity_name, self.voucher_date, self.center if self.center else self.teacher, self.voucher_status)
+        return "%s" % (self.entity_name)
 
     class Meta:
         ordering = ['account_type', 'entity_name']
@@ -152,7 +146,7 @@ class CourierDetails(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
 
-class VoucherDetails(models.Model):
+class VoucherDetails(SmartModel):
     accounts_master = models.ForeignKey(AccountsMaster)
     tracking_no = models.CharField(max_length=100, blank=True)
     nature_of_voucher = models.ForeignKey(VoucherMaster)
@@ -160,10 +154,58 @@ class VoucherDetails(models.Model):
     voucher_date = models.DateField()
     ca_head_of_expenses = models.ForeignKey(ClassExpensesTypeMaster, blank=True, null=True, verbose_name='Head of Expenses')
     ta_head_of_expenses = models.ForeignKey(TeacherExpensesTypeMaster, blank=True, null=True, verbose_name='Head of Expenses')
+    oa_head_of_expenses = models.CharField(max_length=100, blank=True, verbose_name='Head of Expenses')
     expenses_description = models.CharField(max_length=100, blank=True)
     party_name = models.CharField(max_length=100, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     delayed_approval =  models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        # Create and save status change note if it has changed
+        changed_fields = self.changed_fields()
+        if self.pk:
+            if 'status' in changed_fields or 'category' in changed_fields:
+                status_change_note = TransactionNotes()
+                status_change_note.accounts_master = self.accounts_master
+                status_change_note.created_by = 'SC'
+                status_change_note.note = ""
+
+                if 'status' in changed_fields:
+                    status_change_note.note += "\nAutomatic Log: Status of %s changed from '%s' to '%s'\n" % \
+                                               (self.full_name, changed_fields['status'][0],
+                                                changed_fields['status'][-1])
+
+                if 'category' in changed_fields:
+                    status_change_note.note += "\nAutomatic Log: Category of %s changed from '%s' to '%s'\n" % \
+                                               (self.full_name, changed_fields['category'][0],
+                                                changed_fields['category'][-1])
+
+                status_change_note.save()
+
+        if self.pk is None:
+            cft = Configuration.objects.get(configuration_key='IPC_ACCOUNTS_TRACKING_CONST')
+            data = json.loads(cft.configuration_value)
+            if self.accounts_master.account_type == 'CA':
+                key = data[self.accounts_master.center.zone.zone_name]['ca_key']
+                prefix = data[self.accounts_master.center.zone.zone_name]['prefix']
+                tracking_no = 'CA' + prefix + str(key).zfill(10)
+                data[self.accounts_master.center.zone.zone_name]['ca_key'] = key + 1
+                cft.configuration_value = json.dumps(data)
+                cft.save()
+
+            if self.accounts_master.account_type == 'TA':
+                key = data[self.accounts_master.zone.zone_name]['ta_key']
+                prefix = data[self.accounts_master.zone.zone_name]['prefix']
+                tracking_no = 'TA' + prefix + str(key).zfill(10)
+                data[self.accounts_master.zone.zone_name]['ta_key'] = key + 1
+                cft.configuration_value = json.dumps(data)
+                cft.save()
+
+        self.tracking_no = tracking_no
+        super(VoucherDetails, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return "%s -- %s - %s - %s - %s" % (self.accounts_master.entity_name, self.nature_of_voucher, self.voucher_status, self.accounts_master.center if self.accounts_master.center else self.accounts_master.teacher, self.amount)
 
     class Meta:
         ordering = ['nature_of_voucher',]
@@ -178,7 +220,7 @@ class TransactionNotes(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "%s - Note #%d" % (self.accounts_master, self.id)
+        return "%s - Note #%s" % (self.note, self.id)
 
     class Meta:
         ordering = ['-created']

@@ -12,11 +12,12 @@ from django.contrib.auth.models import User
 class TransactionNotesInline(admin.StackedInline):
     model = TransactionNotes
     extra = 0
-    exclude = ('created_by',)
 
-    def save_model(self, request, obj, form, change):
-        obj.created_by = request.user
-        obj.save()
+    fieldsets = [
+        ('', {'fields': ('note',), }),
+        ('Hidden Fields',
+         {'fields': ['created_by',], 'classes': ['hidden']}),
+    ]
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -26,10 +27,14 @@ class VoucherDetailsInline(admin.StackedInline):
     model = VoucherDetails
     extra = 1
 
+    def save_model(self, request, obj, form, change):
+        obj.created_by = request.user.username
+        obj.save()
+
     fieldsets = (
         ('', {
-            'fields': ('nature_of_voucher', 'voucher_status', 'voucher_date',
-                       'ca_head_of_expenses', 'ta_head_of_expenses', 'expenses_description', 'party_name', 'amount', 'delayed_approval'),
+            'fields': ('tracking_no', 'nature_of_voucher', 'voucher_status', 'voucher_date',
+                       'ca_head_of_expenses', 'ta_head_of_expenses', 'oa_head_of_expenses', 'expenses_description', 'party_name', 'amount', 'delayed_approval'),
 
         }),
     )
@@ -132,18 +137,20 @@ class AccountsMasterAdmin(admin.ModelAdmin):
 
         return all_accounts
 
-    list_display = ('account_type', '__str__', 'tracking_no', 'payment_date', 'utr_no', 'approval_status')
+    list_display = ('account_type', '__str__', 'payment_date', 'utr_no', 'approval_status')
     list_filter = ('account_type', 'entity_name', )
+
 
     fieldsets = (
         ('', {
-            'fields': ('account_type', 'entity_name', 'budget_code', 'center',
-            'program_schedule', 'teacher',)
+            'fields': ('account_type', 'entity_name', 'budget_code', 'teacher', 'zone', 'center',
+            'program_schedule')
         }),
         ('Approval', {'fields': (('approval_sent_date', 'approved_date', 'approval_status'),), 'classes': ['collapse', 'has-cols', 'cols-3']}),
 
         ('Finance', {'fields': (('finance_submission_date','movement_sheet_no',), ('payment_date', 'utr_no',)), 'classes': ['collapse', 'has-cols', 'cols-3']}),
-           )
+
+        )
     fieldsets_and_inlines_order = ('f', 'i', 'f', 'f', 'i', 'i')
 
     inlines = [VoucherDetailsInline, CourierDetailsInline, TransactionNotesInline]
@@ -153,7 +160,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
     list_per_page = 30
 
     class Media:
-        js = ('/static/aasaan/ipcaccounts/ipc_accounts.js',)
+        js = ('/static/aasaan/ipcaccounts/ipc_accounts.js', '/static/aasaan/ipcaccounts/disable_notes_ipcaccounts.js')
 
 
 admin.site.register(AccountsMaster, AccountsMasterAdmin)
@@ -162,4 +169,3 @@ admin.site.register(EntityMaster, admin.ModelAdmin)
 admin.site.register(ClassExpensesTypeMaster, admin.ModelAdmin)
 admin.site.register(TeacherExpensesTypeMaster, admin.ModelAdmin)
 admin.site.register(VoucherStatusMaster, admin.ModelAdmin)
-
