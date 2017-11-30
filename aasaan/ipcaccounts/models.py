@@ -5,7 +5,6 @@ from django_markdown.models import MarkdownField
 import json
 from config.models import Configuration, SmartModel
 from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User
 
 
 class ActiveManager(models.Manager):
@@ -90,6 +89,12 @@ class AccountsMaster(SmartModel):
     teacher = models.ForeignKey(Contact, blank=True, null=True)
     budget_code = models.CharField(max_length=100, blank=True)
     program_schedule = models.ForeignKey(ProgramSchedule, blank=True, null=True)
+    STATUS_VALUES = (('AO', 'Open'),
+                     ('AC', 'Closed'),
+                     ('CA', 'Cancelled'))
+
+    status = models.CharField(max_length=2, choices=STATUS_VALUES,
+                              default=STATUS_VALUES[0][0])
     approval_sent_date = models.DateField(blank=True, null=True)
     approved_date = models.DateField(blank=True, null=True)
     APPROVAL_STATUS_VALUES = (('SENT', 'Sent for Approval'), ('NOT', 'Not Approved'),
@@ -107,6 +112,22 @@ class AccountsMaster(SmartModel):
 
     objects = models.Manager()
     active_objects = ActiveManager()
+
+    def _cancelled(self, field_value):
+        if self.get_status_display() == "Cancelled":
+            return "<span style='background-color: rgb(222, 186, 99);'>%s</span>" % field_value
+        else:
+            return field_value
+
+    def is_cancelled(self):
+        if self.get_status_display() == "Cancelled":
+            return "<span style='color : red;'>&#10006;</span>"
+        if self.get_status_display() == "Closed":
+            return "<span style='color : black;'>&#9940;</span>"
+
+        return "<span style='color : green;'>&#10004;</span>"
+    is_cancelled.allow_tags = True
+    is_cancelled.short_description = " "
 
     def clean(self):
 
@@ -126,7 +147,15 @@ class AccountsMaster(SmartModel):
                 raise ValidationError(_error_list)
 
     def __str__(self):
-        return "%s" % (self.entity_name)
+        if self.account_type == 'CA':
+            return "CA : %s %s" % (self.entity_name, self.program_schedule)
+
+        if self.account_type == 'TA':
+            return "TA : %s %s: %s" % (self.entity_name, self.zone, self.teacher)
+
+        return "OA : %s %s: %s" % (self.entity_name, self.zone, self.teacher)
+
+
 
     class Meta:
         ordering = ['account_type', 'entity_name']
@@ -200,8 +229,14 @@ class VoucherDetails(SmartModel):
                 data[self.accounts_master.zone.zone_name]['ta_key'] = key + 1
                 cft.configuration_value = json.dumps(data)
                 cft.save()
-
-        self.tracking_no = tracking_no
+            if self.accounts_master.account_type == 'OA':
+                key = data[self.accounts_master.zone.zone_name]['oa_key']
+                prefix = data[self.accounts_master.zone.zone_name]['prefix']
+                tracking_no = 'OA' + prefix + str(key).zfill(10)
+                data[self.accounts_master.zone.zone_name]['oa_key'] = key + 1
+                cft.configuration_value = json.dumps(data)
+                cft.save()
+            self.tracking_no = tracking_no
         super(VoucherDetails, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -220,8 +255,9 @@ class TransactionNotes(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "%s - Note #%s" % (self.note, self.id)
+        return ""
 
     class Meta:
         ordering = ['-created']
+        verbose_name = 'Transaction Note'
 

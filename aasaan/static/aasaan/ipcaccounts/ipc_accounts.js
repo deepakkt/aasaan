@@ -12,6 +12,13 @@ var custom_error = false;
 
     $(function() {
 
+        if (document.URL.endsWith('/change/')) {
+            $('#transactionnotes_set-group').show()
+        }
+        else{
+            $('#transactionnotes_set-group').hide()
+        }
+
         if($("#id_account_type").find('option')[0].value=='')
             $("#id_account_type").find('option')[0].remove()
         if($("#id_entity_name").find('option')[0].value=='')

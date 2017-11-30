@@ -12,12 +12,25 @@ from django.contrib.auth.models import User
 class TransactionNotesInline(admin.StackedInline):
     model = TransactionNotes
     extra = 0
+    fields = ['note', ]
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+class TransactionNotesInline1(admin.StackedInline):
+    model = TransactionNotes
+    extra = 0
+    readonly_fields = ['note',]
 
     fieldsets = [
         ('', {'fields': ('note',), }),
         ('Hidden Fields',
          {'fields': ['created_by',], 'classes': ['hidden']}),
     ]
+
+    def has_add_permission(self, request):
+        return False
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -26,10 +39,6 @@ class TransactionNotesInline(admin.StackedInline):
 class VoucherDetailsInline(admin.StackedInline):
     model = VoucherDetails
     extra = 1
-
-    def save_model(self, request, obj, form, change):
-        obj.created_by = request.user.username
-        obj.save()
 
     fieldsets = (
         ('', {
@@ -60,6 +69,17 @@ class CourierDetailsInline(admin.StackedInline):
 
 
 class AccountsMasterAdmin(admin.ModelAdmin):
+
+    def save_related(self, request, form, formsets, change):
+        for formset in formsets:
+            for fs in formset:
+                if isinstance(fs.instance, TransactionNotes) and fs.cleaned_data:
+                    if fs.instance.pk is None:
+                        fs.instance.accounts_master = form.instance
+                        fs.instance.created_by = request.user.username
+                        fs.instance.note = fs.instance.note + ' created_by : ' + request.user.username + ' created at : ' + timezone.now().strftime("%b %d %Y %H:%M:%S")
+                        fs.instance.save()
+        super(AccountsMasterAdmin, self).save_related(request, form, formsets, change)
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
 
@@ -137,14 +157,15 @@ class AccountsMasterAdmin(admin.ModelAdmin):
 
         return all_accounts
 
-    list_display = ('account_type', '__str__', 'payment_date', 'utr_no', 'approval_status')
+    list_display = ('is_cancelled', '__str__', 'payment_date', 'utr_no', 'approval_status')
     list_filter = ('account_type', 'entity_name', )
 
+    list_display_links = ['is_cancelled', '__str__']
 
     fieldsets = (
         ('', {
             'fields': ('account_type', 'entity_name', 'budget_code', 'teacher', 'zone', 'center',
-            'program_schedule')
+            'program_schedule', 'status')
         }),
         ('Approval', {'fields': (('approval_sent_date', 'approved_date', 'approval_status'),), 'classes': ['collapse', 'has-cols', 'cols-3']}),
 
@@ -153,14 +174,14 @@ class AccountsMasterAdmin(admin.ModelAdmin):
         )
     fieldsets_and_inlines_order = ('f', 'i', 'f', 'f', 'i', 'i')
 
-    inlines = [VoucherDetailsInline, CourierDetailsInline, TransactionNotesInline]
+    inlines = [VoucherDetailsInline, CourierDetailsInline, TransactionNotesInline1, TransactionNotesInline]
 
     save_on_top = True
 
     list_per_page = 30
 
     class Media:
-        js = ('/static/aasaan/ipcaccounts/ipc_accounts.js', '/static/aasaan/ipcaccounts/disable_notes_ipcaccounts.js')
+        js = ('/static/aasaan/ipcaccounts/ipc_accounts.js',)
 
 
 admin.site.register(AccountsMaster, AccountsMasterAdmin)
