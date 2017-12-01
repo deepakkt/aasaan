@@ -42,11 +42,16 @@ class VoucherDetailsInline(admin.StackedInline):
 
     fieldsets = (
         ('', {
-            'fields': ('tracking_no', 'nature_of_voucher', 'voucher_status', 'voucher_date',
-                       'ca_head_of_expenses', 'ta_head_of_expenses', 'oa_head_of_expenses', 'expenses_description', 'party_name', 'amount', 'delayed_approval'),
-
+            'fields': ('tracking_no', ),
         }),
-    )
+        ('', {'fields': (('nature_of_voucher', 'voucher_status', 'voucher_date'),
+                         ('ca_head_of_expenses', 'ta_head_of_expenses', 'oa_head_of_expenses', 'expenses_description', 'party_name'),
+                         ('amount', 'payment_date', 'delayed_approval'),
+                         ('approval_sent_date', 'approved_date', 'approval_status'),
+                         ('finance_submission_date', 'movement_sheet_no','utr_no')),
+              'classes': ['', 'has-cols', 'cols-3']}),)
+
+
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -148,16 +153,17 @@ class AccountsMasterAdmin(admin.ModelAdmin):
         except ObjectDoesNotExist:
             return AccountsMaster.objects.none()
         if contact_role_group.get(role=trs_role_group):
-            trs_account = all_accounts.filter(account_type='TEACH')
+            trs_account = all_accounts.filter(account_type='TA')
         if contact_role_group.get(role=acc_role_group):
-            class_accounts = all_accounts.filter(account_type='CLASS')
+            class_accounts = all_accounts.filter(account_type='CA') | all_accounts.filter(account_type='OA')
         if contact_role_group.get(role=acc_role_group) and contact_role_group.get(role=trs_role_group):
             all_accounts = trs_account | class_accounts
+
             all_accounts = all_accounts.distinct()
 
         return all_accounts
 
-    list_display = ('is_cancelled', '__str__', 'payment_date', 'utr_no', 'approval_status')
+    list_display = ('is_cancelled', '__str__')
     list_filter = ('account_type', 'entity_name', )
 
     list_display_links = ['is_cancelled', '__str__']
@@ -167,12 +173,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
             'fields': ('account_type', 'entity_name', 'budget_code', 'teacher', 'zone', 'center',
             'program_schedule', 'status')
         }),
-        ('Approval', {'fields': (('approval_sent_date', 'approved_date', 'approval_status'),), 'classes': ['collapse', 'has-cols', 'cols-3']}),
-
-        ('Finance', {'fields': (('finance_submission_date','movement_sheet_no',), ('payment_date', 'utr_no',)), 'classes': ['collapse', 'has-cols', 'cols-3']}),
-
         )
-    fieldsets_and_inlines_order = ('f', 'i', 'f', 'f', 'i', 'i')
 
     inlines = [VoucherDetailsInline, CourierDetailsInline, TransactionNotesInline1, TransactionNotesInline]
 

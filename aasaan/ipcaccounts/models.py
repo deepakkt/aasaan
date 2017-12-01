@@ -95,20 +95,7 @@ class AccountsMaster(SmartModel):
 
     status = models.CharField(max_length=2, choices=STATUS_VALUES,
                               default=STATUS_VALUES[0][0])
-    approval_sent_date = models.DateField(blank=True, null=True)
-    approved_date = models.DateField(blank=True, null=True)
-    APPROVAL_STATUS_VALUES = (('SENT', 'Sent for Approval'), ('NOT', 'Not Approved'),
-                        ('MAIL', 'Mail Approved'),
-                      ('PHY', 'Physically Approved'),
-                      )
-    approval_status = models.CharField(max_length=6, choices=APPROVAL_STATUS_VALUES, blank=True,
-                                    default=APPROVAL_STATUS_VALUES[0][0])
-    finance_submission_date = models.DateField(blank=True, null=True)
-    movement_sheet_no = models.CharField(max_length=100, blank=True)
-    payment_date = models.DateField(null=True, blank=True)
-    utr_no = models.CharField('UTR NO', max_length=100, blank=True)
-    created = models.DateTimeField(auto_now_add=True)
-    modified = models.DateTimeField(auto_now=True)
+
 
     objects = models.Manager()
     active_objects = ActiveManager()
@@ -188,6 +175,21 @@ class VoucherDetails(SmartModel):
     party_name = models.CharField(max_length=100, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     delayed_approval =  models.BooleanField(default=False)
+
+    approval_sent_date = models.DateField(blank=True, null=True)
+    approved_date = models.DateField(blank=True, null=True)
+    APPROVAL_STATUS_VALUES = (('SENT', 'Sent for Approval'), ('NOT', 'Not Approved'),
+                              ('MAIL', 'Mail Approved'),
+                              ('PHY', 'Physically Approved'),
+                              )
+    approval_status = models.CharField(max_length=6, choices=APPROVAL_STATUS_VALUES, blank=True,
+                                       default=APPROVAL_STATUS_VALUES[0][0])
+    finance_submission_date = models.DateField(blank=True, null=True)
+    movement_sheet_no = models.CharField(max_length=100, blank=True)
+    payment_date = models.DateField(null=True, blank=True)
+    utr_no = models.CharField('UTR NO', max_length=100, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         # Create and save status change note if it has changed
