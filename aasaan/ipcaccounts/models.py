@@ -90,12 +90,11 @@ class AccountsMaster(SmartModel):
     budget_code = models.CharField(max_length=100, blank=True)
     program_schedule = models.ForeignKey(ProgramSchedule, blank=True, null=True)
     STATUS_VALUES = (('AO', 'Open'),
-                     ('AC', 'Closed'),
+                     ('CL', 'Closed'),
                      ('CA', 'Cancelled'))
 
     status = models.CharField(max_length=2, choices=STATUS_VALUES,
                               default=STATUS_VALUES[0][0])
-
 
     objects = models.Manager()
     active_objects = ActiveManager()
@@ -140,7 +139,7 @@ class AccountsMaster(SmartModel):
         if self.account_type == 'TA':
             return "TA : %s %s: %s" % (self.entity_name, self.zone, self.teacher)
 
-        return "OA : %s %s: %s" % (self.entity_name, self.zone, self.teacher)
+        return "OA : %s %s: %s" % (self.entity_name, self.budget_code, self.center)
 
 
 
@@ -154,7 +153,7 @@ class CourierDetails(models.Model):
     source = models.CharField(max_length=100, null=True, blank=True)
     destination = models.CharField(max_length=100, null=True, blank=True)
     agency = models.CharField(max_length=100, null=True, blank=True)
-    tracking_no = models.CharField(max_length=100, null=True, blank=True)
+    tracking_no = models.CharField(max_length=100, null=True, blank=True, unique=True)
     sent_date = models.DateField(null=True, blank=True)
     received_date = models.DateField(null=True, blank=True)
     remarks = MarkdownField(blank=True)
@@ -164,7 +163,7 @@ class CourierDetails(models.Model):
 
 class VoucherDetails(SmartModel):
     accounts_master = models.ForeignKey(AccountsMaster)
-    tracking_no = models.CharField(max_length=100, blank=True)
+    tracking_no = models.CharField(max_length=100, blank=True, unique=True)
     nature_of_voucher = models.ForeignKey(VoucherMaster)
     voucher_status = models.ForeignKey(VoucherStatusMaster)
     voucher_date = models.DateField()
@@ -213,7 +212,7 @@ class VoucherDetails(SmartModel):
 
                 status_change_note.save()
 
-        if self.pk is None:
+        if self.pk is None and self.tracking_no == '':
             cft = Configuration.objects.get(configuration_key='IPC_ACCOUNTS_TRACKING_CONST')
             data = json.loads(cft.configuration_value)
             if self.accounts_master.account_type == 'CA':

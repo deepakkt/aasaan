@@ -40,16 +40,21 @@ class VoucherDetailsInline(admin.StackedInline):
     model = VoucherDetails
     extra = 1
 
+
     fieldsets = (
-        ('', {
-            'fields': ('tracking_no', ),
-        }),
-        ('', {'fields': (('nature_of_voucher', 'voucher_status', 'voucher_date'),
-                         ('ca_head_of_expenses', 'ta_head_of_expenses', 'oa_head_of_expenses', 'expenses_description', 'party_name'),
-                         ('amount', 'payment_date', 'delayed_approval'),
-                         ('approval_sent_date', 'approved_date', 'approval_status'),
-                         ('finance_submission_date', 'movement_sheet_no','utr_no')),
-              'classes': ['', 'has-cols', 'cols-3']}),)
+
+        ('', {'fields': (('tracking_no',),('voucher_status',),
+                         ('nature_of_voucher',),('voucher_date',),
+                         ('ca_head_of_expenses', ),
+                         ('ta_head_of_expenses', ),
+                         ('oa_head_of_expenses', ),
+                         ('expenses_description',),
+                         ('party_name', 'amount'),
+                         ('payment_date', 'delayed_approval'),
+                        ('approval_sent_date', 'approved_date'),
+                         ('approval_status','finance_submission_date'),
+                         ('movement_sheet_no','utr_no')),
+              'classes': ['', 'has-cols', 'cols-2']}),)
 
 
 
@@ -106,7 +111,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
             kwargs["queryset"] = Center.objects.filter(pk__in=user_centers)
 
         if db_field.name == 'program_schedule':
-            time_threshold = timezone.now() - timedelta(days=60)
+            time_threshold = timezone.now() - timedelta(days=360)
             qs = ProgramSchedule.objects.filter(end_date__gte=time_threshold)
             if not request.user.is_superuser:
                 user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
@@ -163,7 +168,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
 
         return all_accounts
 
-    list_display = ('is_cancelled', '__str__')
+    list_display = ('is_cancelled', '__str__', 'budget_code')
     list_filter = ('account_type', 'entity_name', )
 
     list_display_links = ['is_cancelled', '__str__']
