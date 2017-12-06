@@ -392,7 +392,9 @@ class ProgramTeacher(models.Model):
                                     null=True,
                                     blank=True)
 
-    teacher = models.ForeignKey(Contact)
+    teacher = models.ForeignKey(Contact,
+                                    null=True,
+                                    blank=True)
 
     def __str__(self):
         return '%s - %s' % (self.program, self.teacher)
