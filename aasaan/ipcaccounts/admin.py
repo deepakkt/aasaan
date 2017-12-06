@@ -7,6 +7,7 @@ from datetime import timedelta
 from django.utils import timezone
 from AasaanUser.models import AasaanUserContact
 from django.contrib.auth.models import User
+from config.models import Configuration
 
 
 class TransactionNotesInline(admin.StackedInline):
@@ -40,23 +41,16 @@ class VoucherDetailsInline(admin.StackedInline):
     model = VoucherDetails
     extra = 1
 
-
     fieldsets = (
+        ('', {
+            'fields': ('tracking_no', 'nature_of_voucher', 'voucher_status', 'voucher_date',
+                       'ca_head_of_expenses', 'ta_head_of_expenses', 'oa_head_of_expenses', 'expenses_description',
+                       'party_name', 'amount', 'payment_date', 'approval_sent_date', 'approved_date',
+                         'approval_status', 'delayed_approval', 'finance_submission_date',
+                         'movement_sheet_no','utr_no'),
 
-        ('', {'fields': (('tracking_no',),('voucher_status',),
-                         ('nature_of_voucher',),('voucher_date',),
-                         ('ca_head_of_expenses', ),
-                         ('ta_head_of_expenses', ),
-                         ('oa_head_of_expenses', ),
-                         ('expenses_description',),
-                         ('party_name', 'amount'),
-                         ('payment_date', 'delayed_approval'),
-                        ('approval_sent_date', 'approved_date'),
-                         ('approval_status','finance_submission_date'),
-                         ('movement_sheet_no','utr_no')),
-              'classes': ['', 'has-cols', 'cols-2']}),)
-
-
+        }),
+    )
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -111,8 +105,13 @@ class AccountsMasterAdmin(admin.ModelAdmin):
             kwargs["queryset"] = Center.objects.filter(pk__in=user_centers)
 
         if db_field.name == 'program_schedule':
-            time_threshold = timezone.now() - timedelta(days=360)
+            obj_id = request.META['PATH_INFO'].rstrip('/').split('/')[-2]
+            schedule_days_to_show = Configuration.objects.get(configuration_key='IPC_ACCOUNTS_SCHEDULE_DAYS').configuration_value
+            time_threshold = timezone.now() - timedelta(days=int(schedule_days_to_show))
             qs = ProgramSchedule.objects.filter(end_date__gte=time_threshold)
+            if obj_id.isdigit():
+                am = AccountsMaster.objects.get(pk=obj_id)
+                qs = qs | ProgramSchedule.objects.filter(pk=am.program_schedule.pk)
             if not request.user.is_superuser:
                 user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
                 user_zone_centers = [x.id for x in Center.objects.filter(zone__in=user_zones)]
@@ -146,13 +145,10 @@ class AccountsMasterAdmin(admin.ModelAdmin):
         all_accounts = center_accounts | center_zonal_accounts
         all_accounts = all_accounts.distinct()
 
-        cfg_trs_role_group = 'Teachers Vouchers'
-        cfg_acc_role_group = 'IPC Accounts Vouchers'
-
         login_user = User.objects.get(username=request.user.username)
         contact = AasaanUserContact.objects.get(user=login_user)
-        trs_role_group = RoleGroup.objects.filter(role_name=cfg_trs_role_group)
-        acc_role_group = RoleGroup.objects.filter(role_name=cfg_acc_role_group)
+        trs_role_group = RoleGroup.objects.filter(role_name=Configuration.objects.get(configuration_key='IPC_ACCOUNTS_TEACHERS_GROUP').configuration_value)
+        acc_role_group = RoleGroup.objects.filter(role_name=Configuration.objects.get(configuration_key='IPC_ACCOUNTS_CLASS_GROUP').configuration_value)
         try:
             contact_role_group = ContactRoleGroup.objects.filter(contact=contact.contact)
         except ObjectDoesNotExist:
@@ -163,7 +159,6 @@ class AccountsMasterAdmin(admin.ModelAdmin):
             class_accounts = all_accounts.filter(account_type='CA') | all_accounts.filter(account_type='OA')
         if contact_role_group.get(role=acc_role_group) and contact_role_group.get(role=trs_role_group):
             all_accounts = trs_account | class_accounts
-
             all_accounts = all_accounts.distinct()
 
         return all_accounts

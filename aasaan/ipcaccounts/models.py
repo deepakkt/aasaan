@@ -56,7 +56,7 @@ class ClassExpensesTypeMaster(models.Model):
         return "%s" % self.name
 
     class Meta:
-        verbose_name = 'Class Expenses'
+        verbose_name = 'Class Expense'
 
 
 class TeacherExpensesTypeMaster(models.Model):
@@ -70,7 +70,7 @@ class TeacherExpensesTypeMaster(models.Model):
         return "%s" % self.name
 
     class Meta:
-        verbose_name = 'Teacher Expenses'
+        verbose_name = 'Teacher Expense'
 
 
 class AccountsMaster(SmartModel):
@@ -159,6 +159,10 @@ class CourierDetails(models.Model):
     remarks = MarkdownField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['agency', 'sent_date']
+        verbose_name = 'Courier Detail'
 
 
 class VoucherDetails(SmartModel):
