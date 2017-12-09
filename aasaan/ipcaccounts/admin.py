@@ -111,7 +111,8 @@ class AccountsMasterAdmin(admin.ModelAdmin):
             qs = ProgramSchedule.objects.filter(end_date__gte=time_threshold)
             if obj_id.isdigit():
                 am = AccountsMaster.objects.get(pk=obj_id)
-                qs = qs | ProgramSchedule.objects.filter(pk=am.program_schedule.pk)
+                if am.program_schedule:
+                    qs = qs | ProgramSchedule.objects.filter(pk=am.program_schedule.pk)
             if not request.user.is_superuser:
                 user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
                 user_zone_centers = [x.id for x in Center.objects.filter(zone__in=user_zones)]
