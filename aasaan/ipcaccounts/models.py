@@ -37,12 +37,18 @@ class EntityMaster(models.Model):
 class VoucherStatusMaster(models.Model):
     name = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
+    TYPE_VALUES = (('RC', 'RCO'), ('NP', 'Nodal Point'), ('FI', 'Finance'))
+    type = models.CharField(max_length=2, choices=TYPE_VALUES, blank=True,
+                                       default=TYPE_VALUES[0][0])
 
     objects = models.Manager()
     active_objects = ActiveManager()
 
     def __str__(self):
-        return "%s" % self.name
+        return "%s - %s" % (self.type, self.name)
+
+    class Meta:
+        verbose_name = 'Voucher Status Master'
 
 
 class ClassExpensesTypeMaster(models.Model):
@@ -84,7 +90,6 @@ class AccountsMaster(SmartModel):
                                        default=ACCOUNT_TYPE_VALUES[1][0])
 
     entity_name = models.ForeignKey(EntityMaster)
-    center = models.ForeignKey(Center, blank=True, null=True)
     zone = models.ForeignKey(Zone, blank=True, null=True)
     teacher = models.ForeignKey(Contact, blank=True, null=True)
     budget_code = models.CharField(max_length=100, blank=True)
@@ -139,9 +144,7 @@ class AccountsMaster(SmartModel):
         if self.account_type == 'TA':
             return "TA : %s %s: %s" % (self.entity_name, self.zone, self.teacher)
 
-        return "OA : %s %s: %s" % (self.entity_name, self.budget_code, self.center)
-
-
+        return "OA : %s %s: %s" % (self.entity_name, self.budget_code, self.zone)
 
     class Meta:
         ordering = ['account_type', 'entity_name']
@@ -150,13 +153,10 @@ class AccountsMaster(SmartModel):
 
 class CourierDetails(models.Model):
     accounts_master = models.ForeignKey(AccountsMaster)
-    source = models.CharField(max_length=100, null=True, blank=True)
-    destination = models.CharField(max_length=100, null=True, blank=True)
     agency = models.CharField(max_length=100, null=True, blank=True)
-    tracking_no = models.CharField(max_length=100, null=True, blank=True, unique=True)
+    tracking_number = models.CharField(max_length=100, null=True, blank=True, unique=True)
     sent_date = models.DateField(null=True, blank=True)
     received_date = models.DateField(null=True, blank=True)
-    remarks = MarkdownField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -177,16 +177,9 @@ class VoucherDetails(SmartModel):
     expenses_description = models.CharField(max_length=100, blank=True)
     party_name = models.CharField(max_length=100, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
-    delayed_approval =  models.BooleanField(default=False)
-
+    delayed_approval =  models.BooleanField('Delay Approval', default=False)
     approval_sent_date = models.DateField(blank=True, null=True)
     approved_date = models.DateField(blank=True, null=True)
-    APPROVAL_STATUS_VALUES = (('SENT', 'Sent for Approval'), ('NOT', 'Not Approved'),
-                              ('MAIL', 'Mail Approved'),
-                              ('PHY', 'Physically Approved'),
-                              )
-    approval_status = models.CharField(max_length=6, choices=APPROVAL_STATUS_VALUES, blank=True,
-                                       default=APPROVAL_STATUS_VALUES[0][0])
     finance_submission_date = models.DateField(blank=True, null=True)
     movement_sheet_no = models.CharField(max_length=100, blank=True)
     payment_date = models.DateField(null=True, blank=True)
@@ -198,21 +191,17 @@ class VoucherDetails(SmartModel):
         # Create and save status change note if it has changed
         changed_fields = self.changed_fields()
         if self.pk:
-            if 'status' in changed_fields or 'category' in changed_fields:
+            if 'voucher_status' in changed_fields:
                 status_change_note = TransactionNotes()
                 status_change_note.accounts_master = self.accounts_master
                 status_change_note.created_by = 'SC'
                 status_change_note.note = ""
 
-                if 'status' in changed_fields:
+                if 'voucher_status' in changed_fields:
                     status_change_note.note += "\nAutomatic Log: Status of %s changed from '%s' to '%s'\n" % \
-                                               (self.full_name, changed_fields['status'][0],
-                                                changed_fields['status'][-1])
+                                               (self.tracking_no, changed_fields['voucher_status'][0],
+                                                changed_fields['voucher_status'][-1])
 
-                if 'category' in changed_fields:
-                    status_change_note.note += "\nAutomatic Log: Category of %s changed from '%s' to '%s'\n" % \
-                                               (self.full_name, changed_fields['category'][0],
-                                                changed_fields['category'][-1])
 
                 status_change_note.save()
 
@@ -220,10 +209,11 @@ class VoucherDetails(SmartModel):
             cft = Configuration.objects.get(configuration_key='IPC_ACCOUNTS_TRACKING_CONST')
             data = json.loads(cft.configuration_value)
             if self.accounts_master.account_type == 'CA':
-                key = data[self.accounts_master.center.zone.zone_name]['ca_key']
-                prefix = data[self.accounts_master.center.zone.zone_name]['prefix']
+                z_name = self.accounts_master.program_schedule.center.zone.zone_name
+                key = data[z_name]['ca_key']
+                prefix = data[z_name]['prefix']
                 tracking_no = 'CA' + prefix + str(key).zfill(10)
-                data[self.accounts_master.center.zone.zone_name]['ca_key'] = key + 1
+                data[z_name]['ca_key'] = key + 1
                 cft.configuration_value = json.dumps(data)
                 cft.save()
 
@@ -245,7 +235,7 @@ class VoucherDetails(SmartModel):
         super(VoucherDetails, self).save(*args, **kwargs)
 
     def __str__(self):
-        return "%s -- %s - %s - %s - %s" % (self.accounts_master.entity_name, self.nature_of_voucher, self.voucher_status, self.accounts_master.center if self.accounts_master.center else self.accounts_master.teacher, self.amount)
+        return "%s -- %s - %s - %s" % (self.accounts_master.entity_name, self.nature_of_voucher, self.voucher_status, self.amount)
 
     class Meta:
         ordering = ['nature_of_voucher',]

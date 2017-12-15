@@ -12,12 +12,51 @@ var custom_error = false;
 
     $(function() {
 
-        if (document.URL.endsWith('/change/')) {
-            $('#transactionnotes_set-group').show()
+        function strStartsWith(str, prefix) {
+            return str.indexOf(prefix) === 0;
         }
-        else{
+
+         $(document).ready(function () {
+             var select1 = $('#id_voucherdetails_set-__prefix__-voucher_status').clone()
+             var select = $('#id_voucherdetails_set-__prefix__-voucher_status')
+             var optGroupRC = $('<optgroup>').attr('label', 'RCO');
+             var optGroupNP = $('<optgroup>').attr('label', 'Nodal Point');
+             var optGroupFI = $('<optgroup>').attr('label', 'Finance');
+             select.empty()
+             select.append(select1.children()[0])
+             var options = select1.children()
+
+         for (var i = 0; i < options.length; i++){
+            var option = options[i];
+
+
+            if(strStartsWith(option.text, 'RC'))
+            {
+                option.text = option.text.substr(5);
+                optGroupRC.append(option);
+            }
+            if(strStartsWith(option.text, 'NP'))
+            {
+                option.text = option.text.substr(5);
+                optGroupNP.append(option);
+            }
+            if(strStartsWith(option.text, 'FI'))
+            {
+                option.text = option.text.substr(5);
+                optGroupFI.append(option);
+            }
+
+          }
+          select.append(optGroupRC)
+          select.append(optGroupNP)
+          select.append(optGroupFI)
+
+})
+
+        if($('#id_transactionnotes_set-TOTAL_FORMS').val()==0){
             $('#transactionnotes_set-group').hide()
         }
+
 
         if($("#id_account_type").find('option')[0].value=='')
             $("#id_account_type").find('option')[0].remove()
@@ -37,8 +76,7 @@ var custom_error = false;
         if($("#id_account_type").val()=='CA'){
             $('.field-teacher').hide()
             $('.field-program_schedule').show()
-            $('.field-center').show()
-            $('.field-zone').show()
+            $('.field-zone').hide()
             $('.field-budget_code').show()
             $('.field-ca_head_of_expenses').show()
             $('.field-ta_head_of_expenses').hide()
@@ -54,7 +92,6 @@ var custom_error = false;
         function toggleVerified(value) {
             if($("#id_account_type").val()=='TA'){
                 $('.field-program_schedule').hide()
-                $('.field-center').hide()
                 $('.field-zone').show()
                 $('.field-budget_code').show()
                 $('.field-teacher').show()
@@ -66,8 +103,7 @@ var custom_error = false;
             else if($("#id_account_type").val()=='CA'){
                 $('.field-teacher').hide()
                 $('.field-program_schedule').show()
-                $('.field-center').show()
-                $('.field-zone').show()
+                $('.field-zone').hide()
                 $('.field-budget_code').show()
                 $('.field-ca_head_of_expenses').show()
                 $('.field-ta_head_of_expenses').hide()
@@ -78,7 +114,6 @@ var custom_error = false;
                 $('.field-teacher').hide()
                 $('.field-program_schedule').hide()
                 $('.field-zone').show()
-                $('.field-center').show()
                 $('.field-budget_code').show()
                 $('.field-ca_head_of_expenses').hide()
                 $('.field-ta_head_of_expenses').hide()

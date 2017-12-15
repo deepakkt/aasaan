@@ -8,6 +8,7 @@ from django.utils import timezone
 from AasaanUser.models import AasaanUserContact
 from django.contrib.auth.models import User
 from config.models import Configuration
+from django.db.models.query import QuerySet
 
 
 class TransactionNotesInline(admin.StackedInline):
@@ -20,6 +21,7 @@ class TransactionNotesInline(admin.StackedInline):
 
 
 class TransactionNotesInline1(admin.StackedInline):
+
     model = TransactionNotes
     extra = 0
     readonly_fields = ['note',]
@@ -39,34 +41,33 @@ class TransactionNotesInline1(admin.StackedInline):
 
 class VoucherDetailsInline(admin.StackedInline):
     model = VoucherDetails
-    extra = 1
+    extra = 0
+
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+
+        if db_field.name == 'nature_of_voucher':
+            kwargs["queryset"] = VoucherMaster.active_objects.all()
+        return super(VoucherDetailsInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     fieldsets = (
         ('', {
             'fields': ('tracking_no', 'nature_of_voucher', 'voucher_status', 'voucher_date',
                        'ca_head_of_expenses', 'ta_head_of_expenses', 'oa_head_of_expenses', 'expenses_description',
-                       'party_name', 'amount', 'payment_date', 'approval_sent_date', 'approved_date',
-                         'approval_status', 'delayed_approval', 'finance_submission_date',
-                         'movement_sheet_no','utr_no'),
-
+                       'party_name', 'amount', 'delayed_approval', 'approval_sent_date', 'approved_date', )
         }),
+        ('Nodal Point', {'fields': (('finance_submission_date', 'movement_sheet_no'),
+                                ('payment_date', 'utr_no'),),
+                     'classes': ['collapse', 'has-cols', 'cols-2']}),
+
     )
 
     def has_delete_permission(self, request, obj=None):
         return False
 
 
-class CourierDetailsInline(admin.StackedInline):
+class CourierDetailsInline(admin.TabularInline):
     model = CourierDetails
     extra = 0
-
-    fieldsets = (
-        ('', {
-            'fields': (('source', 'destination'), ('agency', 'tracking_no'),
-                       ('sent_date', 'received_date'), ('remarks')),
-            'classes': ('has-cols', 'cols-3')
-        }),
-    )
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -86,12 +87,6 @@ class AccountsMasterAdmin(admin.ModelAdmin):
         super(AccountsMasterAdmin, self).save_related(request, form, formsets, change)
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-
-        if db_field.name == 'voucher_status':
-            kwargs["queryset"] = VoucherStatusMaster.active_objects.all()
-
-        if db_field.name == 'nature_of_voucher':
-            kwargs["queryset"] = VoucherMaster.active_objects.all()
 
         if db_field.name == 'entity_name':
             kwargs["queryset"] = EntityMaster.active_objects.all()
@@ -139,13 +134,8 @@ class AccountsMasterAdmin(admin.ModelAdmin):
         qs = super(AccountsMasterAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
-        user_centers = [x.center for x in request.user.aasaanusercenter_set.all()]
         user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
-        center_accounts = AccountsMaster.objects.filter(center__in=user_centers)
-        center_zonal_accounts = AccountsMaster.objects.filter(center__zone__in=user_zones)
-        all_accounts = center_accounts | center_zonal_accounts
-        all_accounts = all_accounts.distinct()
-
+        all_accounts = AccountsMaster.objects.filter(center__zone__in=user_zones)
         login_user = User.objects.get(username=request.user.username)
         contact = AasaanUserContact.objects.get(user=login_user)
         trs_role_group = RoleGroup.objects.filter(role_name=Configuration.objects.get(configuration_key='IPC_ACCOUNTS_TEACHERS_GROUP').configuration_value)
@@ -171,7 +161,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('', {
-            'fields': ('account_type', 'entity_name', 'budget_code', 'teacher', 'zone', 'center',
+            'fields': ('account_type', 'entity_name', 'budget_code', 'teacher', 'zone',
             'program_schedule', 'status')
         }),
         )
