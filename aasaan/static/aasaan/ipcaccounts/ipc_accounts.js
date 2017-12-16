@@ -16,17 +16,14 @@ var custom_error = false;
             return str.indexOf(prefix) === 0;
         }
 
-         $(document).ready(function () {
-             var select1 = $('#id_voucherdetails_set-__prefix__-voucher_status').clone()
-             var select = $('#id_voucherdetails_set-__prefix__-voucher_status')
-             var optGroupRC = $('<optgroup>').attr('label', 'RCO');
-             var optGroupNP = $('<optgroup>').attr('label', 'Nodal Point');
-             var optGroupFI = $('<optgroup>').attr('label', 'Finance');
-             select.empty()
-             select.append(select1.children()[0])
-             var options = select1.children()
+        function groupVoucherStatus(select_o, select_c){
+            var optGroupRC = $('<optgroup>').attr('label', 'RCO');
+            var optGroupNP = $('<optgroup>').attr('label', 'Nodal Point');
+            var optGroupFI = $('<optgroup>').attr('label', 'Finance');
+            $(select_o).empty()
+            var options = $(select_c).children()
 
-         for (var i = 0; i < options.length; i++){
+            for (var i = 0; i < options.length; i++){
             var option = options[i];
 
 
@@ -47,16 +44,29 @@ var custom_error = false;
             }
 
           }
-          select.append(optGroupRC)
-          select.append(optGroupNP)
-          select.append(optGroupFI)
-
-})
-
-        if($('#id_transactionnotes_set-TOTAL_FORMS').val()==0){
-            $('#transactionnotes_set-group').hide()
+          $(select_o).append(optGroupRC)
+          $(select_o).append(optGroupNP)
+          $(select_o).append(optGroupFI)
         }
 
+         $(document).ready(function () {
+            var select_c = $('#id_voucherdetails_set-__prefix__-voucher_status').clone()
+            var select_o = $('#id_voucherdetails_set-__prefix__-voucher_status')
+            groupVoucherStatus(select_o, select_c)
+
+            var total_no_vouchers = $('#id_voucherdetails_set-TOTAL_FORMS').val()
+            if($('#id_transactionnotes_set-TOTAL_FORMS').val()==0){
+                $('#transactionnotes_set-group').hide()
+            }
+
+            if (total_no_vouchers>0){
+                var select_o = $('.field-voucher_status').find('select')
+                var select_c = select_o.clone()
+                for (var i = 0; i < total_no_vouchers; i++){
+                    groupVoucherStatus(select_o[i], select_c[i])
+                }
+            }
+         })
 
         if($("#id_account_type").find('option')[0].value=='')
             $("#id_account_type").find('option')[0].remove()
