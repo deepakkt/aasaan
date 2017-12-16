@@ -1,6 +1,17 @@
 'use strict';
 var aasaan = window.aasaan || {};
 
+(function($) {
+    function removeDateIcon(){
+        var e_date = $('.field-end_date').find('span')
+        var s_date = $('.field-start_date').find('span')
+        $(e_date[0]).remove()
+        $(s_date[0]).remove()
+    }
+    $(window).setInterval(removeDateIcon, 1000);
+
+})(django.jQuery);
+
 aasaan.addEntries = function(groupID, groupEntries) {
     var validInputElements = ['text', 'select-one', 'textarea'];
 
@@ -17,6 +28,7 @@ aasaan.addEntries = function(groupID, groupEntries) {
     for (var i=0; i < numRows; i++) {
         addRow.click();
     }
+
 
     // now fill in the values from the group entries array
     // we will simply assume the array row columns match the
