@@ -84,6 +84,21 @@ class AccountsMasterAdmin(admin.ModelAdmin):
                         fs.instance.created_by = request.user.username
                         fs.instance.note = fs.instance.note + ' created_by : ' + request.user.username + ' created at : ' + timezone.now().strftime("%b %d %Y %H:%M:%S")
                         fs.instance.save()
+                if isinstance(fs.instance, VoucherDetails) and fs.cleaned_data:
+                    if fs.instance.pk:
+                        voucher_details = VoucherDetails.objects.get(tracking_no=fs.instance.tracking_no)
+                        if fs.instance.voucher_status != voucher_details.voucher_status:
+                            status_change_note = TransactionNotes()
+                            status_change_note.accounts_master = form.instance
+                            status_change_note.created_by = 'SC'
+                            note =  "\nAutomatic Log: Status of %s changed from '%s' to '%s'\n" % \
+                                                           (fs.instance.tracking_no, voucher_details.voucher_status,
+                                                            fs.instance.voucher_status)
+                            note = note + ' created_by : ' + request.user.username + ' created at : ' + timezone.now().strftime("%b %d %Y %H:%M:%S")
+                            status_change_note.note = note
+                            status_change_note.save()
+
+
         super(AccountsMasterAdmin, self).save_related(request, form, formsets, change)
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):

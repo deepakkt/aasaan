@@ -188,22 +188,6 @@ class VoucherDetails(SmartModel):
     modified = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        # Create and save status change note if it has changed
-        changed_fields = self.changed_fields()
-        if self.pk:
-            if 'voucher_status' in changed_fields:
-                status_change_note = TransactionNotes()
-                status_change_note.accounts_master = self.accounts_master
-                status_change_note.created_by = 'SC'
-                status_change_note.note = ""
-
-                if 'voucher_status' in changed_fields:
-                    status_change_note.note += "\nAutomatic Log: Status of %s changed from '%s' to '%s'\n" % \
-                                               (self.tracking_no, changed_fields['voucher_status'][0],
-                                                changed_fields['voucher_status'][-1])
-
-
-                status_change_note.save()
 
         if self.pk is None and self.tracking_no == '':
             cft = Configuration.objects.get(configuration_key='IPC_ACCOUNTS_TRACKING_CONST')
@@ -212,7 +196,7 @@ class VoucherDetails(SmartModel):
                 z_name = self.accounts_master.program_schedule.center.zone.zone_name
                 key = data[z_name]['ca_key']
                 prefix = data[z_name]['prefix']
-                tracking_no = 'CA' + prefix + str(key).zfill(10)
+                tracking_no = prefix + str(key).zfill(6)
                 data[z_name]['ca_key'] = key + 1
                 cft.configuration_value = json.dumps(data)
                 cft.save()
@@ -220,14 +204,14 @@ class VoucherDetails(SmartModel):
             if self.accounts_master.account_type == 'TA':
                 key = data[self.accounts_master.zone.zone_name]['ta_key']
                 prefix = data[self.accounts_master.zone.zone_name]['prefix']
-                tracking_no = 'TA' + prefix + str(key).zfill(10)
+                tracking_no = 'T' + prefix + str(key).zfill(6)
                 data[self.accounts_master.zone.zone_name]['ta_key'] = key + 1
                 cft.configuration_value = json.dumps(data)
                 cft.save()
             if self.accounts_master.account_type == 'OA':
                 key = data[self.accounts_master.zone.zone_name]['oa_key']
                 prefix = data[self.accounts_master.zone.zone_name]['prefix']
-                tracking_no = 'OA' + prefix + str(key).zfill(10)
+                tracking_no = 'O' + prefix + str(key).zfill(6)
                 data[self.accounts_master.zone.zone_name]['oa_key'] = key + 1
                 cft.configuration_value = json.dumps(data)
                 cft.save()
