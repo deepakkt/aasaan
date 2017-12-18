@@ -12,7 +12,7 @@ from datetime import date
 from contacts.models import Zone, Center
 from schedulemaster.models import ProgramSchedule
 from django.core.management.base import BaseCommand
-
+from django.db.utils import IntegrityError
 
 class Command(BaseCommand):
     help = "Sync schedules. See gsync.settings for definitions"
@@ -25,7 +25,7 @@ class Command(BaseCommand):
             load_file = each_file
             break
 
-        row_headers = "TrackingNo,zone,account_type,Entity,VoucherDate,NatureoftheVoucher,NameoftheCenter,programcode,BudgetCode,ExpensesDescription,PartyName,Amount,PhysicalMailapproval,Details,CourieredDate,IPCNPRecived,DateofSubmissionFinance,MovementSheetno,Issues,PaymentDate,UTR,VoucherStatus,Remarks".split(",")
+        row_headers = "TrackingNo,zone,account_type,Entity,VoucherDate,NatureoftheVoucher,programcode,BudgetCode,ExpensesDescription,PartyName,Amount,Details,CourieredDate,IPCNPRecived,DateofSubmissionFinance,MovementSheetno,Issues,PaymentDate,UTR,VoucherStatus,Remarks".split(",")
 
         accounts_reader = csv.reader(open(load_file))
 
@@ -66,13 +66,12 @@ class Command(BaseCommand):
             voucher_data['Entity'] = current_row['Entity']
             voucher_data['VoucherDate'] = current_row['VoucherDate']
             voucher_data['NatureoftheVoucher'] = current_row['NatureoftheVoucher']
-            voucher_data['NameoftheCenter'] = current_row['NameoftheCenter']
+            # voucher_data['NameoftheCenter'] = current_row['NameoftheCenter']
             voucher_data['BudgetCode'] = current_row['BudgetCode']
             voucher_data['programcode'] = current_row['programcode']
             voucher_data['ExpensesDescription'] = current_row['ExpensesDescription']
             voucher_data['PartyName'] = current_row['PartyName']
             voucher_data['Amount'] = current_row['Amount']
-            voucher_data['PhysicalMailapproval'] = current_row['PhysicalMailapproval']
             voucher_data['Details'] = current_row['Details']
             voucher_data['CourieredDate'] = current_row['CourieredDate']
             voucher_data['IPCNPRecived'] = current_row['IPCNPRecived']
@@ -87,9 +86,9 @@ class Command(BaseCommand):
             ac_type = value[0]['account_type']
             accounts = AccountsMaster()
             accounts.account_type = ac_type
-            accounts.zone = Zone.objects.get(pk=value[0]['zone'])
-            filterargs = {'center_name': value[0]['NameoftheCenter'], 'zone': accounts.zone,}
-            accounts.center = Center.objects.get(**filterargs)
+            # accounts.zone = Zone.objects.get(pk=value[0]['zone'])
+            # filterargs = {'center_name': value[0]['NameoftheCenter'], 'zone': accounts.zone,}
+            # accounts.center = Center.objects.get(**filterargs)
             accounts.entity_name = emk[value[0]['Entity']]
             accounts.budget_code = value[0]['BudgetCode']
             self.stdout.write('TrackingNo: %s' % value[0]['TrackingNo'])
@@ -102,26 +101,26 @@ class Command(BaseCommand):
             for each_voucher in value:
                 counts['voucher'] += 1
 
-                # self.stdout.write('TrackingNo: %s' % each_voucher['TrackingNo'])
-                # self.stdout.write('Entity: %s' % each_voucher['Entity'])
-                # self.stdout.write('NatureoftheVoucher: %s' % each_voucher['NatureoftheVoucher'])
+                self.stdout.write('TrackingNo: %s' % each_voucher['TrackingNo'])
+                self.stdout.write('Entity: %s' % each_voucher['Entity'])
+                self.stdout.write('NatureoftheVoucher: %s' % each_voucher['NatureoftheVoucher'])
                 # self.stdout.write('NameoftheCenter: %s' % each_voucher['NameoftheCenter'])
-                # self.stdout.write('BudgetCode: %s' % each_voucher['BudgetCode'])
-                # self.stdout.write('ExpensesDescription: %s' % each_voucher['ExpensesDescription'])
-                # self.stdout.write('PartyName: %s' % each_voucher['PartyName'])
-                # self.stdout.write('Amount: %s' % each_voucher['Amount'])
+                self.stdout.write('BudgetCode: %s' % each_voucher['BudgetCode'])
+                self.stdout.write('ExpensesDescription: %s' % each_voucher['ExpensesDescription'])
+                self.stdout.write('PartyName: %s' % each_voucher['PartyName'])
+                self.stdout.write('Amount: %s' % each_voucher['Amount'])
                 # self.stdout.write('PhysicalMailapproval: %s' % each_voucher['PhysicalMailapproval'])
-                #
-                # self.stdout.write('Details: %s' % each_voucher['Details'])
-                # self.stdout.write('CourieredDate: %s' % each_voucher['CourieredDate'])
-                # self.stdout.write('IPCNPRecived: %s' % each_voucher['IPCNPRecived'])
-                # self.stdout.write('DateofSubmissionFinance: %s' % each_voucher['DateofSubmissionFinance'])
-                # self.stdout.write('MovementSheetno: %s' % each_voucher['MovementSheetno'])
-                #
-                # self.stdout.write('Issues: %s' % each_voucher['Issues'])
-                # self.stdout.write('PaymentDate: %s' % each_voucher['PaymentDate'])
-                # self.stdout.write('UTR: %s' % each_voucher['UTR'])
-                # self.stdout.write('VoucherStatus: %s' % each_voucher['VoucherStatus'])
+
+                self.stdout.write('Details: %s' % each_voucher['Details'])
+                self.stdout.write('CourieredDate: %s' % each_voucher['CourieredDate'])
+                self.stdout.write('IPCNPRecived: %s' % each_voucher['IPCNPRecived'])
+                self.stdout.write('DateofSubmissionFinance: %s' % each_voucher['DateofSubmissionFinance'])
+                self.stdout.write('MovementSheetno: %s' % each_voucher['MovementSheetno'])
+
+                self.stdout.write('Issues: %s' % each_voucher['Issues'])
+                self.stdout.write('PaymentDate: %s' % each_voucher['PaymentDate'])
+                self.stdout.write('UTR: %s' % each_voucher['UTR'])
+                self.stdout.write('VoucherStatus: %s' % each_voucher['VoucherStatus'])
 
                 voucher = VoucherDetails()
                 voucher.accounts_master = accounts

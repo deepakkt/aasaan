@@ -13,7 +13,7 @@ class ActiveManager(models.Manager):
 
 
 class VoucherMaster(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     active = models.BooleanField(default=True)
 
     objects = models.Manager()
@@ -24,7 +24,7 @@ class VoucherMaster(models.Model):
 
 
 class EntityMaster(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     active = models.BooleanField(default=True)
 
     objects = models.Manager()
@@ -35,7 +35,7 @@ class EntityMaster(models.Model):
 
 
 class VoucherStatusMaster(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     active = models.BooleanField(default=True)
     TYPE_VALUES = (('RC', 'RCO'), ('NP', 'Nodal Point'), ('FI', 'Finance'))
     type = models.CharField(max_length=2, choices=TYPE_VALUES, blank=True,
@@ -52,7 +52,7 @@ class VoucherStatusMaster(models.Model):
 
 
 class ClassExpensesTypeMaster(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     active = models.BooleanField(default=True)
 
     objects = models.Manager()
@@ -66,7 +66,7 @@ class ClassExpensesTypeMaster(models.Model):
 
 
 class TeacherExpensesTypeMaster(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     active = models.BooleanField(default=True)
 
     objects = models.Manager()
