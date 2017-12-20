@@ -150,22 +150,35 @@ class AccountsMasterAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
-        all_accounts = AccountsMaster.objects.filter(program_schedule__center__zone__in=user_zones)
+
         login_user = User.objects.get(username=request.user.username)
         contact = AasaanUserContact.objects.get(user=login_user)
         trs_role_group = RoleGroup.objects.filter(role_name=Configuration.objects.get(configuration_key='IPC_ACCOUNTS_TEACHERS_GROUP').configuration_value)
         acc_role_group = RoleGroup.objects.filter(role_name=Configuration.objects.get(configuration_key='IPC_ACCOUNTS_CLASS_GROUP').configuration_value)
+
         try:
             contact_role_group = ContactRoleGroup.objects.filter(contact=contact.contact)
         except ObjectDoesNotExist:
             return AccountsMaster.objects.none()
-        if contact_role_group.get(role=trs_role_group):
-            trs_account = all_accounts.filter(account_type='TA')
-        if contact_role_group.get(role=acc_role_group):
-            class_accounts = all_accounts.filter(account_type='CA') | all_accounts.filter(account_type='OA')
-        if contact_role_group.get(role=acc_role_group) and contact_role_group.get(role=trs_role_group):
-            all_accounts = trs_account | class_accounts
-            all_accounts = all_accounts.distinct()
+        try:
+            if contact_role_group.get(role=trs_role_group):
+                all_accounts = AccountsMaster.objects.filter(zone__in=user_zones)
+                trs_account = all_accounts.filter(account_type='TA')
+        except ContactRoleGroup.DoesNotExist:
+            all_accounts = None
+        try:
+            if contact_role_group.get(role=acc_role_group):
+                all_accounts = AccountsMaster.objects.filter(program_schedule__center__zone__in=user_zones)
+                other_accounts = AccountsMaster.objects.filter(zone__in=user_zones).filter(account_type='OA')
+                class_accounts = all_accounts.filter(account_type='CA') | other_accounts
+        except ContactRoleGroup.DoesNotExist:
+            pass
+        try:
+            if contact_role_group.get(role=acc_role_group) and contact_role_group.get(role=trs_role_group):
+                all_accounts = trs_account | class_accounts
+                all_accounts = all_accounts.distinct()
+        except ContactRoleGroup.DoesNotExist:
+            pass
 
         return all_accounts
 
