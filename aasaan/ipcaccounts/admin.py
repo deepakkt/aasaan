@@ -150,7 +150,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
-        all_accounts = AccountsMaster.objects.filter(center__zone__in=user_zones)
+        all_accounts = AccountsMaster.objects.filter(program_schedule__center__zone__in=user_zones)
         login_user = User.objects.get(username=request.user.username)
         contact = AasaanUserContact.objects.get(user=login_user)
         trs_role_group = RoleGroup.objects.filter(role_name=Configuration.objects.get(configuration_key='IPC_ACCOUNTS_TEACHERS_GROUP').configuration_value)
