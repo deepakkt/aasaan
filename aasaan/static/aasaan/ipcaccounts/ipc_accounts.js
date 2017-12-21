@@ -131,14 +131,6 @@ var custom_error = false;
                 $('.field-party_name').show()
             }
         }
-
-        function validateVoucherInline(){
-            var no_of_item = parseInt($('#id_voucherdetails_set-TOTAL_FORMS').val())
-            var item_array = [];
-            for (var i=0; i<no_of_item; i++){
-                $('.field-ca_head_of_expenses').hide()
-            }
-        }
     });
 }
 

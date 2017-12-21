@@ -177,6 +177,7 @@ class VoucherDetails(SmartModel):
     expenses_description = models.CharField(max_length=100, blank=True)
     party_name = models.CharField(max_length=100, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
+    amount_after_tds = models.DecimalField('Amount after TDS', max_digits=10, decimal_places=2, blank=True, null=True)
     delayed_approval =  models.BooleanField('Delay Approval', default=False)
     approval_sent_date = models.DateField(blank=True, null=True)
     approved_date = models.DateField(blank=True, null=True)

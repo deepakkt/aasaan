@@ -53,7 +53,7 @@ class VoucherDetailsInline(admin.StackedInline):
         ('', {
             'fields': ('tracking_no', 'nature_of_voucher', 'voucher_status', 'voucher_date',
                        'ca_head_of_expenses', 'ta_head_of_expenses', 'oa_head_of_expenses', 'expenses_description',
-                       'party_name', 'amount', 'delayed_approval', 'approval_sent_date', 'approved_date', )
+                       'party_name', 'amount', 'amount_after_tds', 'delayed_approval', 'approval_sent_date', 'approved_date', )
         }),
         ('Nodal Point', {'fields': (('finance_submission_date', 'movement_sheet_no'),
                                 ('payment_date', 'utr_no'),),
@@ -201,7 +201,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
     list_per_page = 30
 
     class Media:
-        js = ('/static/aasaan/ipcaccounts/ipc_accounts.js',)
+        js = ('/static/aasaan/ipcaccounts/ipc_accounts.js','/static/aasaan/ipcaccounts/validation.js')
 
 
 admin.site.register(AccountsMaster, AccountsMasterAdmin)
