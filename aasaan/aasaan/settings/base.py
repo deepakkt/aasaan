@@ -71,7 +71,8 @@ INSTALLED_APPS += (
     'config',    
     'reports',
 	'statistics',
-    'misc'
+    'misc',
+    'smart_selects'
 )
 
 # third party apps
@@ -188,3 +189,5 @@ STATICFILES_DIRS = (STATIC_PATH,)
 # django_markdown settings
 MARKDOWN_EDITOR_SKIN = 'simple'
 MARKDOWN_SET_NAME = 'markdown'
+
+JQUERY_URL = True

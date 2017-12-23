@@ -5,7 +5,7 @@ from django_markdown.models import MarkdownField
 import json
 from config.models import Configuration, SmartModel
 from django.core.exceptions import ValidationError
-
+from smart_selects.db_fields import GroupedForeignKey
 
 class ActiveManager(models.Manager):
     def get_queryset(self):
@@ -93,7 +93,7 @@ class AccountsMaster(SmartModel):
     zone = models.ForeignKey(Zone, blank=True, null=True)
     teacher = models.ForeignKey(Contact, blank=True, null=True)
     budget_code = models.CharField(max_length=100, blank=True)
-    program_schedule = models.ForeignKey(ProgramSchedule, blank=True, null=True)
+    program_schedule = GroupedForeignKey(ProgramSchedule, 'program', blank=True, null=True)
     STATUS_VALUES = (('AO', 'Open'),
                      ('CL', 'Closed'),
                      ('CA', 'Cancelled'))
