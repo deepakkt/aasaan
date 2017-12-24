@@ -13,7 +13,7 @@ from .settings import GENDER_VALUES, STATUS_VALUES, ID_PROOF_VALUES,\
 
 from django_markdown.models import MarkdownField
 from config.models import SmartModel, Tag
-
+from smart_selects.db_fields import GroupedForeignKey
 from PIL import Image
 
 
@@ -481,7 +481,7 @@ class IndividualContactRoleCenter(models.Model):
     They always need to be mapped to a center
     """
     contact = models.ForeignKey(Contact)
-    center = models.ForeignKey(Center)
+    center = GroupedForeignKey(Center, 'zone')
     role = models.ForeignKey(IndividualRole)
 
     class Meta:

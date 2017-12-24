@@ -85,6 +85,7 @@ INSTALLED_APPS += (
     'daterange_filter',
     'braces',
     'tastypie',
+    'smart_selects',
     # 'allauth.socialaccount.providers.facebook',
 )
 
@@ -187,3 +188,4 @@ STATICFILES_DIRS = (STATIC_PATH,)
 # django_markdown settings
 MARKDOWN_EDITOR_SKIN = 'simple'
 MARKDOWN_SET_NAME = 'markdown'
+USE_DJANGO_JQUERY = True

@@ -22,6 +22,7 @@ django-import-export==0.4.2
 django-markdown==0.8.4
 django-registration-redux==1.2
 django-rq==0.9.1
+django-smart-selects==1.5.2
 django-tastypie==0.14.0
 gspread==0.6.2
 gunicorn==19.4.5

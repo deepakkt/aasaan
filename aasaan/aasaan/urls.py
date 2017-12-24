@@ -28,6 +28,7 @@ urlpatterns = patterns('',
     url(r'^admin/brochures/', include('brochures.urls', namespace='brochures')),
 	url(r'^statistics/', include(statistics.urls, namespace='statistics')),
     url(r'^schedules/', include(schedulemaster.urls, namespace='schedules')),
+    url(r'^chaining/', include('smart_selects.urls')),
 )
 
 if settings.ASYNC:

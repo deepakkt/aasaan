@@ -6,7 +6,7 @@ from datetime import date
 from contacts.models import Center, Contact, Zone, Sector
 from config.models import SmartModel, Tag
 from django_markdown.models import MarkdownField
-
+from smart_selects.db_fields import GroupedForeignKey
 from utils.datedeux import DateDeux
 
 
@@ -105,7 +105,7 @@ class ProgramSchedule(SmartModel):
     program = models.ForeignKey(ProgramMaster)
     event_name = models.CharField(max_length=100, blank=True)
 
-    center = models.ForeignKey(Center)
+    center = GroupedForeignKey(Center, 'zone')
     program_location = models.CharField(max_length=100)
 
     # don't change choice orders, will impact default value setting
