@@ -61,7 +61,7 @@ class ProgramTeacherAdmin(admin.TabularInline):
         return super(ProgramTeacherAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     model = ProgramTeacher
-    extra = 1
+    extra = 0
 
 
 class ProgramScheduleCountsAdmin(admin.TabularInline):
