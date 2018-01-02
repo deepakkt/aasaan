@@ -72,7 +72,6 @@ INSTALLED_APPS += (
     'reports',
 	'statistics',
     'misc',
-    'smart_selects'
 )
 
 # third party apps
@@ -87,7 +86,7 @@ INSTALLED_APPS += (
     'daterange_filter',
     'braces',
     'tastypie',
-    # 'allauth.socialaccount.providers.facebook',
+    'smart_selects',
 )
 
 MIDDLEWARE_CLASSES = (
