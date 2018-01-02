@@ -8,10 +8,6 @@ from django.utils import timezone
 from AasaanUser.models import AasaanUserContact
 from django.contrib.auth.models import User
 from config.models import Configuration
-from django.db.models.query import QuerySet
-import selectable.forms as selectable
-from .lookups import ClassExpensesLookup
-from django import forms
 
 
 class TransactionNotesInline(admin.StackedInline):
