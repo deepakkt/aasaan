@@ -7,6 +7,7 @@ from config.models import Configuration, SmartModel
 from django.core.exceptions import ValidationError
 from smart_selects.db_fields import GroupedForeignKey
 
+
 class ActiveManager(models.Manager):
     def get_queryset(self):
         return super(ActiveManager, self).get_queryset().filter(active=True)
@@ -37,18 +38,42 @@ class EntityMaster(models.Model):
 class VoucherStatusMaster(models.Model):
     name = models.CharField(max_length=100, unique=True)
     active = models.BooleanField(default=True)
-    TYPE_VALUES = (('RC', 'RCO'), ('NP', 'Nodal Point'), ('FI', 'Finance'))
-    type = models.CharField(max_length=2, choices=TYPE_VALUES, blank=True,
-                                       default=TYPE_VALUES[0][0])
+    objects = models.Manager()
+    active_objects = ActiveManager()
+
+    def __str__(self):
+        return "%s" % self.name
+
+    class Meta:
+        verbose_name = 'RCO Voucher Status Master'
+
+
+class AccountType(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    active = models.BooleanField(default=True)
+    objects = models.Manager()
+    active_objects = ActiveManager()
+
+    def __str__(self):
+        return "%s" % self.name
+
+    class Meta:
+        verbose_name = 'Account Type'
+
+
+class NPVoucherStatusMaster(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    active = models.BooleanField(default=True)
+    type = models.ForeignKey(AccountType)
 
     objects = models.Manager()
     active_objects = ActiveManager()
 
     def __str__(self):
-        return "%s - %s" % (self.type, self.name)
+        return "%s" % self.name
 
     class Meta:
-        verbose_name = 'Voucher Status Master'
+        verbose_name = 'NP Voucher Status Master'
 
 
 class ClassExpensesTypeMaster(models.Model):
@@ -148,7 +173,14 @@ class AccountsMaster(SmartModel):
 
     class Meta:
         ordering = ['account_type', 'entity_name']
-        verbose_name = 'Voucher Approval Tracking'
+        verbose_name = 'RCO Voucher Approval Tracking'
+
+
+class NPAccountsMaster(AccountsMaster):
+
+    class Meta:
+        proxy = True
+        verbose_name = 'NP Voucher Approval Tracking'
 
 
 class CourierDetails(models.Model):
@@ -167,7 +199,7 @@ class CourierDetails(models.Model):
 
 class VoucherDetails(SmartModel):
     accounts_master = models.ForeignKey(AccountsMaster)
-    tracking_no = models.CharField(max_length=100, blank=True, unique=True)
+    tracking_no = models.CharField(max_length=100, blank=True)
     nature_of_voucher = models.ForeignKey(VoucherMaster)
     voucher_status = models.ForeignKey(VoucherStatusMaster)
     voucher_date = models.DateField()
@@ -177,14 +209,16 @@ class VoucherDetails(SmartModel):
     expenses_description = models.CharField(max_length=100, blank=True)
     party_name = models.CharField(max_length=100, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
-    amount_after_tds = models.DecimalField('Amount after TDS', max_digits=10, decimal_places=2, blank=True, null=True)
-    delayed_approval =  models.BooleanField('Delay Approval', default=False)
+    copy_voucher =  models.BooleanField('Copy Voucher', default=False)
     approval_sent_date = models.DateField(blank=True, null=True)
     approved_date = models.DateField(blank=True, null=True)
+
+    np_voucher_status = GroupedForeignKey(NPVoucherStatusMaster, 'type', blank=True, null=True)
     finance_submission_date = models.DateField(blank=True, null=True)
     movement_sheet_no = models.CharField(max_length=100, blank=True)
     payment_date = models.DateField(null=True, blank=True)
     utr_no = models.CharField('UTR NO', max_length=100, blank=True)
+    amount_after_tds = models.DecimalField('Amount after TDS', max_digits=10, decimal_places=2, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -224,7 +258,7 @@ class VoucherDetails(SmartModel):
 
     class Meta:
         ordering = ['nature_of_voucher',]
-        verbose_name = 'Voucher'
+        verbose_name = 'RCO Voucher'
 
 
 class TransactionNotes(models.Model):

@@ -67,15 +67,12 @@ aasaan.submit_dispatch = function (e) {
         if(account_type == 'OA' && voucher_nature!=4){
             $($('.field-ca_head_of_expenses').find('select')[i]).val('')
             $($('.field-ta_head_of_expenses').find('input')[i]).val('')
-            var oa_hoe = $($('.field-ta_head_of_expenses').find('input')[i]).val()
+            var oa_hoe = $($('.field-oa_head_of_expenses').find('input')[i]).val()
             if(oa_hoe == ''){
                 return addErrorMessage('Head of expenses can not be empty')
             }
         }
-        var ed = $($('.field-expenses_description').find('input')[i]).val()
-        if(ed == ''){
-            return addErrorMessage('Please provide expenses description')
-        }
+
         var amount = $($('.field-amount').find('input')[i]).val()
         if(amount == ''){
             return addErrorMessage('Please enter amount')
@@ -84,13 +81,27 @@ aasaan.submit_dispatch = function (e) {
         if(amount_after_tds == ''){
             $($('.field-amount_after_tds').find('input')[i]).val(amount)
         }
+
         if(voucher_nature==4){
             $($('.field-ca_head_of_expenses').find('select')[i]).val('')
-            $($('.field-ta_head_of_expenses').find('input')[i]).val('')
+            $($('.field-ta_head_of_expenses').find('select')[i]).val('')
             $($('.field-oa_head_of_expenses').find('input')[i]).val('')
         }
+
     }
 
+    if(account_type == 'OA'){
+        $('.field-ta_head_of_expenses.field-expenses_description.field-party_name').remove()
+        $('.field-ca_head_of_expenses.field-expenses_description.field-party_name').remove()
+    }
+    if(account_type == 'CA'){
+        $('.field-ta_head_of_expenses.field-expenses_description.field-party_name').remove()
+        $('.field-oa_head_of_expenses.field-expenses_description.field-party_name').remove()
+    }
+    if(account_type == 'TA'){
+        $('.field-oa_head_of_expenses.field-expenses_description.field-party_name').remove()
+        $('.field-ca_head_of_expenses.field-expenses_description.field-party_name').remove()
+    }
 
     //Adds validation error message
     function addErrorMessage(message) {
@@ -107,21 +118,21 @@ aasaan.submit_dispatch = function (e) {
     }
     // this section disables the submit buttons after the form has been submitted
     // to avoid multi-clicks
-        
+
     for (var i=0; i < aasaan.submit_elements.length; i++) {
         aasaan.submit_elements[i].disabled = true;
     }
-    
 
-    
-    // the following section is needed for very precarious reasons. 
+
+
+    // the following section is needed for very precarious reasons.
     // because we are preventing default event process, the default
     // form submission doesn't happen. Along with it is lost
     // which button was clicked (it is important as django admin
     // uses that to dispatch the appropriate HTTPResponseRedirect)
     // so we are recreating the 'click' below by adding a new
     // hidden element
-    
+
     var submit_element = document.createElement('input');
     submit_element.type = "hidden";
     submit_element.name = aasaan.submit_clicked_value;
@@ -152,8 +163,6 @@ window.addEventListener("load", function (e) {
     for (var i=0; i < aasaan.submit_elements.length; i++) {
         aasaan.submit_elements[i].addEventListener('click', aasaan["submit_clicked" + aasaan.submit_elements[i].name], true);
     }
-
-    
     aasaan.base_form = document.forms[0];
     aasaan.base_form.addEventListener('submit', aasaan.submit_dispatch, false);    
 });
