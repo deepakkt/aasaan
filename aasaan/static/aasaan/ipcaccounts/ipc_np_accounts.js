@@ -17,7 +17,7 @@ var custom_error = false;
         }
 
         var no_of_item = parseInt($('#id_voucherdetails_set-TOTAL_FORMS').val())
-        if(no_of_item >1){
+        if(no_of_item >0){
             $($('.field-copy_voucher')[0]).hide()
         }
 
