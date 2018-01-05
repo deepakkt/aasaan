@@ -102,6 +102,10 @@ aasaan.submit_dispatch = function (e) {
         $('.field-oa_head_of_expenses.field-expenses_description.field-party_name').remove()
         $('.field-ca_head_of_expenses.field-expenses_description.field-party_name').remove()
     }
+    $('.form-row.field-payment_date.field-utr_no.field-amount_after_tds').remove()
+    $('.form-row.field-np_voucher_status.field-finance_submission_date.field-movement_sheet_no).remove()
+
+
 
     //Adds validation error message
     function addErrorMessage(message) {
