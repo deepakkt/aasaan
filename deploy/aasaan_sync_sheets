@@ -13,6 +13,13 @@ source /home/deepak/django/aasaan/.virtualenvs/aasaan/bin/activate
 export DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
 export PYTHONPATH=$DJANGODIR:$PYTHONPATH
 
+# database cleanup queries go here
+
+# the below is a temporary query written to clean off orphan entries in the schedulemaster_programteacher
+# table. it interferes with enrollments sync. until a permenant fix is done
+# Deepak - 6-Jan-2017, Saturday
+echo "delete from schedulemaster_programteacher where teacher_id is null" | psql
+
 python manage.py create_ors_programs
 python manage.py create_joomla_programs
 python manage.py close_past_programs
