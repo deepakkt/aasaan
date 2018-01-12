@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AccountsMaster,NPAccountsMaster, CourierDetails, TransactionNotes, VoucherMaster, EntityMaster, VoucherStatusMaster, VoucherDetails, ClassExpensesTypeMaster, TeacherExpensesTypeMaster, NPVoucherStatusMaster, AccountType
+from .models import RCOAccountsMaster, NPAccountsMaster, CourierDetails, TransactionNotes, VoucherMaster, EntityMaster, RCOVoucherStatusMaster, VoucherDetails, ExpensesTypeMaster, NPVoucherStatusMaster, AccountType, AccountTypeMaster
 from schedulemaster.models import ProgramSchedule
 from contacts.models import Contact, IndividualRole, Zone, Center, ContactRoleGroup, RoleGroup, IndividualContactRoleZone
 from django.core.exceptions import ObjectDoesNotExist
@@ -8,6 +8,7 @@ from django.utils import timezone
 from AasaanUser.models import AasaanUserContact
 from django.contrib.auth.models import User
 from config.models import Configuration
+from .forms import RCOAccountsForm
 
 
 class TransactionNotesInline(admin.StackedInline):
@@ -39,6 +40,7 @@ class TransactionNotesInline1(admin.StackedInline):
 
 
 class VoucherDetailsInline(admin.StackedInline):
+    form = RCOAccountsForm
     model = VoucherDetails
     extra = 0
 
@@ -54,16 +56,7 @@ class VoucherDetailsInline(admin.StackedInline):
         }),
         ('', {
             'fields': (('nature_of_voucher', 'voucher_status', 'voucher_date'),
-                       ('ca_head_of_expenses','expenses_description', 'party_name')),
-            'classes': ('has-cols', 'cols-3')
-        }),
-
-        ('', {
-            'fields': (('ta_head_of_expenses', 'expenses_description', 'party_name'),),
-            'classes': ('has-cols', 'cols-3')
-        }),
-        ('', {
-            'fields': (('oa_head_of_expenses', 'expenses_description', 'party_name'),),
+                       ('head_of_expenses','expenses_description', 'party_name')),
             'classes': ('has-cols', 'cols-3')
         }),
 
@@ -142,7 +135,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
             time_threshold = timezone.now() - timedelta(days=int(schedule_days_to_show))
             qs = ProgramSchedule.objects.filter(end_date__gte=time_threshold)
             if obj_id.isdigit():
-                am = AccountsMaster.objects.get(pk=obj_id)
+                am = RCOAccountsMaster.objects.get(pk=obj_id)
                 if am.program_schedule:
                     qs = qs | ProgramSchedule.objects.filter(pk=am.program_schedule.pk)
             if not request.user.is_superuser:
@@ -181,18 +174,18 @@ class AccountsMasterAdmin(admin.ModelAdmin):
         try:
             contact_role_group = ContactRoleGroup.objects.filter(contact=contact.contact)
         except ObjectDoesNotExist:
-            return AccountsMaster.objects.none()
+            return RCOAccountsMaster.objects.none()
         try:
             if contact_role_group.get(role=trs_role_group):
-                all_accounts = AccountsMaster.objects.filter(zone__in=user_zones)
-                trs_account = all_accounts.filter(account_type='TA')
+                all_accounts = RCOAccountsMaster.objects.filter(zone__in=user_zones)
+                trs_account = all_accounts.filter(account_type=AccountTypeMaster.objects.get(name='Teacher Accounts'))
         except ContactRoleGroup.DoesNotExist:
             all_accounts = None
         try:
             if contact_role_group.get(role=acc_role_group):
-                all_accounts = AccountsMaster.objects.filter(program_schedule__center__zone__in=user_zones)
-                other_accounts = AccountsMaster.objects.filter(zone__in=user_zones).filter(account_type='OA')
-                class_accounts = all_accounts.filter(account_type='CA') | other_accounts
+                all_accounts = RCOAccountsMaster.objects.filter(program_schedule__center__zone__in=user_zones)
+                other_accounts = RCOAccountsMaster.objects.filter(zone__in=user_zones).filter(account_type=AccountTypeMaster.objects.get(name='Other Accounts'))
+                class_accounts = all_accounts.filter(account_type=AccountTypeMaster.objects.get(name='Other Accounts')) | other_accounts
         except ContactRoleGroup.DoesNotExist:
             pass
         try:
@@ -211,8 +204,8 @@ class AccountsMasterAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('', {
-            'fields': ('account_type', 'entity_name', 'budget_code', 'teacher', 'zone',
-            'program_schedule', 'status')
+            'fields': ('account_type', 'entity_name', 'budget_code', 'teacher', 'zone','program_schedule',
+             'status')
         }),
         )
 
@@ -223,7 +216,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
     list_per_page = 30
 
     class Media:
-        js = ('/static/aasaan/ipcaccounts/ipc_accounts.js','/static/aasaan/ipcaccounts/validation.js')
+        js = ('/static/aasaan/js/jquery.chained.min.js', '/static/aasaan/ipcaccounts/ipc_accounts.js','/static/aasaan/ipcaccounts/validation.js')
 
 
 class NPAccountsMasterAdmin(admin.ModelAdmin):
@@ -279,17 +272,17 @@ class NPAccountsMasterAdmin(admin.ModelAdmin):
         try:
             contact_role_group = ContactRoleGroup.objects.filter(contact=contact.contact)
         except ObjectDoesNotExist:
-            return AccountsMaster.objects.none()
+            return RCOAccountsMaster.objects.none()
         try:
             if contact_role_group.get(role=trs_role_group):
-                all_accounts = AccountsMaster.objects.filter(zone__in=user_zones)
+                all_accounts = RCOAccountsMaster.objects.filter(zone__in=user_zones)
                 trs_account = all_accounts.filter(account_type='TA')
         except ContactRoleGroup.DoesNotExist:
             all_accounts = None
         try:
             if contact_role_group.get(role=acc_role_group):
-                all_accounts = AccountsMaster.objects.filter(program_schedule__center__zone__in=user_zones)
-                other_accounts = AccountsMaster.objects.filter(zone__in=user_zones).filter(account_type='OA')
+                all_accounts = RCOAccountsMaster.objects.filter(program_schedule__center__zone__in=user_zones)
+                other_accounts = RCOAccountsMaster.objects.filter(zone__in=user_zones).filter(account_type='OA')
                 class_accounts = all_accounts.filter(account_type='CA') | other_accounts
         except ContactRoleGroup.DoesNotExist:
             pass
@@ -322,7 +315,7 @@ class NPAccountsMasterAdmin(admin.ModelAdmin):
             time_threshold = timezone.now() - timedelta(days=int(schedule_days_to_show))
             qs = ProgramSchedule.objects.filter(end_date__gte=time_threshold)
             if obj_id.isdigit():
-                am = AccountsMaster.objects.get(pk=obj_id)
+                am = RCOAccountsMaster.objects.get(pk=obj_id)
                 if am.program_schedule:
                     qs = qs | ProgramSchedule.objects.filter(pk=am.program_schedule.pk)
             if not request.user.is_superuser:
@@ -367,15 +360,15 @@ class NPAccountsMasterAdmin(admin.ModelAdmin):
         return False
 
     class Media:
-        js = ('/static/aasaan/ipcaccounts/ipc_np_accounts.js',)
+        js = ('/static/aasaan/ipcaccounts/ipc_accounts.js',)
 
 
-admin.site.register(AccountsMaster, AccountsMasterAdmin)
+admin.site.register(RCOAccountsMaster, AccountsMasterAdmin)
 admin.site.register(NPAccountsMaster, NPAccountsMasterAdmin)
 admin.site.register(VoucherMaster, admin.ModelAdmin)
 admin.site.register(EntityMaster, admin.ModelAdmin)
-admin.site.register(ClassExpensesTypeMaster, admin.ModelAdmin)
-admin.site.register(TeacherExpensesTypeMaster, admin.ModelAdmin)
-admin.site.register(VoucherStatusMaster, admin.ModelAdmin)
+admin.site.register(ExpensesTypeMaster, admin.ModelAdmin)
+admin.site.register(RCOVoucherStatusMaster, admin.ModelAdmin)
 admin.site.register(NPVoucherStatusMaster, admin.ModelAdmin)
 admin.site.register(AccountType, admin.ModelAdmin)
+admin.site.register(AccountTypeMaster, admin.ModelAdmin)

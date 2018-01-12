@@ -9,23 +9,22 @@ var $ = django.jQuery;
 aasaan.submit_dispatch = function (e) {        
     e.preventDefault();
 
-    var account_type = $("#id_account_type").val()
-    if(account_type == 'CA'){
+    var account_type = $("#id_account_type option:selected").text()
+    if(account_type == 'Class Accounts'){
         if($("#id_program_schedule").val()==''){
                 return addErrorMessage('Program schedule can not be empty')
         }
     }
-    if(account_type == 'OA'){
-
-        if($("#id_zone").val()==''){
-            return addErrorMessage('Zone can not be empty')
-        }
-
-    }
-    if(account_type == 'TA'){
+    else if(account_type == 'Teachers Accounts'){
         if($("#id_teacher").val()==''){
             return addErrorMessage('Teacher can not be empty')
         }
+        if($("#id_zone").val()==''){
+            return addErrorMessage('Zone can not be empty')
+        }
+    }
+    else {
+
         if($("#id_zone").val()==''){
             return addErrorMessage('Zone can not be empty')
         }
@@ -42,33 +41,14 @@ aasaan.submit_dispatch = function (e) {
         if(voucher_nature == ''){
             return addErrorMessage('Nature of voucher can not be empty')
         }
+
+        voucher_nature = $('#'+$($('.field-nature_of_voucher').find('select')[i]).attr('id')+' option:selected').text()
         var voucher_date = $($('.field-voucher_date').find('input')[i]).val()
         if(voucher_date == ''){
             return addErrorMessage('Voucher Date can not be empty')
         }
-        if(account_type == 'CA' && voucher_nature!=4){
-            $($('.field-ta_head_of_expenses').find('input')[i]).val('')
-            $($('.field-oa_head_of_expenses').find('input')[i]).val('')
-            var ca_hoe = $($('.field-ca_head_of_expenses').find('select')[i]).val()
-            if(ca_hoe == ''){
-                return addErrorMessage('Head of expenses can not be empty')
-            }
-        }
-        if(account_type == 'TA' && voucher_nature!=4){
-            $($('.field-ca_head_of_expenses').find('select')[i]).val('')
-            $($('.field-oa_head_of_expenses').find('input')[i]).val('')
-            $($('.field-party_name').find('input')[i]).val('')
-
-            var ta_hoe = $($('.field-ta_head_of_expenses').find('select')[i]).val()
-            if(ta_hoe == ''){
-                return addErrorMessage('Head of expenses can not be empty')
-            }
-        }
-        if(account_type == 'OA' && voucher_nature!=4){
-            $($('.field-ca_head_of_expenses').find('select')[i]).val('')
-            $($('.field-ta_head_of_expenses').find('input')[i]).val('')
-            var oa_hoe = $($('.field-oa_head_of_expenses').find('input')[i]).val()
-            if(oa_hoe == ''){
+        if(voucher_nature!='Reimbursement Payment'){
+            if($($('.field-head_of_expenses').find('select')[i]).val() == ''){
                 return addErrorMessage('Head of expenses can not be empty')
             }
         }
@@ -77,33 +57,10 @@ aasaan.submit_dispatch = function (e) {
         if(amount == ''){
             return addErrorMessage('Please enter amount')
         }
-        var amount_after_tds = $($('.field-amount_after_tds').find('input')[i]).val()
-        if(amount_after_tds == ''){
-            $($('.field-amount_after_tds').find('input')[i]).val(amount)
-        }
-
-        if(voucher_nature==4){
-            $($('.field-ca_head_of_expenses').find('select')[i]).val('')
-            $($('.field-ta_head_of_expenses').find('select')[i]).val('')
-            $($('.field-oa_head_of_expenses').find('input')[i]).val('')
-        }
-
     }
 
-    if(account_type == 'OA'){
-        $('.field-ta_head_of_expenses.field-expenses_description.field-party_name').remove()
-        $('.field-ca_head_of_expenses.field-expenses_description.field-party_name').remove()
-    }
-    if(account_type == 'CA'){
-        $('.field-ta_head_of_expenses.field-expenses_description.field-party_name').remove()
-        $('.field-oa_head_of_expenses.field-expenses_description.field-party_name').remove()
-    }
-    if(account_type == 'TA'){
-        $('.field-oa_head_of_expenses.field-expenses_description.field-party_name').remove()
-        $('.field-ca_head_of_expenses.field-expenses_description.field-party_name').remove()
-    }
     $('.form-row.field-payment_date.field-utr_no.field-amount_after_tds').remove()
-    $('.form-row.field-np_voucher_status.field-finance_submission_date.field-movement_sheet_no).remove()
+    $('.form-row.field-np_voucher_status.field-finance_submission_date.field-movement_sheet_no').remove()
 
 
 

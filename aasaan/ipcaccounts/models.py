@@ -7,7 +7,6 @@ from config.models import Configuration, SmartModel
 from django.core.exceptions import ValidationError
 from smart_selects.db_fields import GroupedForeignKey
 
-
 class ActiveManager(models.Manager):
     def get_queryset(self):
         return super(ActiveManager, self).get_queryset().filter(active=True)
@@ -35,7 +34,7 @@ class EntityMaster(models.Model):
         return "%s" % self.name
 
 
-class VoucherStatusMaster(models.Model):
+class RCOVoucherStatusMaster(models.Model):
     name = models.CharField(max_length=100, unique=True)
     active = models.BooleanField(default=True)
     objects = models.Manager()
@@ -58,7 +57,20 @@ class AccountType(models.Model):
         return "%s" % self.name
 
     class Meta:
-        verbose_name = 'Account Type'
+        verbose_name = 'NP Vouchers Type Master'
+
+
+class AccountTypeMaster(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    active = models.BooleanField(default=True)
+    objects = models.Manager()
+    active_objects = ActiveManager()
+
+    def __str__(self):
+        return "%s" % self.name
+
+    class Meta:
+        verbose_name = 'Account Type Master'
 
 
 class NPVoucherStatusMaster(models.Model):
@@ -76,9 +88,10 @@ class NPVoucherStatusMaster(models.Model):
         verbose_name = 'NP Voucher Status Master'
 
 
-class ClassExpensesTypeMaster(models.Model):
+class ExpensesTypeMaster(models.Model):
     name = models.CharField(max_length=100, unique=True)
     active = models.BooleanField(default=True)
+    type = models.ForeignKey(AccountTypeMaster)
 
     objects = models.Manager()
     active_objects = ActiveManager()
@@ -87,33 +100,12 @@ class ClassExpensesTypeMaster(models.Model):
         return "%s" % self.name
 
     class Meta:
-        verbose_name = 'Class Expense'
+        verbose_name = 'Expense master'
 
 
-class TeacherExpensesTypeMaster(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    active = models.BooleanField(default=True)
+class RCOAccountsMaster(SmartModel):
 
-    objects = models.Manager()
-    active_objects = ActiveManager()
-
-    def __str__(self):
-        return "%s" % self.name
-
-    class Meta:
-        verbose_name = 'Teacher Expense'
-
-
-class AccountsMaster(SmartModel):
-
-    ACCOUNT_TYPE_VALUES = (('TA', 'Teachers Accounts'),
-                           ('CA', 'Classes Accounts'),
-                           ('OA', 'Other Accounts'),
-
-    )
-    account_type = models.CharField(max_length=6, choices=ACCOUNT_TYPE_VALUES,
-                                       default=ACCOUNT_TYPE_VALUES[1][0])
-
+    account_type = models.ForeignKey(AccountTypeMaster)
     entity_name = models.ForeignKey(EntityMaster)
     zone = models.ForeignKey(Zone, blank=True, null=True)
     teacher = models.ForeignKey(Contact, blank=True, null=True)
@@ -163,10 +155,10 @@ class AccountsMaster(SmartModel):
                 raise ValidationError(_error_list)
 
     def __str__(self):
-        if self.account_type == 'CA':
+        if self.account_type.name == 'Class Accounts':
             return "CA : %s %s" % (self.entity_name, self.program_schedule)
 
-        if self.account_type == 'TA':
+        if self.account_type.name == 'Teachers Accounts':
             return "TA : %s %s: %s" % (self.entity_name, self.zone, self.teacher)
 
         return "OA : %s %s: %s" % (self.entity_name, self.budget_code, self.zone)
@@ -176,7 +168,7 @@ class AccountsMaster(SmartModel):
         verbose_name = 'RCO Voucher Approval Tracking'
 
 
-class NPAccountsMaster(AccountsMaster):
+class NPAccountsMaster(RCOAccountsMaster):
 
     class Meta:
         proxy = True
@@ -184,7 +176,7 @@ class NPAccountsMaster(AccountsMaster):
 
 
 class CourierDetails(models.Model):
-    accounts_master = models.ForeignKey(AccountsMaster)
+    accounts_master = models.ForeignKey(RCOAccountsMaster)
     agency = models.CharField(max_length=100, null=True, blank=True)
     tracking_number = models.CharField(max_length=100, null=True, blank=True, unique=True)
     sent_date = models.DateField(null=True, blank=True)
@@ -198,21 +190,17 @@ class CourierDetails(models.Model):
 
 
 class VoucherDetails(SmartModel):
-    accounts_master = models.ForeignKey(AccountsMaster)
+    accounts_master = models.ForeignKey(RCOAccountsMaster)
     tracking_no = models.CharField(max_length=100, blank=True)
     nature_of_voucher = models.ForeignKey(VoucherMaster)
-    voucher_status = models.ForeignKey(VoucherStatusMaster)
+    voucher_status = models.ForeignKey(RCOVoucherStatusMaster)
     voucher_date = models.DateField()
-    ca_head_of_expenses = models.ForeignKey(ClassExpensesTypeMaster, blank=True, null=True, verbose_name='Head of Expenses')
-    ta_head_of_expenses = models.ForeignKey(TeacherExpensesTypeMaster, blank=True, null=True, verbose_name='Head of Expenses')
-    oa_head_of_expenses = models.CharField(max_length=100, blank=True, verbose_name='Head of Expenses')
+    head_of_expenses = GroupedForeignKey(ExpensesTypeMaster, 'type', blank=True, null=True, verbose_name='Head of Expenses')
     expenses_description = models.CharField(max_length=100, blank=True)
     party_name = models.CharField(max_length=100, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
-    copy_voucher =  models.BooleanField('Copy Voucher', default=False)
     approval_sent_date = models.DateField(blank=True, null=True)
     approved_date = models.DateField(blank=True, null=True)
-
     np_voucher_status = GroupedForeignKey(NPVoucherStatusMaster, 'type', blank=True, null=True)
     finance_submission_date = models.DateField(blank=True, null=True)
     movement_sheet_no = models.CharField(max_length=100, blank=True)
@@ -223,11 +211,10 @@ class VoucherDetails(SmartModel):
     modified = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-
         if self.pk is None and self.tracking_no == '':
             cft = Configuration.objects.get(configuration_key='IPC_ACCOUNTS_TRACKING_CONST')
             data = json.loads(cft.configuration_value)
-            if self.accounts_master.account_type == 'CA':
+            if self.accounts_master.account_type.name == 'Class Accounts':
                 z_name = self.accounts_master.program_schedule.center.zone.zone_name
                 key = data[z_name]['ca_key']
                 prefix = data[z_name]['prefix']
@@ -235,15 +222,14 @@ class VoucherDetails(SmartModel):
                 data[z_name]['ca_key'] = key + 1
                 cft.configuration_value = json.dumps(data)
                 cft.save()
-
-            if self.accounts_master.account_type == 'TA':
+            elif self.accounts_master.account_type.name == 'Teachers Accounts':
                 key = data[self.accounts_master.zone.zone_name]['ta_key']
                 prefix = data[self.accounts_master.zone.zone_name]['prefix']
                 tracking_no = 'T' + prefix + str(key).zfill(6)
                 data[self.accounts_master.zone.zone_name]['ta_key'] = key + 1
                 cft.configuration_value = json.dumps(data)
                 cft.save()
-            if self.accounts_master.account_type == 'OA':
+            else:
                 key = data[self.accounts_master.zone.zone_name]['oa_key']
                 prefix = data[self.accounts_master.zone.zone_name]['prefix']
                 tracking_no = 'O' + prefix + str(key).zfill(6)
@@ -258,11 +244,11 @@ class VoucherDetails(SmartModel):
 
     class Meta:
         ordering = ['nature_of_voucher',]
-        verbose_name = 'RCO Voucher'
+        verbose_name = 'Voucher'
 
 
 class TransactionNotes(models.Model):
-    accounts_master = models.ForeignKey(AccountsMaster)
+    accounts_master = models.ForeignKey(RCOAccountsMaster)
     note = MarkdownField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.CharField(max_length=100, null=True, blank=True)
