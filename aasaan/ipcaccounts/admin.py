@@ -197,7 +197,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
 
         return all_accounts
 
-    list_display = ('is_cancelled', '__str__', 'budget_code')
+    list_display = ('is_cancelled', '__str__', 'voucher_status', 'total_no_vouchers', 'total_amount', 'last_modified')
     list_filter = ('account_type', 'entity_name', )
 
     list_display_links = ['is_cancelled', '__str__']
@@ -338,7 +338,7 @@ class NPAccountsMasterAdmin(admin.ModelAdmin):
 
         return super(NPAccountsMasterAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-    list_display = ('is_cancelled', '__str__', 'budget_code')
+    list_display = ('is_cancelled', '__str__', 'voucher_status', 'total_no_vouchers', 'total_amount', 'last_modified')
     list_filter = ('account_type', 'entity_name', )
 
     list_display_links = ['is_cancelled', '__str__']

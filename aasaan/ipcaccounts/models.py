@@ -6,7 +6,7 @@ import json
 from config.models import Configuration, SmartModel
 from django.core.exceptions import ValidationError
 from smart_selects.db_fields import GroupedForeignKey
-
+from django.db.models import Sum
 
 class ActiveManager(models.Manager):
     def get_queryset(self):
@@ -121,6 +121,29 @@ class RCOAccountsMaster(SmartModel):
 
     objects = models.Manager()
     active_objects = ActiveManager()
+
+    def total_amount(self):
+        total_amount = VoucherDetails.objects.filter(accounts_master=self).aggregate(Sum('amount'))['amount__sum']
+        return total_amount
+
+    def total_no_vouchers(self):
+        items_count = VoucherDetails.objects.filter(accounts_master=self).count()
+        return items_count
+
+    def last_modified(self):
+        vd = VoucherDetails.objects.filter(accounts_master=self).order_by('modified')
+        if len(vd)>=1:
+            return vd[len(vd)-1].modified
+        else:
+            return ''
+
+    def voucher_status(self):
+        vd = VoucherDetails.objects.filter(accounts_master=self).order_by('modified')
+        if len(vd)>=1:
+            v = vd[len(vd)-1]
+            return v.nature_of_voucher.name + ' : ' + v.voucher_status.name
+        else:
+            return ''
 
     def _cancelled(self, field_value):
         if self.get_status_display() == "Cancelled":
