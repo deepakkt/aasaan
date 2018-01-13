@@ -7,6 +7,7 @@ from config.models import Configuration, SmartModel
 from django.core.exceptions import ValidationError
 from smart_selects.db_fields import GroupedForeignKey
 
+
 class ActiveManager(models.Manager):
     def get_queryset(self):
         return super(ActiveManager, self).get_queryset().filter(active=True)
