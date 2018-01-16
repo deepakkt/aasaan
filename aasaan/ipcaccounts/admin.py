@@ -75,6 +75,10 @@ class VoucherDetailsInline(admin.StackedInline):
             'classes': ('has-cols', 'cols-3')
         }),
         ('', {
+            'fields': (('cheque', 'address1', 'address2'),),
+            'classes': ('has-cols', 'cols-3')
+        }),
+        ('', {
             'fields': ('copy_voucher',),
 
         }),
@@ -197,7 +201,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
 
         return all_accounts
 
-    list_display = ('is_cancelled', '__str__', 'voucher_status', 'total_no_vouchers', 'total_amount', 'last_modified')
+    list_display = ('is_cancelled', '__str__', 'rco_status', 'np_status', 'total_no_vouchers', 'total_amount', 'last_modified')
     list_filter = ('account_type', 'entity_name', )
 
     list_display_links = ['is_cancelled', '__str__']
@@ -216,7 +220,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
     list_per_page = 30
 
     class Media:
-        js = ('/static/aasaan/js/jquery.chained.min.js', '/static/aasaan/ipcaccounts/ipc_accounts.js','/static/aasaan/ipcaccounts/validation.js')
+        js = ('/static/aasaan/ipcaccounts/ipc_accounts.js','/static/aasaan/ipcaccounts/validation.js')
 
 
 class NPAccountsMasterAdmin(admin.ModelAdmin):
@@ -338,7 +342,7 @@ class NPAccountsMasterAdmin(admin.ModelAdmin):
 
         return super(NPAccountsMasterAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-    list_display = ('is_cancelled', '__str__', 'voucher_status', 'total_no_vouchers', 'total_amount', 'last_modified')
+    list_display = ('is_cancelled', '__str__', 'rco_status', 'np_status', 'total_no_vouchers', 'total_amount', 'last_modified')
     list_filter = ('account_type', 'entity_name', )
 
     list_display_links = ['is_cancelled', '__str__']

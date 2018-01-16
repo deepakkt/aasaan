@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from smart_selects.db_fields import GroupedForeignKey
 from django.db.models import Sum
 
+
 class ActiveManager(models.Manager):
     def get_queryset(self):
         return super(ActiveManager, self).get_queryset().filter(active=True)
@@ -122,6 +123,25 @@ class RCOAccountsMaster(SmartModel):
     objects = models.Manager()
     active_objects = ActiveManager()
 
+    def rco_status(self):
+        vd = VoucherDetails.objects.filter(accounts_master=self).order_by('modified')
+        if len(vd) >= 1:
+            v = vd[len(vd)-1]
+            return v.nature_of_voucher.name + ' : ' + v.voucher_status.name
+        else:
+            return ''
+
+    def np_status(self):
+        vd = VoucherDetails.objects.filter(accounts_master=self).order_by('modified')
+        if len(vd) >= 1:
+            v = vd[len(vd) - 1]
+            tmp = ''
+            if v.np_voucher_status:
+                tmp = v.np_voucher_status.name
+            return tmp
+        else:
+            return ''
+
     def total_amount(self):
         total_amount = VoucherDetails.objects.filter(accounts_master=self).aggregate(Sum('amount'))['amount__sum']
         return total_amount
@@ -134,14 +154,6 @@ class RCOAccountsMaster(SmartModel):
         vd = VoucherDetails.objects.filter(accounts_master=self).order_by('modified')
         if len(vd)>=1:
             return vd[len(vd)-1].modified
-        else:
-            return ''
-
-    def voucher_status(self):
-        vd = VoucherDetails.objects.filter(accounts_master=self).order_by('modified')
-        if len(vd)>=1:
-            v = vd[len(vd)-1]
-            return v.nature_of_voucher.name + ' : ' + v.voucher_status.name
         else:
             return ''
 
@@ -225,6 +237,9 @@ class VoucherDetails(SmartModel):
     amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
     approval_sent_date = models.DateField(blank=True, null=True)
     approved_date = models.DateField(blank=True, null=True)
+    cheque = models.BooleanField('Cheque Party', default=False)
+    address1 = models.CharField(max_length=200, blank=True)
+    address2 = models.CharField(max_length=200, blank=True)
     np_voucher_status = models.ForeignKey(NPVoucherStatusMaster, blank=True, null=True)
     finance_submission_date = models.DateField(blank=True, null=True)
     movement_sheet_no = models.CharField(max_length=100, blank=True)

@@ -6,7 +6,7 @@
 var aasaan = window.aasaan || {};
 var brochure_list = {};
 var custom_error = false;
-
+var eeeee;
 
 (function($) {
 
@@ -142,10 +142,10 @@ var custom_error = false;
                 $($row.find('.field-tracking_no')).hide()
                 $('#id_voucherdetails_set-0-copy_voucher').parent().parent().hide()
                 var line_no = $row.find('.inline_label').html()
-                line_no = line_no.split('#')
-
+                line_no = line_no.split('#')[1]
+                $($('.form-row.field-cheque.field-address1.field-address2')[line_no-1]).hide()
                 if(document.URL.indexOf('rcoaccountsmaster')>-1){
-                    $($('.checkbox-row').find('input')[line_no[1]-1]).change(function () {
+                    $($('.checkbox-row').find('input')[line_no-1]).change(function () {
                         var id = $(this).parent().parent().parent().parent().attr('id')
                         var vid = id.split('-')[1]
                         if($(this).is(":checked")){
@@ -158,8 +158,42 @@ var custom_error = false;
                             $('#id_voucherdetails_set-'+vid+'-amount').val($('#id_voucherdetails_set-'+(vid-1)+'-amount').val())
                             $('#id_voucherdetails_set-'+vid+'-approval_sent_date').val($('#id_voucherdetails_set-'+(vid-1)+'-approval_sent_date').val())
                             $('#id_voucherdetails_set-'+vid+'-approved_date').val($('#id_voucherdetails_set-'+(vid-1)+'-approved_date').val())
+                            $('#id_voucherdetails_set-'+vid+'-nature_of_voucher').change();
                         }
                     });
+
+                    var check_box = $(this).parent().parent().parent().parent().parent().find('.field-box.field-cheque').parent()
+                    $(check_box).hide()
+
+                    $('#id_voucherdetails_set-'+(line_no-1)+'-nature_of_voucher').change(function () {
+                        var cbox = $(this).parent().parent().parent().parent().parent().find('.field-box.field-cheque').parent()
+                        if($(this).find('option:selected').text() == 'Expenses' || $(this).val() == ''){
+                            $(cbox).hide()
+                            $($(cbox).find('input')).prop('checked', false)
+                            var i = $($(cbox).find('input')).attr('id').split('-')[1]
+                            $($('.field-box.field-address1')[i]).hide()
+                            $($('.field-box.field-address2')[i]).hide()
+                        }
+                        else{
+                            $(cbox).show()
+                            $($(cbox).find('input')).change(function () {
+                                var i = $(this).attr('id').split('-')[1]
+                                if($(this).is(":checked")){
+                                   $($('.field-box.field-address1')[i]).show()
+                                   $($('.field-box.field-address2')[i]).show()
+                                }
+                                else{
+
+                                    $($('.field-box.field-address1')[i]).hide()
+                                    $($('.field-box.field-address2')[i]).hide()
+                                }
+                            });
+                        }
+                    });
+
+                    $($('.field-box.field-address1')[line_no-1]).hide()
+                    $($('.field-box.field-address2')[line_no-1]).hide()
+
                 }
 
             }
