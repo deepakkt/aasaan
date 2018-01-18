@@ -11,8 +11,7 @@ var eeeee;
 (function($) {
 
     $(function() {
-
-
+        //Show Head Of Expenses options based on account type selection
         $("#id_account_type").change(function () {
             var hoe = $('.field-box.field-head_of_expenses').find('select')
             var options = $('#id_account_type option');
@@ -24,14 +23,51 @@ var eeeee;
             }
         });
 
+
+        //hide while loading for change
+        var no_of_item = parseInt($('#id_voucherdetails_set-TOTAL_FORMS').val())
+        for (var i=0; i<=no_of_item-1; i++){
+            $('#id_voucherdetails_set-'+i+'-nature_of_voucher').change(function () {
+                var vid = $(this).attr('id').split('-')[1]
+                if($(this).find('option:selected').text()== 'Expenses' || $(this).val() == ''){
+                    $($('.field-box.field-address1')[vid]).hide()
+                    $($('.field-box.field-address2')[vid]).hide()
+                    $($('.field-box.field-cheque')[vid]).parent().hide()
+                }
+                else{
+                    $($('.field-box.field-cheque')[vid]).parent().show()
+                    if($('#id_voucherdetails_set-'+vid+'-cheque').is(":checked")){
+                         $($('.field-box.field-address1')[vid]).show()
+                         $($('.field-box.field-address2')[vid]).show()
+                    }
+                    else{
+                        $($('.field-box.field-address1')[vid]).hide()
+                        $($('.field-box.field-address2')[vid]).hide()
+                    }
+                    $('#id_voucherdetails_set-'+vid+'-cheque').change(function () {
+                        var i = $(this).attr('id').split('-')[1]
+                        if($(this).is(":checked")){
+                           $($('.field-box.field-address1')[i]).show()
+                           $($('.field-box.field-address2')[i]).show()
+                        }
+                        else{
+
+                            $($('.field-box.field-address1')[i]).hide()
+                            $($('.field-box.field-address2')[i]).hide()
+                        }
+                    });
+                }
+            });
+            //Hide copy features for already created vouchers
+            $('#id_voucherdetails_set-'+i+'-copy_voucher').parent().parent().hide()
+        }
+
         if(document.URL.indexOf('npaccountsmaster')>-1){
             $('#voucherdetails_set-group').find('.add-row').hide()
             $('.form-row.field-np_voucher_status.field-finance_submission_date.field-movement_sheet_no').show()
             $('.form-row.field-payment_date.field-utr_no.field-amount_after_tds').show()
             $('#id_voucherdetails_set-0-copy_voucher').parent().parent().show()
             $('#id_voucherdetails_set-0-copy_voucher').next().html('Copy All')
-
-            var no_of_item = parseInt($('#id_voucherdetails_set-TOTAL_FORMS').val())
 
             for (var i=1; i<no_of_item; i++){
                 if($($('.field-tracking_no').find('input')).val() !='')
@@ -48,6 +84,7 @@ var eeeee;
                     }
                 });
             }
+            // NP Accounts Copy All
             $($('.checkbox-row').find('input')[0]).change(function () {
                 if($(this).is(":checked")){
                     var no_of_item = parseInt($('#id_voucherdetails_set-TOTAL_FORMS').val())
@@ -59,8 +96,6 @@ var eeeee;
                         $('#id_voucherdetails_set-'+i+'-utr_no').val($('#id_voucherdetails_set-0-utr_no').val())
                         $('#id_voucherdetails_set-'+i+'-amount_after_tds').val($('#id_voucherdetails_set-0-amount_after_tds').val())
                     }
-//                    $(window).setInterval(resetCopy, 1000);
-//resetCopy()
                 }
             });
         }
@@ -135,8 +170,7 @@ var eeeee;
 
         });
 
-
-
+        //Copy Voucher
         django.jQuery(document).on('formset:added', function(event, $row, formsetName) {
             if(formsetName == 'voucherdetails_set'){
                 $($row.find('.field-tracking_no')).hide()
@@ -161,6 +195,8 @@ var eeeee;
                             $('#id_voucherdetails_set-'+vid+'-nature_of_voucher').change();
                         }
                     });
+
+                    //Cheque Party Logic
 
                     var check_box = $(this).parent().parent().parent().parent().parent().find('.field-box.field-cheque').parent()
                     $(check_box).hide()
@@ -190,7 +226,6 @@ var eeeee;
                             });
                         }
                     });
-
                     $($('.field-box.field-address1')[line_no-1]).hide()
                     $($('.field-box.field-address2')[line_no-1]).hide()
 

@@ -57,6 +57,11 @@ aasaan.submit_dispatch = function (e) {
         if(amount == ''){
             return addErrorMessage('Please enter amount')
         }
+
+        if($('#id_voucherdetails_set-'+i+'-cheque').is(":checked")==false){
+            $('#id_voucherdetails_set-'+i+'-address1').val('')
+            $('#id_voucherdetails_set-'+i+'-address2').val('')
+        }
     }
 
     $('.form-row.field-payment_date.field-utr_no.field-amount_after_tds').remove()
