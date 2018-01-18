@@ -25,8 +25,11 @@ python manage.py create_joomla_programs
 python manage.py close_past_programs
 python manage.py sync_ors_counts
 python manage.py sync_joomla_counts
+
 psql -f /home/deepak/django/aasaan/sql/refresh_irc_dashboard.sql
 psql -f /home/deepak/django/aasaan/sql/statistics_dashboard.sql
+echo "VACUUM FULL" | psql
+
 python manage.py notify_program_creation
 python manage.py notify_program_cancellation
 python manage.py sync_iyc_schedules
