@@ -25,6 +25,7 @@ python manage.py create_joomla_programs
 python manage.py close_past_programs
 python manage.py sync_ors_counts
 python manage.py sync_joomla_counts
+python manage.py sync_ereceipts
 
 psql -f /home/deepak/django/aasaan/sql/refresh_irc_dashboard.sql
 psql -f /home/deepak/django/aasaan/sql/statistics_dashboard.sql
