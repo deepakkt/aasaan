@@ -217,7 +217,7 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
 
     list_display_links = ['is_cancelled', 'program_name']
 
-    exclude = ('cancelled_date',)
+    exclude = ('cancelled_date', 'receipts')
 
     list_filter = [ProgramScheduleZoneFilter, ProgramScheduleProgramFilter,
                    ProgramScheduleTagFilter,
