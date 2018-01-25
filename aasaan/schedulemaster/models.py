@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 
 from datetime import date
@@ -144,6 +145,8 @@ class ProgramSchedule(SmartModel):
 
     status = models.CharField(max_length=2, choices=STATUS_VALUES,
                               default=STATUS_VALUES[0][0])
+
+    receipts = JSONField()
 
     created = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
@@ -428,6 +431,22 @@ class ProgramScheduleCounts(models.Model):
 
     class Meta:
         verbose_name = 'program count'
+        unique_together = ['program', 'category']
+
+
+
+class ProgramReceiptAmounts(models.Model):
+    program = models.ForeignKey(ProgramSchedule)
+    category = models.ForeignKey(ProgramCountMaster)
+    receipt_count = models.IntegerField(default=0)
+    receipt_amout = models.DecimalField(max_digits=9, decimal_places=2)
+
+
+    def __str__(self):
+        return "%s - %s" % (self.program, self.category)
+
+    class Meta:
+        verbose_name = 'program receipt counts'
         unique_together = ['program', 'category']
 
 
