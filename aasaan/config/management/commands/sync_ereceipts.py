@@ -79,7 +79,7 @@ def update_schedule(receipt, tally_code_key, splitter=" - "):
     try:
         schedule = ProgramSchedule.objects.get(id=schedule_id)
     except ObjectDoesNotExist:
-        print(receipt['eReceiptNumber'], "Not found")
+        print(receipt['eReceiptNumber'], schedule, "Not found")
         return 1
 
     schedule_receipts = json.loads(schedule.receipts) if schedule.receipts else []
@@ -87,7 +87,7 @@ def update_schedule(receipt, tally_code_key, splitter=" - "):
     schedule_receipt_numbers = [x['eReceiptNumber'] for x in schedule_receipts]
 
     if receipt['eReceiptNumber'] in schedule_receipt_numbers:
-        print(receipt['eReceiptNumber'], "Present")
+        print(receipt['eReceiptNumber'], schedule, "Present")
         return 2
 
     receipt.pop(tally_code_key, None)
@@ -96,7 +96,7 @@ def update_schedule(receipt, tally_code_key, splitter=" - "):
     schedule.receipts = json.dumps(schedule_receipts)
     schedule.save()
 
-    print(receipt['eReceiptNumber'], "Updated")
+    print(receipt['eReceiptNumber'], schedule, "Updated")
     return 3
 
 
