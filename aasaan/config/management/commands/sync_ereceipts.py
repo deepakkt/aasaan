@@ -79,6 +79,7 @@ def update_schedule(receipt, tally_code_key, splitter=" - "):
     try:
         schedule = ProgramSchedule.objects.get(id=schedule_id)
     except ObjectDoesNotExist:
+        schedule = schedule_id
         print(receipt['eReceiptNumber'], schedule, "Not found")
         return 1
 
