@@ -8,7 +8,7 @@ from .models import LanguageMaster, ProgramCategory, ProgramMaster, \
     ProgramMasterCategory, ProgramSchedule, ProgramVenueAddress, ProgramScheduleNote, \
     ProgramTeacher, BatchMaster, ProgramBatch, ProgramScheduleCounts, \
     ProgramCountMaster, ProgramAdditionalLanguages, ProgramAdditionalInformation, \
-    ProgramTag
+    ProgramTag, ProgramReceiptAmounts
 
 from config.models import Tag
 
@@ -47,6 +47,9 @@ class ProgramBatchAdmin(admin.TabularInline):
     model = ProgramBatch
     extra = 0
 
+class ProgramReceiptAmountsAdmin(admin.TabularInline):
+    model = ProgramReceiptAmounts
+    extra = 0
 
 class ProgramTeacherAdmin(admin.TabularInline):
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
@@ -230,7 +233,7 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
     list_per_page = 30
 
     inlines = [ProgramTagAdmin, ProgramLanguageAdmin, ProgramBatchAdmin, ProgramTeacherAdmin,
-               ProgramScheduleCountsAdmin, ProgramVenueAdmin,
+               ProgramScheduleCountsAdmin, ProgramReceiptAmountsAdmin, ProgramVenueAdmin,
                ProgramScheduleNoteAdmin, ProgramAdditionalInformationAdmin]
 
     actions = ['mark_hidden', 'mark_unhidden', 'make_schedule_copy']
