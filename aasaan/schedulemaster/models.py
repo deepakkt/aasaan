@@ -439,7 +439,7 @@ class ProgramReceiptAmounts(models.Model):
     program = models.ForeignKey(ProgramSchedule)
     category = models.ForeignKey(ProgramCountMaster)
     receipt_count = models.IntegerField(default=0)
-    receipt_amout = models.DecimalField(max_digits=9, decimal_places=2)
+    receipt_amount = models.DecimalField(max_digits=9, decimal_places=2)
 
 
     def __str__(self):
