@@ -49,7 +49,7 @@ def get_program_master_abbreviations():
 
 
 def validate_tally_code(receipt, tally_code_key, abbreviations, splitter=" - "):
-    _tally_code = receipt[tally_code_key]
+    _tally_code = receipt.get(tally_code_key, "")
 
     return _tally_code.split(splitter)[0] in abbreviations
 
