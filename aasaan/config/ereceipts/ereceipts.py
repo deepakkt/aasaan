@@ -191,7 +191,7 @@ class EReceiptsInterface(object):
         _page = "1"
         _rows = "5000"
         _nd = str(datetime.datetime.now().timestamp()).split(".")[0]
-        _totalrows = "100"
+        _totalrows = "5000"
         _sord = "asc"
         _search = "false"
         _splice = "none"
