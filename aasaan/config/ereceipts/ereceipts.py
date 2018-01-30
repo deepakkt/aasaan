@@ -189,9 +189,9 @@ class EReceiptsInterface(object):
         _sidx = '_id'
         _condition = '{"dateOfReceipt":"range,%s,%s"}' % (_start_date, _end_date)
         _page = "1"
-        _rows = "5000"
+        _rows = "50000"
         _nd = str(datetime.datetime.now().timestamp()).split(".")[0]
-        _totalrows = "5000"
+        _totalrows = "50000"
         _sord = "asc"
         _search = "false"
         _splice = "none"

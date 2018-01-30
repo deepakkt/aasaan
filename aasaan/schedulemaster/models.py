@@ -276,6 +276,9 @@ class ProgramSchedule(SmartModel):
     def save(self, *args, **kwargs):
         changed_fields = self.changed_fields()
 
+        if not self.id:
+            self.receipts = []
+
         if 'status' in changed_fields and changed_fields['status'][-1] == "Cancelled":
             self.cancelled_date = date.today()
 
