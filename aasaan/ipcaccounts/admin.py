@@ -280,14 +280,14 @@ class NPAccountsMasterAdmin(admin.ModelAdmin):
         try:
             if contact_role_group.get(role=trs_role_group):
                 all_accounts = RCOAccountsMaster.objects.filter(zone__in=user_zones)
-                trs_account = all_accounts.filter(account_type='TA')
+                trs_account = all_accounts.filter(account_type__name='Teacher Accounts')
         except ContactRoleGroup.DoesNotExist:
             all_accounts = None
         try:
             if contact_role_group.get(role=acc_role_group):
                 all_accounts = RCOAccountsMaster.objects.filter(program_schedule__center__zone__in=user_zones)
-                other_accounts = RCOAccountsMaster.objects.filter(zone__in=user_zones).filter(account_type='OA')
-                class_accounts = all_accounts.filter(account_type='CA') | other_accounts
+                other_accounts = RCOAccountsMaster.objects.filter(zone__in=user_zones).filter(account_type__name='Other Accounts')
+                class_accounts = all_accounts.filter(account_type__name='Class Accounts') | other_accounts
         except ContactRoleGroup.DoesNotExist:
             pass
         try:
