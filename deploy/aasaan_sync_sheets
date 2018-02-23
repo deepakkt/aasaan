@@ -30,6 +30,7 @@ python manage.py sync_ereceipt_amounts
 
 psql -f /home/deepak/django/aasaan/sql/refresh_irc_dashboard.sql
 psql -f /home/deepak/django/aasaan/sql/statistics_dashboard.sql
+echo "REFRESH MATERIALIZED VIEW SCHEDULE_SNAPSHOT" | psql
 echo "VACUUM FULL VERBOSE ANALYZE" | psql
 
 python manage.py notify_program_creation
