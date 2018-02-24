@@ -54,9 +54,12 @@ def deploy():
         run("cp aasaan_sync_sheets ~/.virtualenvs/aasaan/bin")
         run("cp aasaan_worker_start ~/.virtualenvs/aasaan/bin")
         run("cp aasaan_backup_db ~/.virtualenvs/aasaan/bin")
+        run("cp aasaan_backup_metabase ~/.virtualenvs/aasaan/bin")
+        run("cp database_backup.clean.py ~/.virtualenvs/aasaan/bin")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_sync_sheets")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_worker_start")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_backup_db")
+        run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_backup_metabase")
 
 
 def get_database_file(local_path="/tmp"):

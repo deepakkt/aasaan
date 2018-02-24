@@ -1,0 +1,6 @@
+#!/bin/bash
+
+BACKUP_DIR=/home/deepak/dropbox/aasaan/metabase
+TODAY=$(date +\%Y-\%m-\%d)
+BACKUP_FILE=$BACKUP_DIR/metabase_$TODAY.tar
+docker export metabase > ${BACKUP_FILE}

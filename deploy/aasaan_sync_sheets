@@ -2,6 +2,7 @@
 # 26-May-2017, add this to repo to maintain audit trail
 
 source /home/deepak/django/aasaan/.virtualenvs/aasaan/bin/aasaan_backup_db
+source /home/deepak/django/aasaan/.virtualenvs/aasaan/bin/aasaan_backup_metabase
 python /home/deepak/django/aasaan/.virtualenvs/aasaan/bin/database_backup_clean.py
 
 DJANGODIR=/home/deepak/django/aasaan/aasaan
