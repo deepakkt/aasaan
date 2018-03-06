@@ -9,7 +9,7 @@ from AasaanUser.models import AasaanUserContact
 from django.contrib.auth.models import User
 from config.models import Configuration
 from .forms import RCOAccountsForm
-
+from django.db.models import Q
 
 class TransactionNotesInline(admin.StackedInline):
     model = TransactionNotes
@@ -181,25 +181,24 @@ class AccountsMasterAdmin(admin.ModelAdmin):
             return RCOAccountsMaster.objects.none()
         try:
             if contact_role_group.get(role=trs_role_group):
-                all_accounts = RCOAccountsMaster.objects.filter(zone__in=user_zones)
-                trs_account = all_accounts.filter(account_type=AccountTypeMaster.objects.get(name='Teacher Accounts'))
+                trs_account = RCOAccountsMaster.objects.filter(zone__in=user_zones).filter(account_type__name='Teacher Accounts')
+                all_accounts = trs_account
         except ContactRoleGroup.DoesNotExist:
             all_accounts = None
         try:
             if contact_role_group.get(role=acc_role_group):
-                all_accounts = RCOAccountsMaster.objects.filter(program_schedule__center__zone__in=user_zones)
-                other_accounts = RCOAccountsMaster.objects.filter(zone__in=user_zones).filter(account_type=AccountTypeMaster.objects.get(name='Other Accounts'))
-                class_accounts = all_accounts.filter(account_type=AccountTypeMaster.objects.get(name='Other Accounts')) | other_accounts
+                class_accounts = RCOAccountsMaster.objects.filter(program_schedule__center__zone__in=user_zones)
+                other_accounts = RCOAccountsMaster.objects.filter(zone__in=user_zones).filter(~Q(account_type__name='Teacher Accounts'))
+                all_accounts = class_accounts | other_accounts
         except ContactRoleGroup.DoesNotExist:
             pass
         try:
             if contact_role_group.get(role=acc_role_group) and contact_role_group.get(role=trs_role_group):
-                all_accounts = trs_account | class_accounts
-                all_accounts = all_accounts.distinct()
+                all_accounts = trs_account | class_accounts | other_accounts
         except ContactRoleGroup.DoesNotExist:
             pass
 
-        return all_accounts
+        return all_accounts.distinct()
 
     list_display = ('is_cancelled', '__str__', 'rco_status', 'np_status', 'total_no_vouchers', 'total_amount', 'last_modified')
     list_filter = ('account_type', 'entity_name', )
@@ -279,25 +278,25 @@ class NPAccountsMasterAdmin(admin.ModelAdmin):
             return RCOAccountsMaster.objects.none()
         try:
             if contact_role_group.get(role=trs_role_group):
-                all_accounts = RCOAccountsMaster.objects.filter(zone__in=user_zones)
-                trs_account = all_accounts.filter(account_type__name='Teacher Accounts')
+                trs_account = RCOAccountsMaster.objects.filter(zone__in=user_zones).filter(account_type__name='Teacher Accounts')
+                all_accounts = trs_account
         except ContactRoleGroup.DoesNotExist:
             all_accounts = None
         try:
             if contact_role_group.get(role=acc_role_group):
-                all_accounts = RCOAccountsMaster.objects.filter(program_schedule__center__zone__in=user_zones)
-                other_accounts = RCOAccountsMaster.objects.filter(zone__in=user_zones).filter(account_type__name='Other Accounts')
-                class_accounts = all_accounts.filter(account_type__name='Class Accounts') | other_accounts
+                class_accounts = RCOAccountsMaster.objects.filter(program_schedule__center__zone__in=user_zones)
+                other_accounts = RCOAccountsMaster.objects.filter(zone__in=user_zones).filter(~Q(account_type__name='Teacher Accounts'))
+                all_accounts = class_accounts | other_accounts
         except ContactRoleGroup.DoesNotExist:
             pass
         try:
             if contact_role_group.get(role=acc_role_group) and contact_role_group.get(role=trs_role_group):
-                all_accounts = trs_account | class_accounts
+                all_accounts = trs_account | class_accounts | other_accounts
                 all_accounts = all_accounts.distinct()
         except ContactRoleGroup.DoesNotExist:
             pass
 
-        return all_accounts
+        return all_accounts.distinct()
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
 
