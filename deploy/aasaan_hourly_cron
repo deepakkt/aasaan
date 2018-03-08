@@ -1,5 +1,3 @@
 #!/bin/bash
 
 # cron to run every 30 minutes for management tasks
-
-mktemp -d
