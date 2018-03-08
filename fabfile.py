@@ -52,11 +52,13 @@ def deploy():
 
     with cd(os.path.join(_code_dir(), 'deploy')):
         run("cp aasaan_sync_sheets ~/.virtualenvs/aasaan/bin")
+        run("cp aasaan_hourly_cron ~/.virtualenvs/aasaan/bin")
         run("cp aasaan_worker_start ~/.virtualenvs/aasaan/bin")
         run("cp aasaan_backup_db ~/.virtualenvs/aasaan/bin")
         run("cp aasaan_backup_metabase ~/.virtualenvs/aasaan/bin")
         run("cp database_backup_clean.py ~/.virtualenvs/aasaan/bin")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_sync_sheets")
+        run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_hourly_cron")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_worker_start")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_backup_db")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_backup_metabase")
