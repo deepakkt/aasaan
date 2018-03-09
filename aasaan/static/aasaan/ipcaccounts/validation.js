@@ -30,9 +30,9 @@ aasaan.submit_dispatch = function (e) {
         }
     }
 
-    if($("#id_budget_code").val()==''){
-        return addErrorMessage('Budget Code can not be empty')
-    }
+//    if($("#id_budget_code").val()==''){
+//        return addErrorMessage('Budget Code can not be empty')
+//    }
 
     var no_of_item = parseInt($('#id_voucherdetails_set-TOTAL_FORMS').val())
     var item_array = [];

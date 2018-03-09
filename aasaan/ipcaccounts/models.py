@@ -142,10 +142,6 @@ class RCOAccountsMaster(SmartModel):
         else:
             return ''
 
-    def total_amount(self):
-        total_amount = VoucherDetails.objects.filter(accounts_master=self).aggregate(Sum('amount'))['amount__sum']
-        return total_amount
-
     def total_no_vouchers(self):
         items_count = VoucherDetails.objects.filter(accounts_master=self).count()
         return items_count

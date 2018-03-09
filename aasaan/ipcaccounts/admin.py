@@ -93,6 +93,10 @@ class CourierDetailsInline(admin.TabularInline):
         return False
 
 
+class ExpensesTypeMasterAdmin(admin.ModelAdmin):
+    list_filter = ('type',)
+
+
 class AccountsMasterAdmin(admin.ModelAdmin):
 
     def save_related(self, request, form, formsets, change):
@@ -200,14 +204,14 @@ class AccountsMasterAdmin(admin.ModelAdmin):
 
         return all_accounts.distinct()
 
-    list_display = ('is_cancelled', '__str__', 'rco_status', 'np_status', 'total_no_vouchers', 'total_amount', 'last_modified')
+    list_display = ('is_cancelled', '__str__', 'rco_status', 'np_status', 'total_no_vouchers', 'last_modified')
     list_filter = ('account_type', 'entity_name', )
 
     list_display_links = ['is_cancelled', '__str__']
 
     fieldsets = (
         ('', {
-            'fields': ('account_type', 'entity_name', 'budget_code', 'teacher', 'zone','program_schedule',
+            'fields': ('account_type', 'entity_name', 'teacher', 'zone','program_schedule', 'budget_code',
              'status')
         }),
         )
@@ -341,7 +345,7 @@ class NPAccountsMasterAdmin(admin.ModelAdmin):
 
         return super(NPAccountsMasterAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
-    list_display = ('is_cancelled', '__str__', 'rco_status', 'np_status', 'total_no_vouchers', 'total_amount', 'last_modified')
+    list_display = ('is_cancelled', '__str__', 'rco_status', 'np_status', 'total_no_vouchers', 'last_modified')
     list_filter = ('account_type', 'entity_name', )
 
     list_display_links = ['is_cancelled', '__str__']
@@ -370,7 +374,7 @@ admin.site.register(RCOAccountsMaster, AccountsMasterAdmin)
 admin.site.register(NPAccountsMaster, NPAccountsMasterAdmin)
 admin.site.register(VoucherMaster, admin.ModelAdmin)
 admin.site.register(EntityMaster, admin.ModelAdmin)
-admin.site.register(ExpensesTypeMaster, admin.ModelAdmin)
+admin.site.register(ExpensesTypeMaster, ExpensesTypeMasterAdmin)
 admin.site.register(RCOVoucherStatusMaster, admin.ModelAdmin)
 admin.site.register(NPVoucherStatusMaster, admin.ModelAdmin)
 admin.site.register(AccountType, admin.ModelAdmin)
