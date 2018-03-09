@@ -34,6 +34,11 @@ psql -f /home/deepak/django/aasaan/sql/statistics_dashboard.sql
 echo "REFRESH MATERIALIZED VIEW SCHEDULE_SNAPSHOT" | psql
 echo "VACUUM FULL VERBOSE ANALYZE" | psql
 
+# run dropbox for 10 minutes so everything is synced
+docker start dropbox
+sleep 10m
+docker stop dropbox
+
 python manage.py notify_program_creation
 python manage.py notify_program_cancellation
 python manage.py sync_iyc_schedules
