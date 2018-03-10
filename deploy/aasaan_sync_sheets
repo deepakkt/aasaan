@@ -45,3 +45,6 @@ python manage.py sync_iyc_schedules
 python manage.py sync_sheets
 python manage.py sync_enrollments
 python manage.py sync_contacts
+
+# restart metabase container
+docker restart metabase
