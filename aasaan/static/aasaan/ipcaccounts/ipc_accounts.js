@@ -21,7 +21,27 @@ var eeeee;
                 else
                     $(hoe).children("optgroup[label='"+options[i].text+"']").hide();
             }
+             $("#id_budget_code").val('')
         });
+
+        $("#id_program_schedule").change(function() {
+            if($(this).val()==''){
+                $("#id_budget_code").val('')
+                return
+            }
+             $.ajax({
+                    type: 'GET',
+                    url: '/admin/ipcaccounts/get_budget_code/',
+                    data: {
+                            'program_schedule': $(this).val()
+                            },
+                    contentType: 'application/json; charset=utf-8',
+                    cache: false,
+                    success: function(data) {
+                       $("#id_budget_code").val(data)
+                    }
+                });
+        })
 
 
         //hide while loading for change
@@ -166,6 +186,7 @@ var eeeee;
                 $('.field-budget_code').show()
                 $('.field-box.field-party_name').show()
             }
+            $("#id_budget_code").val('')
         }
 
         });
