@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+{% load django_markdown %}
+
+{% block title %}IPC{% endblock %}
+
+{% block branding %} <h1 id="site-name">aasaan</h1> {% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block extrahead %}{{ block.super }}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+{% endblock %}
+
+{% block content %}
+    <h4>Your Message has been sent</h4>
+   <form action="/admin/ipcaccounts/rcoaccountsmaster/" method="get">{% csrf_token %}
+     {{ form.media }}
+    {{ form.as_p }}Click Home to go to Dashboard
+    <input type="submit" value="Home" />
+</form>
+{% endblock %}
+
+{% load admin_static %}{% load firstof from future %}<!DOCTYPE html>
+

@@ -87,7 +87,7 @@ INSTALLED_APPS += (
     'braces',
     'tastypie',
     'smart_selects',
-    # 'allauth.socialaccount.providers.facebook',
+    'tinymce',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -190,3 +190,26 @@ STATICFILES_DIRS = (STATIC_PATH,)
 MARKDOWN_EDITOR_SKIN = 'simple'
 MARKDOWN_SET_NAME = 'markdown'
 USE_DJANGO_JQUERY = True
+TINYMCE_DEFAULT_CONFIG = {
+    'theme' : 'advanced',
+     'theme_advanced_buttons1' : "save,newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,styleselect,formatselect,fontselect,fontsizeselect",
+     'theme_advanced_buttons2' : "cut,copy,paste,pastetext,pasteword,|,search,replace,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,insertdate,inserttime,preview,|,forecolor,backcolor",
+     'theme_advanced_buttons3' : "tablecontrols,|,hr,removeformat,visualaid,|,sub,sup,|,charmap,emotions,iespell,media,advhr,|,print,|,ltr,rtl,|,fullscreen",
+    'theme_advanced_toolbar_location' : 'top',
+    'theme_advanced_toolbar_align': 'left',
+    'paste_text_sticky': True,
+    'paste_text_sticky_default' : True,
+    'valid_styles' : 'font-weight,font-style,text-decoration',
+   'plugins': "table,spellchecker,paste,searchreplace",
+    'menubar': "table",
+    'toolbar': "table",
+    'table_tab_navigation': 'false',
+    'cleanup_on_startup': True,
+    'custom_undo_redo_levels': 10,
+    'skin' : "default",
+    'skin_variant' : "blue",
+    'nowrap' : 'false',
+    'overflow': 'scroll',
+}
+TINYMCE_JS_ROOT = MEDIA_ROOT + '/js/'
+TINYMCE_JS_URL = STATIC_URL + '/tiny_mce/tiny_mce.js'

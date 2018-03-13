@@ -30,6 +30,7 @@ urlpatterns = patterns('',
 	url(r'^statistics/', include(statistics.urls, namespace='statistics')),
     url(r'^schedules/', include(schedulemaster.urls, namespace='schedules')),
     url(r'^chaining/', include('smart_selects.urls')),
+    url(r'^tinymce/', include('tinymce.urls')),
 )
 
 if settings.ASYNC:

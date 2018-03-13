@@ -10,6 +10,8 @@ from django.contrib.auth.models import User
 from config.models import Configuration
 from .forms import RCOAccountsForm
 from django.db.models import Q
+from django.utils.html import format_html
+
 
 class TransactionNotesInline(admin.StackedInline):
     model = TransactionNotes
@@ -98,6 +100,16 @@ class ExpensesTypeMasterAdmin(admin.ModelAdmin):
 
 
 class AccountsMasterAdmin(admin.ModelAdmin):
+
+    def account_actions(self, obj):
+
+        url = '/admin/ipcaccounts/send_email?account_id='+str(obj.id)+''
+        return format_html(
+            '<a class="button" target="_blank" href="{}">Send E-Mail</a>&nbsp;', url, obj.id)
+
+    account_actions.short_description = 'Email Approval'
+    account_actions.allow_tags = True
+
 
     def save_related(self, request, form, formsets, change):
         for formset in formsets:
@@ -204,7 +216,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
 
         return all_accounts.distinct()
 
-    list_display = ('is_cancelled', '__str__', 'rco_status', 'np_status', 'total_no_vouchers', 'last_modified')
+    list_display = ('is_cancelled', '__str__', 'rco_status', 'np_status', 'total_no_vouchers', 'last_modified', 'account_actions',)
     list_filter = ('account_type', 'entity_name', )
 
     list_display_links = ['is_cancelled', '__str__']

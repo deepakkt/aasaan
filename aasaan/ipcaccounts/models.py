@@ -278,7 +278,7 @@ class VoucherDetails(SmartModel):
         return "%s -- %s - %s - %s" % (self.accounts_master.entity_name, self.nature_of_voucher, self.voucher_status, self.amount)
 
     class Meta:
-        ordering = ['nature_of_voucher',]
+        ordering = ['tracking_no', 'nature_of_voucher',]
         verbose_name = 'Voucher'
 
 
