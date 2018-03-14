@@ -6,7 +6,6 @@ import json
 from config.models import Configuration, SmartModel
 from django.core.exceptions import ValidationError
 from smart_selects.db_fields import GroupedForeignKey
-from django.db.models import Sum
 
 
 class ActiveManager(models.Manager):
