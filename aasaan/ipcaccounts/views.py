@@ -29,16 +29,20 @@ def send_email(request):
     if request.method == 'GET':
         account_id = request.GET['account_id']
         account_master = RCOAccountsMaster.objects.get(id=account_id)
-        if (account_master.account_type.name == 'Class Accounts'):
+        if account_master.account_type.name == 'Class Accounts':
             zone = account_master.program_schedule.center.zone.zone_name
         else:
             zone = account_master.zone.zone_name
         cft = Configuration.objects.get(configuration_key='IPCACCOUNTS_EMAIL_NOTIFY')
         data = json.loads(cft.configuration_value)
-        sender = data[zone]['sender']
-        approvar = data[zone]['approvar']
-        accounts_incharge = data[zone]['accounts_incharge']
-
+        sender = request.user.email
+        if account_master.account_type.name == 'Teacher Accounts':
+            approvar = data[zone]['ta_approvar']
+        else:
+            approvar = data[zone]['ca_approvar']
+        accounts_incharge = request.user.get_full_name()
+        cc = data[zone]['cc']
+        bcc = data[zone]['bcc']
 
         voucher_details = VoucherDetails.objects.filter(accounts_master=account_master)
         message_body = add_voucher_details(account_master, voucher_details)
@@ -56,7 +60,7 @@ def send_email(request):
         message_body = message_body.replace('ACCOUNTS_INCHARGE', accounts_incharge)
         message_body = message_body.replace('ZONE_NAME', zone)
         form = MessageForm(
-            initial={'sender':sender, 'to':approvar, 'subject': subject, 'message': message_body})
+            initial={'sender':sender, 'to':approvar, 'cc':cc, 'bcc':bcc, 'subject': subject, 'message': message_body})
     return render(request, 'ipcaccounts/mailer.html', {'form': form})
 
 
@@ -95,11 +99,22 @@ class SendEmailView(FormView):
     def post(self, request, *args, **kwargs):
         msg_subject = request.POST.get('subject')
         message_body = request.POST.get('temp_message')
-        sender = request.POST.get('sender')
-        to = request.POST.get('to')
-        _emails = [to,]
-        sendgrid_contnection = setup_sendgrid_connection(settings.SENDGRID_KEY)
-        _dispatch_status = dispatch_notification(sender, _emails, msg_subject,
-                                                 message_body, sendgrid_contnection)
-        return render(request, 'ipcaccounts/confirm.html')
+        sender = request.user.email
+        to = get_email_list(request.POST.get('to'))
+        cc = get_email_list(request.POST.get('cc'))
+        bcc = get_email_list(request.POST.get('bcc'))
 
+        sendgrid_contnection = setup_sendgrid_connection(settings.SENDGRID_KEY)
+        _dispatch_status = dispatch_notification(sender, to, msg_subject,
+                                                 message_body, sendgrid_contnection, cc, bcc)
+        if _dispatch_status:
+            return render(request, 'ipcaccounts/confirm.html')
+        else:
+            return render(request, 'ipcaccounts/error.html')
+
+def get_email_list(_emails):
+    if _emails.find(',') > 1:
+        e_list = _emails.split(',')
+    else:
+        e_list = [_emails, ]
+    return e_list

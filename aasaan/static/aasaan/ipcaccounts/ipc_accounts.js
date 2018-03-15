@@ -21,10 +21,14 @@ var eeeee;
                 else
                     $(hoe).children("optgroup[label='"+options[i].text+"']").hide();
             }
+
+        });
+        $("#id_account_type").click(function () {
              $("#id_budget_code").val('')
+             $("#id_program_schedule").val('')
         });
 
-        $("#id_program_schedule").change(function() {
+        $("#id_program_schedule").click(function() {
             if($(this).val()==''){
                 $("#id_budget_code").val('')
                 return
@@ -165,7 +169,7 @@ var eeeee;
         })
 
         function toggleVerified() {
-            if($("#id_account_type option:selected").text()=='Teachers Accounts'){
+            if($("#id_account_type option:selected").text()=='Teacher Accounts'){
                 $('.field-program_schedule').hide()
                 $('.field-zone').show()
                 $('.field-budget_code').show()
@@ -177,7 +181,6 @@ var eeeee;
                 $('.field-program_schedule').show()
                 $('.field-zone').hide()
                 $('.field-budget_code').show()
-                $('.field-box.field-party_name').show()
             }
             else {
                 $('.field-teacher').hide()
@@ -186,7 +189,6 @@ var eeeee;
                 $('.field-budget_code').show()
                 $('.field-box.field-party_name').show()
             }
-            $("#id_budget_code").val('')
         }
 
         });

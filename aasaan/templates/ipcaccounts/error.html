@@ -12,10 +12,10 @@
 {% endblock %}
 
 {% block content %}
-    <h4>Your Message has been sent</h4>
+    <h4>Your Message has not sent</h4>
    <form action="/admin/ipcaccounts/rcoaccountsmaster/" method="get">{% csrf_token %}
      {{ form.media }}
-    {{ form.as_p }}Click Accounts Master to go to Dashboard
+    {{ form.as_p }}Click Accounts Master to go to Dashboard and send Email again
     <input type="submit" value="Accounts Master" />
 </form>
 {% endblock %}

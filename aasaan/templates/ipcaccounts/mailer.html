@@ -16,14 +16,17 @@ function myFunction() {
     document.getElementById("temp_message").value = document.getElementById("id_message").value
     document.getElementById("id_sender").disabled = false
     }
+
 </script>
 {% endblock %}
 
 {% block content %}
     <h2>IPC Communication</h2>
    <form onsubmit="myFunction()" action="/admin/ipcaccounts/sendApprovalMessage" method="post">{% csrf_token %}
-     {{ form.media }}
-    {{ form.as_p }}
+      {{ form.media }}
+        <table>
+        {{ form }}
+        </table>
        <input type="hidden" name="temp_message" id="temp_message" value="">
     <input type="submit" value="Send for Approval" />
 </form>

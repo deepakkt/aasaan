@@ -9,7 +9,7 @@ from contacts.models import IndividualContactRoleCenter, IndividualContactRoleZo
 from utils.datedeux import DateDeux
 
 import sendgrid
-
+import traceback
 
 def build_template_dict(schedule):
     _template_dict = dict()
@@ -94,13 +94,17 @@ def build_config_email_list(config, schedule):
     return tuple(set(email_list))
 
 
-def dispatch_notification(msg_from, msg_to, msg_subject, msg_body, connection):
+def dispatch_notification(msg_from, msg_to, msg_subject, msg_body, connection, msg_cc=[], msg_bcc=[]):
     try:
         msg = sendgrid.Mail()
 
         msg.set_from(msg_from)
         msg.set_subject(msg_subject)
         msg.set_html(msg_body)
+        if msg_cc:
+            msg.cc = msg_cc
+        if msg_bcc:
+            msg.bcc = msg_bcc
 
         for each_to in msg_to:
             print("sending email to ", each_to, " ...")

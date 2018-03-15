@@ -188,11 +188,12 @@ class RCOAccountsMaster(SmartModel):
     def __str__(self):
         if self.account_type.name == 'Class Accounts':
             return "CA : %s %s" % (self.entity_name, self.program_schedule)
-
-        if self.account_type.name == 'Teachers Accounts':
+        elif self.account_type.name == 'Teacher Accounts':
             return "TA : %s %s: %s" % (self.entity_name, self.zone, self.teacher)
-
-        return "OA : %s %s: %s" % (self.entity_name, self.budget_code, self.zone)
+        elif self.account_type.name == 'RCO Accounts':
+            return "RCO : %s %s: %s" % (self.entity_name, self.budget_code, self.zone)
+        else:
+            return "OA : %s %s: %s" % (self.entity_name, self.budget_code, self.zone)
 
     class Meta:
         ordering = ['account_type', 'entity_name']
@@ -256,7 +257,7 @@ class VoucherDetails(SmartModel):
                 data[z_name]['ca_key'] = key + 1
                 cft.configuration_value = json.dumps(data)
                 cft.save()
-            elif self.accounts_master.account_type.name == 'Teachers Accounts':
+            elif self.accounts_master.account_type.name == 'Teacher Accounts':
                 key = data[self.accounts_master.zone.zone_name]['ta_key']
                 prefix = data[self.accounts_master.zone.zone_name]['prefix']
                 tracking_no = 'T' + prefix + str(key).zfill(6)

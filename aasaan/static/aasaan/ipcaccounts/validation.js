@@ -15,7 +15,7 @@ aasaan.submit_dispatch = function (e) {
                 return addErrorMessage('Program schedule can not be empty')
         }
     }
-    else if(account_type == 'Teachers Accounts'){
+    else if(account_type == 'Teacher Accounts'){
         if($("#id_teacher").val()==''){
             return addErrorMessage('Teacher can not be empty')
         }

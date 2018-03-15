@@ -15,7 +15,10 @@
     <h2>IPC Communication</h2>
    <form action="{% url 'addRecipient' %}" method="post">{% csrf_token %}
      {{ form.media }}
+        <table border="1">
     {{ form.as_p }}
+  </table>
+
     <input type="submit" value="Add Recipients" />
 </form>
 {% endblock %}
