@@ -8,7 +8,9 @@ class ScheduleResource(ModelResource):
         queryset =  ProgramSchedule.objects.filter(hidden=False,program__admin=False)
         fields = ['start_date',
                 'event_management_code', 
-                'online_registration_code', 'id']
+                'online_registration_code', 'id',
+                'contact_name', 'contact_phone1', 
+                'contact_email', 'gender']
         authentication = ApiKeyAuthentication()
         cache = SimpleCache(timeout=10)
 
