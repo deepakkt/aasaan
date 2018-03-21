@@ -162,6 +162,7 @@ var eeeee;
             $('.field-budget_code').show()
             $('.field-box.field-party_name').show()
         }
+
         toggleVerified()
 
         $("#id_account_type").change(function() {
@@ -198,6 +199,7 @@ var eeeee;
             if(formsetName == 'voucherdetails_set'){
                 $($row.find('.field-tracking_no')).hide()
                 $('#id_voucherdetails_set-0-copy_voucher').parent().parent().hide()
+                $('.form-row.field-tracking_no.field-voucher_type').show()
                 var line_no = $row.find('.inline_label').html()
                 line_no = line_no.split('#')[1]
                 $($('.form-row.field-cheque.field-address1.field-address2')[line_no-1]).hide()

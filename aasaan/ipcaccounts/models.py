@@ -141,9 +141,23 @@ class RCOAccountsMaster(SmartModel):
         else:
             return ''
 
+    def tracking_no(self):
+        voucher_details = VoucherDetails.objects.filter(accounts_master=self).order_by('tracking_no')
+        if (len(voucher_details) > 2):
+            tracking_numbers = voucher_details[0].tracking_no + ' - ' + voucher_details[len(voucher_details) - 1].tracking_no
+        elif (len(voucher_details) == 2):
+            tracking_numbers = voucher_details[0].tracking_no + ' & ' + voucher_details[len(voucher_details) - 1].tracking_no
+        elif (len(voucher_details) == 1):
+            tracking_numbers = voucher_details[0].tracking_no
+        else:
+            tracking_numbers = 'No Voucher'
+        return tracking_numbers
+
     def total_no_vouchers(self):
         items_count = VoucherDetails.objects.filter(accounts_master=self).count()
         return items_count
+    total_no_vouchers.allow_tags = True
+    total_no_vouchers.short_description = "Vouchers"
 
     def last_modified(self):
         vd = VoucherDetails.objects.filter(accounts_master=self).order_by('modified')
@@ -224,6 +238,12 @@ class CourierDetails(models.Model):
 class VoucherDetails(SmartModel):
     accounts_master = models.ForeignKey(RCOAccountsMaster)
     tracking_no = models.CharField(max_length=100, blank=True)
+    VOUCHER_TYPE_VALUES = (('BV', 'Bank Voucher'),
+                     ('CV', 'Cash Voucher'),
+                     ('JV', 'Journal Voucher'))
+
+    voucher_type = models.CharField(max_length=2, choices=VOUCHER_TYPE_VALUES,
+                              default=VOUCHER_TYPE_VALUES[0][0])
     nature_of_voucher = models.ForeignKey(VoucherMaster)
     voucher_status = models.ForeignKey(RCOVoucherStatusMaster)
     voucher_date = models.DateField()

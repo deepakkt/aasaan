@@ -50,7 +50,7 @@ def send_email(request):
         subject = ''
         if (len(voucher_details) > 2):
             subject = voucher_details[0].tracking_no + ' - ' + voucher_details[len(voucher_details) - 1].tracking_no
-        if (len(voucher_details) == 2):
+        elif (len(voucher_details) == 2):
             subject = voucher_details[0].tracking_no + ' & ' + voucher_details[len(voucher_details) - 1].tracking_no
         elif (len(voucher_details) == 1):
             subject = voucher_details[0].tracking_no
@@ -91,7 +91,6 @@ def add_voucher_details(account_master, voucher_details):
         table_row = table_row.replace('PARTY_NAME', v.party_name)
         table_row = table_row.replace('AMOUNT', str(v.amount))
         message_body = message_body+table_row
-
     message = message_body + message_body_end
     return message
 

@@ -12,7 +12,6 @@ from .forms import RCOAccountsForm
 from django.db.models import Q
 from django.utils.html import format_html
 
-
 class TransactionNotesInline(admin.StackedInline):
     model = TransactionNotes
     extra = 0
@@ -54,10 +53,7 @@ class VoucherDetailsInline(admin.StackedInline):
 
     fieldsets = (
         ('', {
-            'fields': ('tracking_no',),'classes': ('has-cols', 'cols-3')
-        }),
-        ('', {
-            'fields': (('nature_of_voucher', 'voucher_status', 'voucher_date'),
+            'fields': (('tracking_no', 'voucher_type',), ('nature_of_voucher', 'voucher_status', 'voucher_date'),
                        ('head_of_expenses','expenses_description', 'party_name')),
             'classes': ('has-cols', 'cols-3')
         }),
@@ -216,8 +212,10 @@ class AccountsMasterAdmin(admin.ModelAdmin):
 
         return all_accounts.distinct()
 
-    list_display = ('is_cancelled', '__str__', 'rco_status', 'np_status', 'total_no_vouchers', 'last_modified', 'account_actions',)
-    list_filter = ('account_type', 'entity_name', )
+    list_display = ('is_cancelled', '__str__', 'tracking_no', 'rco_status', 'np_status', 'total_no_vouchers', 'account_actions', 'last_modified',)
+    list_filter = ('account_type', 'entity_name', 'zone',)
+
+    search_fields = ('teacher__first_name', 'budget_code', 'program_schedule__program__name')
 
     list_display_links = ['is_cancelled', '__str__']
 
