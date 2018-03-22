@@ -11,6 +11,8 @@ from config.models import Configuration
 from .forms import RCOAccountsForm
 from django.db.models import Q
 from django.utils.html import format_html
+from utils.filters import RelatedDropdownFilter, DropdownFilter, RelatedOnlyFieldListFilter
+
 
 class TransactionNotesInline(admin.StackedInline):
     model = TransactionNotes
@@ -213,7 +215,7 @@ class AccountsMasterAdmin(admin.ModelAdmin):
         return all_accounts.distinct()
 
     list_display = ('is_cancelled', '__str__', 'tracking_no', 'rco_status', 'np_status', 'total_no_vouchers', 'account_actions', 'last_modified',)
-    list_filter = ('account_type', 'entity_name', 'zone',)
+    list_filter = ('account_type', 'entity_name', ('zone', RelatedDropdownFilter))
 
     search_fields = ('teacher__first_name', 'budget_code', 'program_schedule__program__name')
 
