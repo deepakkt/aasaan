@@ -84,19 +84,31 @@
     <script type="text/javascript">
     (function($) {
         $(function () {
+            var dateObj = new Date();
+            var to_date = dateObj.getUTCFullYear()+'-'+(dateObj.getUTCMonth())
+            var fromDateObj = addMonths(new Date(), -6);
+            var from_date = fromDateObj.getUTCFullYear()+'-'+(fromDateObj.getUTCMonth()+1)
             $('#datetimepicker10').datetimepicker({
                 viewMode: 'years',
                 format: 'YYYY-MM',
-                defaultDate: '2017-01',
+                defaultDate: from_date,
             });
             $('#datetimepicker10').attr('readonly', true);
             $('#datetimepicker11').datetimepicker({
                 viewMode: 'years',
                 format: 'YYYY-MM',
-                defaultDate: '2017-06',
+                defaultDate: to_date,
             });
         });
+
+        function addMonths(date, months) {
+          date.setMonth(date.getMonth() + months);
+          return date;
+        }
         })(jQuery);
+
+
+
     </script>
 </div>
 
