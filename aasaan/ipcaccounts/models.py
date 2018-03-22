@@ -122,6 +122,11 @@ class RCOAccountsMaster(SmartModel):
     objects = models.Manager()
     active_objects = ActiveManager()
 
+    def save(self, *args, **kwargs):
+        if(self.account_type.name=='Class Accounts'):
+            self.zone = self.program_schedule.center.zone
+        super(RCOAccountsMaster, self).save(*args, **kwargs)
+
     def rco_status(self):
         vd = VoucherDetails.objects.filter(accounts_master=self).order_by('modified')
         if len(vd) >= 1:
