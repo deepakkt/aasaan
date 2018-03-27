@@ -6,7 +6,7 @@ from tastypie.cache import SimpleCache
 class ScheduleResource(ModelResource):
     class Meta:
         queryset =  ProgramSchedule.objects.filter(hidden=False,program__admin=False)
-        fields = ['start_date',
+        fields = ['start_date', 'end_date',
                 'event_management_code', 
                 'online_registration_code', 'id',
                 'contact_name', 'contact_phone1', 
@@ -19,4 +19,5 @@ class ScheduleResource(ModelResource):
         bundle.data['program_name'] = bundle.obj.program_name
         bundle.data['center_name'] = bundle.obj.center.center_name
         bundle.data['zone_name'] = bundle.obj.center.zone.zone_name
+        bundle.data['schedule_long_name'] = str(bundle.obj)
         return bundle
