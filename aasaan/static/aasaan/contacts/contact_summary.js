@@ -3,7 +3,9 @@
  */
 button_submit = null;
 (function($) {
-
+$(document).ready(function() {
+    reload();
+});
 
 function reload(){
      var url = "/contacts/s_refresh?"
@@ -31,7 +33,10 @@ function reload(){
                 extend: 'pdfHtml5',
                 orientation: 'landscape',
                 pageSize: 'LEGAL',
-                download: 'open'
+                download: 'open',
+                exportOptions: {
+                    columns: ':visible'
+                }
             },
             'print',
             'colvis'
@@ -54,7 +59,6 @@ function reload(){
             { "data": "roles" },
         ]
     }
-
 
     var table = $('#example').DataTable(options)
     table.ajax.reload()

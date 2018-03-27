@@ -1,11 +1,5 @@
 from django.contrib import admin
-from django.db.models.query import QuerySet
-from import_export import resources
-from import_export.admin import ImportExportModelAdmin
-from import_export.admin import ImportExportMixin, ExportActionModelAdmin, ExportMixin
-from import_export.widgets import ForeignKeyWidget
-from import_export.formats import base_formats
-from import_export.fields import Field
+
 from .models import Contact, ContactNote, \
     ContactAddress, ContactRoleGroup, RoleGroup, Zone, \
     Center, IndividualRole, IndividualContactRoleCenter, \
@@ -143,21 +137,6 @@ class IndividualContactRoleZoneInline(admin.TabularInline):
     extra = 1
 
 
-class ContactResource(resources.ModelResource):
-
-    zone = Field(column_name=None, attribute=None, widget=ForeignKeyWidget(Zone, 'zone_name'), readonly=True)
-    formats = base_formats.XLS
-
-    class Meta:
-        model = Contact
-        fields = ('id', 'first_name', 'last_name', 'cug_mobile', 'other_mobile_1', 'whatsapp_number', 'primary_email', 'date_of_birth', 'zone')
-        ordering = 'first_name'
-        export_order = fields
-        widgets = {
-                'date_of_birth': {'format': '%d.%m.%Y'},
-                }
-
-
 # Implement filter logic based on roles assigned for centers or zones
 # Zone => Role assigned directly to zone
 # Center => Role assigned to center which belongs to zone
@@ -211,7 +190,7 @@ class ContactTagFilter(admin.SimpleListFilter):
 
 
 
-class ContactAdmin(ExportMixin, MarkdownModelAdmin):
+class ContactAdmin(MarkdownModelAdmin):
     # filter contact records based on user permissions
     def get_queryset(self, request):
         qs = super(ContactAdmin, self).get_queryset(request)
@@ -277,10 +256,6 @@ class ContactAdmin(ExportMixin, MarkdownModelAdmin):
                IndividualContactRoleCenterInline,
                ContactNoteInline, ContactRoleGroupInline]
 
-    formats = [base_formats.XLS,]
-    to_encoding = 'utf-8'
-    resource_class = ContactResource
-
     class Media:
         js = ('/static/aasaan/js/disable_notes_v2.js',)
 
@@ -293,18 +268,8 @@ class ZoneAdmin(admin.ModelAdmin):
     inlines = [CenterInline]
 
 
-class RoleResource(resources.ModelResource):
-    class Meta:
-        model = IndividualRole
-        fields = ('id', 'role_name', 'role_level', 'role_remarks')
-        ordering = 'role_name'
-
-
-class RoleAdmin(ImportExportMixin, admin.ModelAdmin):
-    resource_class = RoleResource
-
 
 admin.site.register(Contact, ContactAdmin)
 admin.site.register(RoleGroup, RoleGroupAdmin)
 admin.site.register(Zone, ZoneAdmin)
-admin.site.register(IndividualRole, RoleAdmin)
+admin.site.register(IndividualRole, admin.ModelAdmin)
