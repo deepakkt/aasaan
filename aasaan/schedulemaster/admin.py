@@ -213,6 +213,7 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
 
         return all_schedules.filter(program__admin=False)
 
+    date_hierarchy = 'start_date'
     list_display = ['is_cancelled', 'program_name', 'center',
                     'start_date', 'end_date',
                     'gender', 'primary_language', 'event_management_code', 
