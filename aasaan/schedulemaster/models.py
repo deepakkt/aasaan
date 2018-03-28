@@ -119,8 +119,8 @@ class ProgramSchedule(SmartModel):
 
     primary_language = models.ForeignKey(LanguageMaster)
 
-    start_date = models.DateField("start Date")
-    end_date = models.DateField("end Date")
+    start_date = models.DateField(verbose_name='Program Start Date')
+    end_date = models.DateField(verbose_name='Program End Date')
     donation_amount = models.IntegerField()
 
     hidden = models.BooleanField(default=False)
