@@ -71,7 +71,8 @@ INSTALLED_APPS += (
     'config',    
     'reports',
 	'statistics',
-    'misc'
+    'misc',
+    'ashramvisit'
 )
 
 # third party apps
