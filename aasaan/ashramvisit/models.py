@@ -1,9 +1,10 @@
 from django.db import models
 from contacts.models import Center, Contact, IndividualContactRoleZone, Zone
+from smart_selects.db_fields import GroupedForeignKey
 
 
 class AshramVisit(models.Model):
-    Center = models.ForeignKey(Center)
+    Center = GroupedForeignKey(Center, 'zone')
     arrival_date = models.DateTimeField("Arrival Date & Time")
     departure_time = models.TimeField("Departure Time")
     participant_count = models.IntegerField()

@@ -113,7 +113,7 @@ class Treasurer(models.Model):
                    )
     request_type = models.CharField(max_length=3, choices=TYPE_VALUES,
                                     default=TYPE_VALUES[0][0])
-    center = models.ForeignKey(Center)
+    center = GroupedForeignKey(Center, 'zone')
     old_treasurer = models.ForeignKey(Contact, related_name="old_treasurer", blank=True, null=True)
     new_treasurer = models.ForeignKey(Contact, related_name="new_treasurer")
     ifsc_code = models.CharField("IFSCode", max_length=15)
