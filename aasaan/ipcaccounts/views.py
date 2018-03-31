@@ -83,7 +83,7 @@ def add_voucher_details(account_master, voucher_details):
         table_row = str(message_content)
         table_row = table_row.replace('TRACKING_NO', v.tracking_no)
         table_row = table_row.replace('ENTITY', account_master.entity_name.name)
-        voucher_date = formats.date_format(v.voucher_date, "DATE_FORMAT")
+        voucher_date = formats.date_format(account_master.voucher_date, "DATE_FORMAT")
         table_row = table_row.replace('VOUCHER_DATE', voucher_date)
         table_row = table_row.replace('NAME_OF_VOUCHER', v.nature_of_voucher.name)
         table_row = table_row.replace('BUDGET_CODE', account_master.budget_code)

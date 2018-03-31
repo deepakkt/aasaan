@@ -107,6 +107,24 @@ class ExpensesTypeMaster(models.Model):
         verbose_name = 'Expense master'
 
 
+class Treasurer(models.Model):
+    center = models.ForeignKey(Center)
+    old_treasurer = models.ForeignKey(Contact, related_name="old_treasurer")
+    new_treasurer = models.ForeignKey(Contact, related_name="new_treasurer")
+    ifsc_code = models.CharField("IFSCode", max_length=15)
+    bank_name = models.CharField("Bank Name", max_length=100)
+    branch_name = models.CharField("Branch Name", max_length=100)
+    account_holder = models.CharField("Account Holder Name", max_length=50)
+    account_number = models.CharField("Account Number", max_length=15)
+    document = models.FileField(upload_to='documents/%Y/%m/%d/')
+
+    def __str__(self):
+        return "%s" % self.center
+
+    class Meta:
+        verbose_name = 'Treasurer Change Request'
+
+
 class RCOAccountsMaster(SmartModel):
 
     account_type = models.ForeignKey(AccountTypeMaster, default=1)

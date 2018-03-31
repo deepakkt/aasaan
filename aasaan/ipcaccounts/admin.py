@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import RCOAccountsMaster, NPAccountsMaster, CourierDetails, TransactionNotes, VoucherMaster, EntityMaster, RCOVoucherStatusMaster, VoucherDetails, ExpensesTypeMaster, NPVoucherStatusMaster, AccountType, AccountTypeMaster
+from .models import RCOAccountsMaster, NPAccountsMaster, CourierDetails, TransactionNotes, VoucherMaster, EntityMaster, RCOVoucherStatusMaster, VoucherDetails, ExpensesTypeMaster, NPVoucherStatusMaster, AccountType, AccountTypeMaster, Treasurer
 from schedulemaster.models import ProgramSchedule
 from contacts.models import Contact, IndividualRole, Zone, Center, ContactRoleGroup, RoleGroup, IndividualContactRoleZone
 from django.core.exceptions import ObjectDoesNotExist
@@ -11,6 +11,18 @@ from config.models import Configuration
 from django.db.models import Q
 from django.utils.html import format_html
 from utils.daterange_filter import DateRangeFilter
+
+
+class TreasurerAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'old_treasurer', 'new_treasurer')
+
+    fieldsets = (
+        ('', {
+            'fields': (('center', 'old_treasurer'), ('new_treasurer', 'ifsc_code'),('bank_name', 'branch_name'),('account_holder', 'account_number'),('document',),
+                       ),
+            'classes': ('has-cols', 'cols-2')
+        }),
+    )
 
 class TransactionNotesInline(admin.StackedInline):
     model = TransactionNotes
@@ -212,3 +224,4 @@ admin.site.register(RCOVoucherStatusMaster, admin.ModelAdmin)
 admin.site.register(NPVoucherStatusMaster, admin.ModelAdmin)
 admin.site.register(AccountType, admin.ModelAdmin)
 admin.site.register(AccountTypeMaster, admin.ModelAdmin)
+admin.site.register(Treasurer, TreasurerAdmin)
