@@ -14,9 +14,8 @@ from django.views.generic import TemplateView
 from django.http import JsonResponse
 from braces.views import LoginRequiredMixin
 from .forms import FilterFieldsForm
-from django.core.urlresolvers import reverse
 from contacts.models import Contact, Zone, IndividualRole, IndividualContactRoleZone, IndividualContactRoleCenter
-from django.http import HttpResponseRedirect
+
 @login_required
 def get_budget_code(request):
     if request.method == 'GET':
@@ -109,7 +108,7 @@ class SendEmailView(FormView):
             account_master = RCOAccountsMaster.objects.get(id=account_id)
             account_master.email_sent = True
             account_master.save()
-            return HttpResponseRedirect(reverse('rcoaccountsmaster'))
+            return render(request, 'ipcaccounts/confirm.html')
         else:
             return render(request, 'ipcaccounts/error.html')
 
