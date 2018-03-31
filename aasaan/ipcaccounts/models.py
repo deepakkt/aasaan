@@ -108,21 +108,26 @@ class ExpensesTypeMaster(models.Model):
 
 
 class Treasurer(models.Model):
+    TYPE_VALUES = (('ADD', 'Add Treasurer'),
+                   ('CHG', 'Change Treasurer'),
+                   )
+    request_type = models.CharField(max_length=3, choices=TYPE_VALUES,
+                                    default=TYPE_VALUES[0][0])
     center = models.ForeignKey(Center)
-    old_treasurer = models.ForeignKey(Contact, related_name="old_treasurer")
+    old_treasurer = models.ForeignKey(Contact, related_name="old_treasurer", blank=True, null=True)
     new_treasurer = models.ForeignKey(Contact, related_name="new_treasurer")
     ifsc_code = models.CharField("IFSCode", max_length=15)
     bank_name = models.CharField("Bank Name", max_length=100)
     branch_name = models.CharField("Branch Name", max_length=100)
     account_holder = models.CharField("Account Holder Name", max_length=50)
     account_number = models.CharField("Account Number", max_length=15)
-    document = models.FileField(upload_to='documents/%Y/%m/%d/')
+    document = models.FileField(upload_to='documents/%Y/%m/%d/', blank=True, null=True)
 
     def __str__(self):
         return "%s" % self.center
 
     class Meta:
-        verbose_name = 'Treasurer Change Request'
+        verbose_name = 'Treasurer'
 
 
 class RCOAccountsMaster(SmartModel):
@@ -141,6 +146,7 @@ class RCOAccountsMaster(SmartModel):
     finance_submission_date = models.DateField(blank=True, null=True)
     rco_voucher_status = models.ForeignKey(RCOVoucherStatusMaster, default=1)
     movement_sheet_no = models.CharField(max_length=100, blank=True)
+    email_sent = models.BooleanField(blank=True, default=False)
 
     objects = models.Manager()
     active_objects = ActiveManager()

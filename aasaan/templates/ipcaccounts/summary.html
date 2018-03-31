@@ -1,0 +1,96 @@
+{% extends 'contacts/base_summary.html' %}
+
+{% block title %}Treasurer Reporting Dashboard{% endblock %}
+
+{% block scripts %}
+<style type="text/css">
+    .table-text-style {
+    text-align: left;
+    }
+</style>
+<link rel="stylesheet" type="text/css" href="/static/datatables/DataTables/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css" href="/static/datatables/Buttons/css/buttons.dataTables.min.css">
+
+<script type="text/javascript" charset="utf8"  src='/static/bootstrap/js/jquery.js'></script>
+<script type="text/javascript" charset="utf8" src="/static/datatables/DataTables/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/static/datatables/Buttons/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/static/datatables/Buttons/js/buttons.flash.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/static/datatables/Buttons/js/buttons.html5.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/static/datatables/Buttons/js/buttons.print.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/static/datatables/Buttons/js/buttons.colVis.min.js"></script>
+<script type="text/javascript" charset="utf8" src='/static/pdfmake/pdfmake.min.js'></script>
+<script type="text/javascript" charset="utf8"  src='/static/pdfmake/vfs_fonts.js'></script>
+<script type="text/javascript" charset="utf8"  src='/static/jszip/jszip.min.js'></script>
+
+<link rel="stylesheet" type="text/css" href="/static/datatables/AutoFill/css/autoFill.dataTables.min.css">
+<script type="text/javascript" charset="utf8" src="/static/datatables/AutoFill/js/dataTables.autoFill.min.js"></script>
+
+<script type="text/javascript" src="/static/aasaan/ipcaccounts/treasurer_report.js"></script>
+
+
+{% endblock %}
+
+{% block body_block %}
+
+{% block sidebar %}
+
+
+{% endblock sidebar %}
+
+
+{% block pagetitle %}
+Treasurer Report
+{% endblock pagetitle %}
+
+{% block main %}
+<div class="container-fluid" style="border:1px solid #cecece;">
+<form class='form-horizontal' action="/ipcaccounts/treasurer_report" method="post">{% csrf_token %}
+      {{ form.media }}
+
+        {{ form }}
+
+       <input type="hidden" name="temp_message" id="temp_message" value="">
+    <input type="button" value="Submit" onclick="button_submit()" />
+</form>
+
+<div id="row-tn-ie-table" class="row placeholders">
+        <h4 id="header_ie_table">Treasurer</h4>
+        <table id="example" class="display cell-border" width="100%">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Name in the Account</th>
+                    <th>Bank Name</th>
+                    <th>Branch</th>
+                    <th>Account Number</th>
+                    <th>IFSC Code</th>
+                    <th>Zone</th>
+                    <th>Center</th>
+                    <th>Roles</th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Name in the Account</th>
+                    <th>Bank Name</th>
+                    <th>Branch</th>
+                    <th>Account Number</th>
+                    <th>IFSC Code</th>
+                    <th>Zone</th>
+                    <th>Center</th>
+                    <th>Roles</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+</div>
+
+{% endblock main %}
+
+{% endblock body_block %}

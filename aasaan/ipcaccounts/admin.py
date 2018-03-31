@@ -18,11 +18,15 @@ class TreasurerAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('', {
-            'fields': (('center', 'old_treasurer'), ('new_treasurer', 'ifsc_code'),('bank_name', 'branch_name'),('account_holder', 'account_number'),('document',),
+            'fields': (('request_type', 'center'),('new_treasurer', 'old_treasurer'), ('bank_name', 'branch_name'),('account_holder', 'account_number'),('ifsc_code', 'document'),
                        ),
             'classes': ('has-cols', 'cols-2')
         }),
     )
+
+    class Media:
+        js = ('/static/aasaan/ipcaccounts/treasurer.js',)
+
 
 class TransactionNotesInline(admin.StackedInline):
     model = TransactionNotes
@@ -50,6 +54,7 @@ class TransactionNotesInline1(admin.StackedInline):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
 
 class CourierDetailsInline(admin.TabularInline):
     model = CourierDetails
@@ -90,10 +95,13 @@ class VoucherDetailsInline(admin.StackedInline):
 class RCOAccountsMasterAdmin(admin.ModelAdmin):
 
     def account_actions(self, obj):
-
+        if obj.email_sent:
+            button_text = 'Resend Email'
+        else:
+            button_text = 'Send Email'
         url = '/admin/ipcaccounts/send_email?account_id='+str(obj.id)+''
         return format_html(
-            '<a class="button" target="_blank" href="{}">Send E-Mail</a>&nbsp;', url, obj.id)
+            '<a class="button" target="_blank" href="{}">'+button_text+'</a>&nbsp;', url, obj.id)
 
     account_actions.short_description = 'Email Approval'
     account_actions.allow_tags = True
@@ -195,8 +203,10 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
     )
     date_hierarchy = 'voucher_date'
     list_editable = ('rco_voucher_status', 'approved_date')
-    list_display = ('is_cancelled', '__str__', 'rco_voucher_status', 'approved_date', 'account_actions', 'np_voucher_status')
+    list_display = ('__str__', 'rco_voucher_status', 'approved_date', 'email_sent', 'account_actions', 'np_voucher_status')
     list_filter = (('program_schedule__start_date', DateRangeFilter), 'account_type', 'entity_name', 'zone')
+
+    search_fields = ('program_schedule__program__name', )
 
     list_display_links = ['__str__']
 
