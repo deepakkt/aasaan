@@ -227,9 +227,11 @@ class ScheduleSync(SheetSyncCache):
 
     def get_programschedule_queryset(self):
         forty_five_days_ago = date.fromordinal(date.today().toordinal() - 45)
-        return ProgramSchedule.objects.filter(start_date__gte=forty_five_days_ago).order_by('center__zone',
+        _program_schedule_initial =  ProgramSchedule.objects.filter(start_date__gte=forty_five_days_ago).order_by('center__zone',
                                                                                             '-start_date',
                                                                                             'center', 'program')
+        return _program_schedule_initial.exclude(program__name='Satsang')
+
     def translate_programschedule(self, instance):
         _worksheet_row = 0
 
