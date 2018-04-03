@@ -64,6 +64,7 @@ def send_email(request):
 
         message_body = message_body.replace('ACCOUNTS_INCHARGE', accounts_incharge)
         message_body = message_body.replace('ZONE_NAME', zone)
+        message_body = message_body.replace('SENDER_SIGNATURE', accounts_incharge)
         form = MessageForm(
             initial={'sender':sender, 'to':approvar, 'cc':cc, 'bcc':bcc, 'subject': subject, 'message': message_body, 'account_id' : account_id})
     return render(request, 'ipcaccounts/mailer.html', {'form': form})
@@ -86,7 +87,7 @@ def add_voucher_details(account_master, voucher_details):
         table_row = table_row.replace('EXPENSES_DESC', v.expenses_description)
         table_row = table_row.replace('PARTY_NAME', v.party_name)
         table_row = table_row.replace('AMOUNT', str(v.amount))
-        message_body = message_body+table_row
+        message_body += table_row
     message = message_body + message_body_end
     return message
 

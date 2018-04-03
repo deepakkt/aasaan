@@ -41,7 +41,7 @@
 
         //Hide Tracking Number for new vouchers
         $('.form-row.field-tracking_no.field-voucher_type.field-nature_of_voucher').show()
-        if (document.URL.endsWith('/change/')) {
+        if (document.URL.indexOf('change')>-1){
             $('.field-tracking_no').show()
             $('.field-tracking_no').find('input').prop("readonly", true);
         }
@@ -83,6 +83,7 @@
                     }
                 });
             }
+            setTimeout(removeDuplicateDateIcon,10);
 
         }
         else{
@@ -92,6 +93,14 @@
 
     });
 
+    function removeDuplicateDateIcon(){
+        var s = $('.field-finance_submission_date.nowrap').find('.datetimeshortcuts')
+            if(s.length>0){
+                for (var i=0;i<s.length;i=i+2){
+                    $(s[i]).hide()
+                }
+            }
+    }
 
 
     function toggleVerified() {

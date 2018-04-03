@@ -133,9 +133,9 @@ class Treasurer(models.Model):
 
 class RCOAccountsMaster(SmartModel):
 
-    account_type = models.ForeignKey(AccountTypeMaster, default=1)
-    entity_name = models.ForeignKey(EntityMaster, default=1)
-    zone = models.ForeignKey(Zone, blank=True, null=True)
+    account_type = models.ForeignKey(AccountTypeMaster, default=1, verbose_name='Account Type')
+    entity_name = models.ForeignKey(EntityMaster, default=1, verbose_name='Entity')
+    zone = models.ForeignKey(Zone, blank=True, null=True, verbose_name='Zone')
     teacher = models.ForeignKey(Contact, blank=True, null=True)
     budget_code = models.CharField(max_length=100, blank=True)
     program_schedule = GroupedForeignKey(ProgramSchedule, 'program', blank=True, null=True)
@@ -143,18 +143,24 @@ class RCOAccountsMaster(SmartModel):
     voucher_date = models.DateField(_("Voucher Date"), default=datetime.date.today)
     approval_sent_date = models.DateField('Approval request Date', blank=True, null=True)
     approved_date = models.DateField(blank=True, null=True)
-    np_voucher_status = GroupedForeignKey(NPVoucherStatusMaster, 'type', blank=True, null=True)
+    np_voucher_status = GroupedForeignKey(NPVoucherStatusMaster, 'type', blank=True, null=True, verbose_name='NP Voucher Status')
     finance_submission_date = models.DateField(blank=True, null=True)
-    rco_voucher_status = models.ForeignKey(RCOVoucherStatusMaster, default=1)
+    rco_voucher_status = models.ForeignKey(RCOVoucherStatusMaster, default=1, verbose_name='RCO Voucher Status')
     movement_sheet_no = models.CharField(max_length=100, blank=True)
     email_sent = models.BooleanField(blank=True, default=False)
 
     objects = models.Manager()
     active_objects = ActiveManager()
 
+    def __init__(self, *args, **kwargs):
+        super(RCOAccountsMaster, self).__init__(*args, **kwargs)
+        self.old_rco_voucher_status = self.rco_voucher_status
+
     def save(self, *args, **kwargs):
-        if(self.account_type.name=='Class Accounts'):
+        if self.account_type.name == 'Class Accounts':
             self.zone = self.program_schedule.center.zone
+        if self.old_rco_voucher_status.name != 'Panel Treasurer Approved' and self.rco_voucher_status.name == 'Panel Treasurer Approved':
+            self.approved_date = datetime.date.today()
         super(RCOAccountsMaster, self).save(*args, **kwargs)
 
     def total_no_vouchers(self):
@@ -272,6 +278,8 @@ class VoucherDetails(SmartModel):
                 data[self.accounts_master.zone.zone_name]['ta_key'] = key + 1
                 cft.configuration_value = json.dumps(data)
                 cft.save()
+                if not self.party_name:
+                    self.party_name = self.accounts_master.teacher.full_name + ' - ' + self.accounts_master.teacher.teacher_tno
             else:
                 key = data[self.accounts_master.zone.zone_name]['oa_key']
                 prefix = data[self.accounts_master.zone.zone_name]['prefix']

@@ -11,7 +11,7 @@ from config.models import Configuration
 from django.db.models import Q
 from django.utils.html import format_html
 from utils.daterange_filter import DateRangeFilter
-
+from utils.filters import RelatedDropdownFilter
 
 class TreasurerAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'old_treasurer', 'new_treasurer')
@@ -202,9 +202,9 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
         }),
     )
     date_hierarchy = 'voucher_date'
-    list_editable = ('rco_voucher_status', 'approved_date')
+    list_editable = ('rco_voucher_status',)
     list_display = ('__str__', 'rco_voucher_status', 'approved_date', 'email_sent', 'account_actions', 'np_voucher_status')
-    list_filter = (('program_schedule__start_date', DateRangeFilter), 'account_type', 'entity_name', 'zone')
+    list_filter = (('program_schedule__start_date', DateRangeFilter), ('account_type', RelatedDropdownFilter), ('rco_voucher_status', RelatedDropdownFilter), ('np_voucher_status',RelatedDropdownFilter), ('zone',RelatedDropdownFilter),('entity_name', RelatedDropdownFilter))
 
     search_fields = ('program_schedule__program__name', )
 
@@ -222,7 +222,7 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
 
 class NPAccountsMasterAdmin(RCOAccountsMasterAdmin):
     list_editable = ('np_voucher_status', 'finance_submission_date', 'movement_sheet_no')
-    list_display = ('is_cancelled', '__str__', 'np_voucher_status', 'finance_submission_date', 'movement_sheet_no', 'tracking_no')
+    list_display = ('__str__', 'np_voucher_status', 'finance_submission_date', 'movement_sheet_no', 'tracking_no')
 
 
 admin.site.register(RCOAccountsMaster, RCOAccountsMasterAdmin)
