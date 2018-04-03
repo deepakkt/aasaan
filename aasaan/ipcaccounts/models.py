@@ -93,7 +93,7 @@ class NPVoucherStatusMaster(models.Model):
 
 
 class ExpensesTypeMaster(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
     type = models.ForeignKey(AccountTypeMaster)
 
@@ -105,6 +105,7 @@ class ExpensesTypeMaster(models.Model):
 
     class Meta:
         verbose_name = 'Expense master'
+        unique_together = ['name', 'type']
 
 
 class Treasurer(models.Model):
