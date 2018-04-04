@@ -83,8 +83,6 @@
                     }
                 });
             }
-            setTimeout(removeDuplicateDateIcon,10);
-
         }
         else{
             $('.form-row.field-payment_date.field-utr_no.field-tds_amount').hide()
@@ -92,16 +90,6 @@
 
 
     });
-
-    function removeDuplicateDateIcon(){
-        var s = $('.field-finance_submission_date.nowrap').find('.datetimeshortcuts')
-            if(s.length>0){
-                for (var i=0;i<s.length;i=i+2){
-                    $(s[i]).hide()
-                }
-            }
-    }
-
 
     function toggleVerified() {
         if($("#id_account_type option:selected").text()=='Teacher Accounts'){

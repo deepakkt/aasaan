@@ -5,7 +5,7 @@ from django.utils import formats
 from django.shortcuts import render
 from django.views.generic.edit import FormView, View
 from .forms import MessageForm
-from .models import RCOAccountsMaster, VoucherDetails, Treasurer
+from .models import RCOAccountsMaster, VoucherDetails, Treasurer, AccountTypeMaster, NPVoucherStatusMaster, RCOVoucherStatusMaster
 from config.management.commands.notify_utils import dispatch_notification, setup_sendgrid_connection
 from django.conf import settings
 from config.models import Configuration
@@ -13,7 +13,7 @@ from config.models import Configuration
 from django.views.generic import TemplateView
 from django.http import JsonResponse
 from braces.views import LoginRequiredMixin
-from .forms import FilterFieldsForm
+from .forms import FilterFieldsForm, VoucherAdvancedSearchFieldsForm
 from contacts.models import Contact, Zone, IndividualRole, IndividualContactRoleZone, IndividualContactRoleCenter
 
 @login_required
@@ -123,8 +123,8 @@ def get_email_list(_emails):
 
 
 class TreasurerSummaryDashboard(LoginRequiredMixin, TemplateView):
-    template = "ipcaccounts/summary.html"
-    template_name = "ipcaccounts/summary.html"
+    template = "ipcaccounts/treasurer_adv_search.html"
+    template_name = "ipcaccounts/treasurer_adv_search.html"
     login_url = "/admin/login/?next=/"
 
     def get(self, request):
@@ -135,7 +135,6 @@ class TreasurerSummaryDashboard(LoginRequiredMixin, TemplateView):
 def treasurer_refresh(request):
     teacher_role = IndividualRole.objects.get(role_name='Center Treasurer', role_level='CE')
     _teacher_list = Contact.objects.filter(individualcontactrolecenter__role=teacher_role)
-    print(teacher_role)
     summary = {}
     data = []
     for c in _teacher_list:
@@ -168,5 +167,84 @@ def treasurer_refresh(request):
             {'id': c.pk, 'name': c.full_name, 'phone_number': c.primary_mobile, 'primary_email': c.primary_email,
              'account_holder': account_holder, 'bank_name': bank_name, 'branch_name': branch_name, 'account_number': account_number,'ifsc_code': ifsc_code,
              'zone': zone_list, 'center': center_list, 'roles': role_list})
+        summary['data'] = data
+    return JsonResponse(summary, safe=False)
+
+
+class VoucherSummaryDashboard(LoginRequiredMixin, TemplateView):
+    template = "ipcaccounts/voucher_adv_search.html"
+    template_name = "ipcaccounts/voucher_adv_search.html"
+    login_url = "/admin/login/?next=/"
+
+    def get(self, request):
+        form = VoucherAdvancedSearchFieldsForm()
+        return render(request, self.template, {'form': form})
+
+
+def voucher_refresh(request):
+    summary = {}
+    data = []
+    zone = request.GET['zone']
+    account_type = request.GET['account_type']
+    # np_voucher_status = request.GET['np_voucher_status']
+    rco_voucher_status = request.GET['rco_voucher_status']
+
+    if account_type and account_type.find(',') > 0:
+        account_type = account_type.split(',')
+        account_type = list(AccountTypeMaster.objects.filter(pk__in=account_type))
+    elif account_type != 'null':
+        account_type = [account_type, ]
+        account_type = list(AccountTypeMaster.objects.filter(pk__in=account_type))
+    else:
+        account_type = list(AccountTypeMaster.objects.all())
+
+    if rco_voucher_status.find(',') > 0:
+        rco_voucher_status = rco_voucher_status.split(',')
+    elif rco_voucher_status!= 'null':
+        rco_voucher_status = [rco_voucher_status, ]
+        rco_voucher_status = list(RCOVoucherStatusMaster.objects.filter(pk__in=rco_voucher_status))
+    else:
+        rco_voucher_status = list(RCOVoucherStatusMaster.objects.all())
+
+    # if np_voucher_status.find(',') > 0:
+    #     np_voucher_status = np_voucher_status.split(',')
+    #     np_voucher_status = list(NPVoucherStatusMaster.objects.filter(pk__in=np_voucher_status))
+    # elif np_voucher_status != 'null':
+    #     np_voucher_status = [np_voucher_status, ]
+    #     np_voucher_status = list(NPVoucherStatusMaster.objects.filter(pk__in=np_voucher_status))
+    # else:
+    #     np_voucher_status = list(NPVoucherStatusMaster.objects.all())
+
+    if request.user.is_superuser and zone != 'null':
+        if zone.find(',') > 0:
+            zs = zone.split(',')
+        else:
+            zs = [zone, ]
+        z = list(Zone.objects.filter(pk__in=zs))
+
+        vd = VoucherDetails.objects.filter(accounts_master__zone__in=z, accounts_master__account_type__in=account_type,
+                                           accounts_master__rco_voucher_status__in=rco_voucher_status)
+    elif request.user.is_superuser and zone == 'null':
+        vd = VoucherDetails.objects.filter(accounts_master__account_type__in=account_type,
+                                           accounts_master__rco_voucher_status__in=rco_voucher_status)
+    elif request.user.is_superuser is not True:
+        user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
+        vd = VoucherDetails.objects.filter(accounts_master__zone__in=user_zones, accounts_master__account_type__in=account_type,
+                                           accounts_master__rco_voucher_status__in=rco_voucher_status)
+    for v in vd:
+        am = v.accounts_master
+        data.append(
+            {'id': am.pk, 'tracking_no': v.tracking_no, 'voucher_type': v.get_voucher_type_display() if v.voucher_type else '', 'nature_of_voucher': v.nature_of_voucher.name, 'head_of_expenses': v.head_of_expenses.name if v.head_of_expenses else '', 'party_name': v.party_name,
+             'amount': v.amount, 'budget_code': am.budget_code, 'rco_voucher_status': am.rco_voucher_status.name, 'entity_name': am.entity_name.name,'account_type': am.account_type.name,
+             'np_voucher_status': am.np_voucher_status.name if am.np_voucher_status else '', 'zone': am.zone.zone_name})
+        summary['data'] = data
+    if not vd:
+        data.append(
+            {'id': '', 'tracking_no': '',
+             'voucher_type': '', 'nature_of_voucher': '',
+             'head_of_expenses': '', 'party_name': '',
+             'amount': '', 'budget_code': '', 'rco_voucher_status': '',
+             'entity_name': '', 'account_type': '',
+             'np_voucher_status': '', 'zone': ''})
         summary['data'] = data
     return JsonResponse(summary, safe=False)

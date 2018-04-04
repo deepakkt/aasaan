@@ -7,4 +7,6 @@ urlpatterns = patterns('',
                        url(r'^sendApprovalMessage', views.SendEmailView.as_view(), name='ipcaccounts'),
                        url(r'^treasurer_report', views.TreasurerSummaryDashboard.as_view(), name='treasurer_report'),
                        url(r'^treasurer_refresh', views.treasurer_refresh, name='treasurer_refresh'),
+                       url(r'^voucher_report', views.VoucherSummaryDashboard.as_view(), name='voucher_report'),
+                       url(r'^voucher_refresh', views.voucher_refresh, name='voucher_refresh'),
                        )

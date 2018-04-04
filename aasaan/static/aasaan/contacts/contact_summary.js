@@ -2,10 +2,16 @@
  * Created by manimaran on 21-12-2016.
  */
 button_submit = null;
+button_reset = null;
 (function($) {
 $(document).ready(function() {
     reload();
 });
+
+function reset(){
+    $("#id_zone option:selected").removeAttr("selected");
+    $("#id_roles option:selected").removeAttr("selected");
+}
 
 function reload(){
      var url = "/contacts/s_refresh?"
@@ -62,9 +68,8 @@ function reload(){
 
     var table = $('#example').DataTable(options)
     table.ajax.reload()
-
-
 }
 button_submit = reload;
+button_reset = reset;
 })(jQuery);
 

@@ -1,5 +1,5 @@
 from django import forms
-from .models import VoucherDetails
+from .models import VoucherDetails, AccountTypeMaster, NPVoucherStatusMaster, RCOVoucherStatusMaster
 from tinymce.widgets import TinyMCE
 from contacts.models import Zone
 
@@ -24,4 +24,10 @@ class MessageForm(forms.Form):
 class FilterFieldsForm(forms.Form):
     zone = forms.ModelMultipleChoiceField(queryset=Zone.objects.all())
 
+
+class VoucherAdvancedSearchFieldsForm(forms.Form):
+    zone = forms.ModelMultipleChoiceField(queryset=Zone.objects.all(), widget=forms.SelectMultiple(attrs={'class': 'form-control'}))
+    account_type = forms.ModelMultipleChoiceField(queryset=AccountTypeMaster.objects.all(), widget=forms.SelectMultiple(attrs={'class': 'form-control'}))
+    np_voucher_status = forms.ModelMultipleChoiceField(queryset=NPVoucherStatusMaster.objects.all(), widget=forms.SelectMultiple(attrs={'class': 'form-control'}))
+    rco_voucher_status = forms.ModelMultipleChoiceField(queryset=RCOVoucherStatusMaster.objects.all(), widget=forms.SelectMultiple(attrs={'class': 'form-control'}))
 

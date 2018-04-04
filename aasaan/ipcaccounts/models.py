@@ -155,12 +155,16 @@ class RCOAccountsMaster(SmartModel):
     def __init__(self, *args, **kwargs):
         super(RCOAccountsMaster, self).__init__(*args, **kwargs)
         self.old_rco_voucher_status = self.rco_voucher_status
+        self.old_np_voucher_status = self.np_voucher_status
 
     def save(self, *args, **kwargs):
         if self.account_type.name == 'Class Accounts':
             self.zone = self.program_schedule.center.zone
         if self.old_rco_voucher_status.name != 'Panel Treasurer Approved' and self.rco_voucher_status.name == 'Panel Treasurer Approved':
             self.approved_date = datetime.date.today()
+        if self.np_voucher_status:
+            if self.old_np_voucher_status is None or self.old_np_voucher_status.name != 'Submitted to Finance' and self.np_voucher_status.name == 'Submitted to Finance':
+                self.finance_submission_date = datetime.date.today()
         super(RCOAccountsMaster, self).save(*args, **kwargs)
 
     def total_no_vouchers(self):
@@ -179,17 +183,6 @@ class RCOAccountsMaster(SmartModel):
 
     is_cancelled.allow_tags = True
     is_cancelled.short_description = " "
-
-    def tracking_no(self):
-        voucher_details = VoucherDetails.objects.filter(accounts_master=self).order_by('tracking_no')
-        if (len(voucher_details) > 0):
-            tracking_numbers = voucher_details[0].tracking_no
-        else:
-            tracking_numbers = 'No Voucher'
-        return tracking_numbers
-
-    tracking_no.allow_tags = True
-    tracking_no.short_description = "Tracking No"
 
     def clean(self):
         if self.id:
@@ -308,7 +301,7 @@ class NPAccountsMaster(RCOAccountsMaster):
 class CourierDetails(models.Model):
     accounts_master = models.ForeignKey(RCOAccountsMaster)
     agency = models.CharField(max_length=100, null=True, blank=True)
-    tracking_number = models.CharField(max_length=100, null=True, blank=True, unique=True)
+    tracking_number = models.CharField(max_length=100, null=True, blank=True)
     sent_date = models.DateField(null=True, blank=True)
     received_date = models.DateField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)

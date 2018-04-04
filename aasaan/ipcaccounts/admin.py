@@ -221,8 +221,8 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
 
 
 class NPAccountsMasterAdmin(RCOAccountsMasterAdmin):
-    list_editable = ('np_voucher_status', 'finance_submission_date', 'movement_sheet_no')
-    list_display = ('__str__', 'np_voucher_status', 'finance_submission_date', 'movement_sheet_no', 'tracking_no')
+    list_editable = ('np_voucher_status', 'movement_sheet_no')
+    list_display = ('__str__', 'np_voucher_status', 'finance_submission_date', 'movement_sheet_no')
 
 
 admin.site.register(RCOAccountsMaster, RCOAccountsMasterAdmin)
