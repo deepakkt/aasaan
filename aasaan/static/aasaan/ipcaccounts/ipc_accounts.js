@@ -89,14 +89,14 @@
         }
 
         $("#id_zone").change(function() {
-        if($(this).val()==''){
+        if($(this).val()=='' || $("#id_program_type").val()==''){
                 return
             }
-
+            refresh_Programs()
          });
 
          $("#id_program_type").change(function() {
-            if($(this).val()==''){
+            if($(this).val()=='' || $("#id_zone").val()==''){
                     return
                 }
                 refresh_Programs()
@@ -139,6 +139,7 @@
                 });
                 $("#id_program_schedule").find('option').remove()
                 $("#id_program_schedule").append(listitems);
+                $("#id_budget_code").val('')
             }
         });
      }

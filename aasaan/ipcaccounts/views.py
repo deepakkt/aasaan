@@ -27,7 +27,7 @@ def get_budget_code(request):
         data = json.loads(cft.configuration_value)
         prefix = data[program_schedule.center.zone.zone_name]['prefix']
         formatted_start_date = formats.date_format(program_schedule.start_date, "DATE_FORMAT")
-        budget_code = prefix+'-'+program_schedule.center.center_name+'-'+program_master.abbreviation+ '-'+formatted_start_date
+        budget_code = prefix+'-'+program_schedule.center.center_name+'-'+program_master.abbreviation+ '-'+formatted_start_date + ' ('+program_id+')'
         return JsonResponse(budget_code, safe=False)
 
 @login_required
