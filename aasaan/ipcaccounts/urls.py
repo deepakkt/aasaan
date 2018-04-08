@@ -9,4 +9,5 @@ urlpatterns = patterns('',
                        url(r'^treasurer_refresh', views.treasurer_refresh, name='treasurer_refresh'),
                        url(r'^voucher_report', views.VoucherSummaryDashboard.as_view(), name='voucher_report'),
                        url(r'^voucher_refresh', views.voucher_refresh, name='voucher_refresh'),
+                       url(r'^get_program_schedules', views.get_program_schedules, name='schedules_list'),
                        )

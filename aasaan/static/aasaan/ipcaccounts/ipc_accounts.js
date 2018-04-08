@@ -88,31 +88,60 @@
             $('.form-row.field-payment_date.field-utr_no.field-tds_amount').hide()
         }
 
+        $("#id_zone").change(function() {
+        if($(this).val()==''){
+                return
+            }
 
+         });
+
+         $("#id_program_type").change(function() {
+            if($(this).val()==''){
+                    return
+                }
+                refresh_Programs()
+
+         });
     });
 
     function toggleVerified() {
         if($("#id_account_type option:selected").text()=='Teacher Accounts'){
             $('.field-program_schedule').hide()
-            $('.field-zone').show()
             $('.field-budget_code').show()
             $('.field-teacher').show()
-            $('.field-box.field-party_name').hide()
         }
         else if($("#id_account_type option:selected").text()=='Class Accounts'){
             $('.field-teacher').hide()
             $('.field-program_schedule').show()
-            $('.field-zone').hide()
             $('.field-budget_code').show()
         }
         else {
             $('.field-teacher').hide()
             $('.field-program_schedule').hide()
-            $('.field-zone').show()
             $('.field-budget_code').show()
-            $('.field-box.field-party_name').show()
         }
     }
+
+     function refresh_Programs(){
+        $.ajax({
+            type: 'GET',
+            url: '/admin/ipcaccounts/get_program_schedules/',
+            data: {
+                    'zone': $(id_zone).val(),
+                    'program_type': $(id_program_type).val()
+                    },
+            contentType: 'application/json; charset=utf-8',
+            cache: false,
+            success: function(data) {
+                var listitems = '<option value="" selected="selected">---------</option>';
+                $.each(data, function(key, value){
+                    listitems += '<option value=' + value[0] + '>' + value[1] + '</option>';
+                });
+                $("#id_program_schedule").find('option').remove()
+                $("#id_program_schedule").append(listitems);
+            }
+        });
+     }
 }
 
 )(django.jQuery);

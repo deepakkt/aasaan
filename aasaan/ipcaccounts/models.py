@@ -132,14 +132,13 @@ class Treasurer(models.Model):
 
 
 class RCOAccountsMaster(SmartModel):
-
     account_type = models.ForeignKey(AccountTypeMaster, default=1, verbose_name='Account Type')
     entity_name = models.ForeignKey(EntityMaster, default=1, verbose_name='Entity')
-    zone = models.ForeignKey(Zone, blank=True, null=True, verbose_name='Zone')
+    zone = models.ForeignKey(Zone, verbose_name='Zone')
     teacher = models.ForeignKey(Contact, blank=True, null=True)
     budget_code = models.CharField(max_length=100, blank=True)
-    program_schedule = GroupedForeignKey(ProgramSchedule, 'program', blank=True, null=True)
-
+    program_type = models.ForeignKey(ProgramMaster, blank=True, null=True, verbose_name='Program Type',)
+    program_schedule = models.ForeignKey(ProgramSchedule, blank=True, null=True)
     voucher_date = models.DateField(_("Voucher Date"), default=datetime.date.today)
     approval_sent_date = models.DateField('Approval request Date', blank=True, null=True)
     approved_date = models.DateField(blank=True, null=True)
@@ -148,9 +147,6 @@ class RCOAccountsMaster(SmartModel):
     rco_voucher_status = models.ForeignKey(RCOVoucherStatusMaster, default=1, verbose_name='RCO Voucher Status')
     movement_sheet_no = models.CharField(max_length=100, blank=True)
     email_sent = models.BooleanField(blank=True, default=False)
-
-    objects = models.Manager()
-    active_objects = ActiveManager()
 
     def __init__(self, *args, **kwargs):
         super(RCOAccountsMaster, self).__init__(*args, **kwargs)
@@ -174,12 +170,12 @@ class RCOAccountsMaster(SmartModel):
     total_no_vouchers.short_description = "Vouchers"
 
     def is_cancelled(self):
-        if self.rco_voucher_status.name == "New":
+        if self.rco_voucher_status.name == "Cancelled":
             return "<span style='color : red;'>&#10006;</span>"
-        if self.rco_voucher_status.name == "Sent to NP":
-            return "<span style='color : black;'>&#9940;</span>"
+        if self.np_voucher_status and self.np_voucher_status.name == "Voucher Processed":
+            return "<span style='color : green;'>&#10004;</span>"
 
-        return "<span style='color : green;'>&#10004;</span>"
+        return "<span style='color : black;'>&#9940;</span>"
 
     is_cancelled.allow_tags = True
     is_cancelled.short_description = " "
@@ -203,11 +199,11 @@ class RCOAccountsMaster(SmartModel):
     def __str__(self):
 
         voucher_details = VoucherDetails.objects.filter(accounts_master=self).order_by('tracking_no')
-        if (len(voucher_details) > 2):
+        if len(voucher_details) > 2:
             tracking_numbers = voucher_details[0].tracking_no + ' - ' + voucher_details[len(voucher_details) - 1].tracking_no[-2:]
-        elif (len(voucher_details) == 2):
+        elif len(voucher_details) == 2:
             tracking_numbers = voucher_details[0].tracking_no + ' & ' + voucher_details[len(voucher_details) - 1].tracking_no[-2:]
-        elif (len(voucher_details) == 1):
+        elif len(voucher_details) == 1:
             tracking_numbers = voucher_details[0].tracking_no
         else:
             tracking_numbers = 'No Voucher'

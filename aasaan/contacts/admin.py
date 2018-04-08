@@ -234,7 +234,7 @@ class ContactAdmin(MarkdownModelAdmin):
     fieldsets = [
         ('Core Information', {'fields': ['profile_image_display', 'first_name', 'last_name',
                                          'teacher_tno', 'date_of_birth',
-                                         'gender', 'category', 'status',
+                                         'gender', 'category', 'status', 'marital_status',
                                          'cug_mobile', 'other_mobile_1',
                                          'whatsapp_number',
                                          'primary_email', 'profile_picture'

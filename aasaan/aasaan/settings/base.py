@@ -72,7 +72,8 @@ INSTALLED_APPS += (
     'reports',
 	'statistics',
     'misc',
-    'ashramvisit'
+    'ashramvisit',
+    'travels'
 )
 
 # third party apps

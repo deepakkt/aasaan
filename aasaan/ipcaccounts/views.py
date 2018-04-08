@@ -15,7 +15,8 @@ from django.http import JsonResponse
 from braces.views import LoginRequiredMixin
 from .forms import FilterFieldsForm, VoucherAdvancedSearchFieldsForm
 from contacts.models import Contact, Zone, IndividualRole, IndividualContactRoleZone, IndividualContactRoleCenter
-
+from datetime import timedelta
+from django.utils import timezone
 @login_required
 def get_budget_code(request):
     if request.method == 'GET':
@@ -248,3 +249,22 @@ def voucher_refresh(request):
              'np_voucher_status': '', 'zone': ''})
         summary['data'] = data
     return JsonResponse(summary, safe=False)
+
+@login_required
+def get_program_schedules(request):
+    if request.method == 'GET':
+        zone_id = request.GET['zone']
+        program_type = request.GET['program_type']
+    pt = ProgramMaster.objects.get(pk=program_type)
+    zone = Zone.objects.get(pk=zone_id)
+    obj_id = request.META['PATH_INFO'].rstrip('/').split('/')[-2]
+    schedule_days_to_show = Configuration.objects.get(
+        configuration_key='IPC_ACCOUNTS_SCHEDULE_DAYS').configuration_value
+    time_threshold = timezone.now() - timedelta(days=int(schedule_days_to_show))
+    qs = ProgramSchedule.objects.filter(center__zone=zone, program=pt, end_date__gte=time_threshold)
+    if obj_id.isdigit():
+        am = RCOAccountsMaster.objects.get(pk=obj_id)
+        if am.program_schedule:
+            qs = qs | ProgramSchedule.objects.filter(pk=am.program_schedule.pk)
+    ps_list = [(x.id, str(x)) for x in qs]
+    return JsonResponse(ps_list, safe=False)

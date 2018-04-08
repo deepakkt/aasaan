@@ -108,6 +108,10 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
 
+        if not request.user.is_superuser and db_field.name == 'zone':
+            user_zones = [x.zone.id for x in request.user.aasaanuserzone_set.all()]
+            kwargs["queryset"] = Zone.objects.filter(pk__in=user_zones)
+
         if db_field.name == 'entity_name':
             kwargs["queryset"] = EntityMaster.active_objects.all()
 
@@ -121,22 +125,13 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
 
         if db_field.name == 'program_schedule':
             obj_id = request.META['PATH_INFO'].rstrip('/').split('/')[-2]
-            schedule_days_to_show = Configuration.objects.get(configuration_key='IPC_ACCOUNTS_SCHEDULE_DAYS').configuration_value
-            time_threshold = timezone.now() - timedelta(days=int(schedule_days_to_show))
-            qs = ProgramSchedule.objects.filter(end_date__gte=time_threshold)
+            print(obj_id)
             if obj_id.isdigit():
                 am = RCOAccountsMaster.objects.get(pk=obj_id)
                 if am.program_schedule:
-                    qs = qs | ProgramSchedule.objects.filter(pk=am.program_schedule.pk)
-            if not request.user.is_superuser:
-                user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
-                user_zone_centers = [x.id for x in Center.objects.filter(zone__in=user_zones)]
-                user_centers = [x.center.id for x in request.user.aasaanusercenter_set.all()] + \
-                               user_zone_centers
-                user_centers = list(set(user_centers))
-                kwargs["queryset"] = qs.filter(center__in=user_centers)
+                    kwargs["queryset"] = ProgramSchedule.objects.filter(pk=am.program_schedule.pk)
             else:
-                kwargs["queryset"] = qs
+                kwargs["queryset"] = ProgramSchedule.objects.none()
 
         if db_field.name == 'teacher':
             try:
@@ -193,7 +188,7 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
             'classes': ('has-cols', 'cols-2')
         }),
         ('', {
-            'fields': ('program_schedule', 'teacher', 'budget_code', 'zone')
+            'fields': ('zone', 'program_type', 'program_schedule', 'teacher', 'budget_code')
         }),
         ('IPC Accounts', {
             'fields': (('np_voucher_status', 'finance_submission_date', 'movement_sheet_no'),
@@ -203,7 +198,7 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
     )
     date_hierarchy = 'voucher_date'
     list_editable = ('rco_voucher_status',)
-    list_display = ('__str__', 'rco_voucher_status', 'approved_date', 'email_sent', 'account_actions', 'np_voucher_status')
+    list_display = ('is_cancelled', '__str__', 'rco_voucher_status', 'approved_date', 'email_sent', 'account_actions', 'np_voucher_status')
     list_filter = (('program_schedule__start_date', DateRangeFilter), ('account_type', RelatedDropdownFilter), ('rco_voucher_status', RelatedDropdownFilter), ('np_voucher_status',RelatedDropdownFilter), ('zone',RelatedDropdownFilter),('entity_name', RelatedDropdownFilter))
 
     search_fields = ('program_schedule__program__name', )
@@ -222,7 +217,7 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
 
 class NPAccountsMasterAdmin(RCOAccountsMasterAdmin):
     list_editable = ('np_voucher_status', 'movement_sheet_no')
-    list_display = ('__str__', 'np_voucher_status', 'finance_submission_date', 'movement_sheet_no')
+    list_display = ('is_cancelled', '__str__', 'np_voucher_status', 'finance_submission_date', 'movement_sheet_no')
 
 
 admin.site.register(RCOAccountsMaster, RCOAccountsMasterAdmin)

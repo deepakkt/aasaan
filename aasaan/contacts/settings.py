@@ -2,6 +2,10 @@ GENDER_VALUES = (('M', 'Male'),
                  ('F', 'Female'),
                  ('TG', 'Transgender'))
 
+MARITAL_STATUS_VALUES = (('M', 'Married'),
+                 ('S', 'Single'),
+                 ('U', 'Unknown'))
+
 CATEGORY_VALUES = (('BR', 'Bramhachari'),
                  ('FTT', 'Full Time Teacher'),
                  ('PTT', 'Part Time Teacher'),

@@ -9,7 +9,7 @@ import os, os.path
 from .settings import GENDER_VALUES, STATUS_VALUES, ID_PROOF_VALUES,\
                         ROLE_LEVEL_CHOICES, NOTE_TYPE_VALUES, \
                         ADDRESS_TYPE_VALUES, CATEGORY_VALUES, \
-                        CENTER_CATEGORY_VALUES
+                        CENTER_CATEGORY_VALUES,MARITAL_STATUS_VALUES
 
 from django_markdown.models import MarkdownField
 from config.models import SmartModel, Tag
@@ -45,6 +45,7 @@ class Contact(SmartModel):
     gender = models.CharField(max_length=2, choices=GENDER_VALUES)
     category = models.CharField(max_length=6, choices=CATEGORY_VALUES)
     status = models.CharField(max_length=6, choices=STATUS_VALUES)
+    marital_status = models.CharField(max_length=2, choices=MARITAL_STATUS_VALUES, default='U')
     cug_mobile = models.CharField("cUG phone number", max_length=15, blank=True)
     other_mobile_1 = models.CharField("alternate mobile 1", max_length=15, blank=True)
     other_mobile_2 = models.CharField("alternate mobile 2", max_length=15, blank=True)
