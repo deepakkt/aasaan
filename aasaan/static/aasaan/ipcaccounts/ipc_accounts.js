@@ -107,17 +107,20 @@
     function toggleVerified() {
         if($("#id_account_type option:selected").text()=='Teacher Accounts'){
             $('.field-program_schedule').hide()
+            $('.form-row.field-program_type').hide()
             $('.field-budget_code').show()
             $('.field-teacher').show()
         }
         else if($("#id_account_type option:selected").text()=='Class Accounts'){
             $('.field-teacher').hide()
             $('.field-program_schedule').show()
+            $('.form-row.field-program_type').show()
             $('.field-budget_code').show()
         }
         else {
             $('.field-teacher').hide()
             $('.field-program_schedule').hide()
+            $('.form-row.field-program_type').hide()
             $('.field-budget_code').show()
         }
     }
