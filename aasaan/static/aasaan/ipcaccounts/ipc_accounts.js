@@ -88,14 +88,14 @@
             $('.form-row.field-payment_date.field-utr_no.field-tds_amount').hide()
         }
 
-        $("#id_zone").change(function() {
+        $("#id_zone").click(function() {
         if($(this).val()=='' || $("#id_program_type").val()==''){
                 return
             }
             refresh_Programs()
          });
 
-         $("#id_program_type").change(function() {
+         $("#id_program_type").click(function() {
             if($(this).val()=='' || $("#id_zone").val()==''){
                     return
                 }

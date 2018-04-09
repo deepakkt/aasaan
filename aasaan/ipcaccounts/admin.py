@@ -125,13 +125,24 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
 
         if db_field.name == 'program_schedule':
             obj_id = request.META['PATH_INFO'].rstrip('/').split('/')[-2]
-            print(obj_id)
+            schedule_days_to_show = Configuration.objects.get(
+                configuration_key='IPC_ACCOUNTS_SCHEDULE_DAYS').configuration_value
+            time_threshold = timezone.now() - timedelta(days=int(schedule_days_to_show))
+            qs = ProgramSchedule.objects.filter(end_date__gte=time_threshold)
             if obj_id.isdigit():
                 am = RCOAccountsMaster.objects.get(pk=obj_id)
                 if am.program_schedule:
-                    kwargs["queryset"] = ProgramSchedule.objects.filter(pk=am.program_schedule.pk)
+                    qs = qs | ProgramSchedule.objects.filter(pk=am.program_schedule.pk)
+            if not request.user.is_superuser:
+                user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
+                user_zone_centers = [x.id for x in Center.objects.filter(zone__in=user_zones)]
+                user_centers = [x.center.id for x in request.user.aasaanusercenter_set.all()] + \
+                               user_zone_centers
+                user_centers = list(set(user_centers))
+                kwargs["queryset"] = qs.filter(center__in=user_centers)
             else:
-                kwargs["queryset"] = ProgramSchedule.objects.none()
+                kwargs["queryset"] = qs
+
 
         if db_field.name == 'teacher':
             try:
@@ -199,7 +210,7 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
     date_hierarchy = 'voucher_date'
     list_editable = ('rco_voucher_status',)
     list_display = ('is_cancelled', '__str__', 'rco_voucher_status', 'approved_date', 'email_sent', 'account_actions', 'np_voucher_status')
-    list_filter = (('program_schedule__start_date', DateRangeFilter), ('account_type', RelatedDropdownFilter), ('rco_voucher_status', RelatedDropdownFilter), ('np_voucher_status',RelatedDropdownFilter), ('zone',RelatedDropdownFilter),('entity_name', RelatedDropdownFilter))
+    list_filter = (('program_schedule__start_date', DateRangeFilter),('program_schedule__program', RelatedDropdownFilter),  ('account_type', RelatedDropdownFilter), ('rco_voucher_status', RelatedDropdownFilter), ('np_voucher_status',RelatedDropdownFilter), ('zone',RelatedDropdownFilter),('entity_name', RelatedDropdownFilter))
 
     search_fields = ('program_schedule__program__name', )
 
