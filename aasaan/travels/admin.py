@@ -24,16 +24,24 @@ class TravellersInline(admin.TabularInline):
 
 class TravelRequestAdmin(admin.ModelAdmin):
     form = TravelRequestForm
-    list_display = ('__str__', '_from', '_to', 'onward_date', 'status')
+    list_display = ('status_flag', '__str__', '_from', '_to', 'onward_date', 'status')
     list_editable = ('status',)
+    list_display_links = ['status_flag', '__str__']
 
     fieldsets = (
         ('', {
-            'fields': (('_from', '_to'),('onward_date', 'travel_mode'), ('remarks',)
+            'fields': (('_from', '_to'),('onward_date', 'travel_mode'), ('status', 'zone'), ('remarks',)
                        ),
             'classes': ('has-cols', 'cols-2')
         }),
     )
+
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+
+        if not request.user.is_superuser and db_field.name == 'zone':
+            user_zones = [x.zone.id for x in request.user.aasaanuserzone_set.all()]
+            kwargs["queryset"] = Zone.objects.filter(pk__in=user_zones)
+        return super(TravelRequestAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     inlines = [TravellersInline,]
     class Media:
