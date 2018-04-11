@@ -5,6 +5,7 @@ from contacts.models import Contact, IndividualRole, Zone, Center
 from django.core.exceptions import ObjectDoesNotExist
 from utils.filters import RelatedDropdownFilter
 
+
 class TravellersInline(admin.TabularInline):
     model = Travellers
     extra = 1

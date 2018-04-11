@@ -225,7 +225,7 @@ class RCOAccountsMaster(SmartModel):
 
     class Meta:
         ordering = ['account_type', 'entity_name']
-        verbose_name = 'RCO Voucher Approval Tracking'
+        verbose_name = 'RCO Voucher'
 
 
 class VoucherDetails(SmartModel):
@@ -291,7 +291,7 @@ class NPAccountsMaster(RCOAccountsMaster):
 
     class Meta:
         proxy = True
-        verbose_name = 'NP Voucher Approval Tracking'
+        verbose_name = 'NP Voucher'
 
 
 class CourierDetails(models.Model):

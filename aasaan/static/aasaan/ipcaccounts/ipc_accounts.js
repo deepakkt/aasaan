@@ -3,6 +3,42 @@
 (function($) {
 
     $(document).ready(function() {
+
+        //logic to run on change list to send email
+         $('.actions').find('button').click(function(event) {
+            if($('.actions').find('select').val() == 'make_email'){
+                var favorite = [];
+                $.each($("input[name='_selected_action']:checked"), function(){
+                    favorite.push($(this).val());
+                });
+                if(favorite.length==1){
+                    document.getElementById('send_email').href = document.getElementById('send_email').href+'?account_id='+favorite.join(", ")
+                    document.getElementById('send_email').click();
+                }
+                else if(favorite.length>1){
+                    addErrorMessage('Only one item must be selected in order to perform actions on them.')
+                    event.preventDefault()
+                }
+                else if(favorite.length==0){
+                    addErrorMessage('One item must be selected in order to perform actions on them.')
+                    event.preventDefault()
+                }
+            }
+         })
+
+         //Adds validation error message
+        function addErrorMessage(message) {
+            removeErrorMessage();
+            $($('.breadcrumbs')[0]).after('<ul class="messagelist"><li class="warning">'+message+'</li></ul>');
+//            custom_error = true
+            return false;
+        }
+
+        //Removes all validation error message
+        function removeErrorMessage() {
+            $(".messagelist").remove();
+        }
+
         $('.form-row.field-np_voucher_status.field-finance_submission_date.field-movement_sheet_no').parent().hide()
         toggleVerified();
 

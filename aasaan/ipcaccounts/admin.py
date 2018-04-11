@@ -13,6 +13,7 @@ from django.utils.html import format_html
 from utils.daterange_filter import DateRangeFilter
 from utils.filters import RelatedDropdownFilter
 
+
 class TreasurerAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'old_treasurer', 'new_treasurer')
 
@@ -94,17 +95,11 @@ class VoucherDetailsInline(admin.StackedInline):
 
 class RCOAccountsMasterAdmin(admin.ModelAdmin):
 
-    def account_actions(self, obj):
-        if obj.email_sent:
-            button_text = 'Resend Email'
-        else:
-            button_text = 'Send Email'
-        url = '/admin/ipcaccounts/send_email?account_id='+str(obj.id)+''
-        return format_html(
-            '<a class="button" target="_blank" href="{}">'+button_text+'</a>&nbsp;', url, obj.id)
+    def make_email(modeladmin, request, queryset):
+        pass
 
-    account_actions.short_description = 'Email Approval'
-    account_actions.allow_tags = True
+    make_email.short_description = "Email selected Vouchers"
+    actions = [make_email]
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
 
@@ -142,7 +137,6 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
                 kwargs["queryset"] = qs.filter(center__in=user_centers)
             else:
                 kwargs["queryset"] = qs
-
 
         if db_field.name == 'teacher':
             try:
@@ -209,8 +203,8 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
     )
     date_hierarchy = 'voucher_date'
     list_editable = ('rco_voucher_status',)
-    list_display = ('is_cancelled', '__str__', 'rco_voucher_status', 'approved_date', 'email_sent', 'account_actions', 'np_voucher_status')
-    list_filter = (('program_schedule__start_date', DateRangeFilter),('program_schedule__program', RelatedDropdownFilter),  ('account_type', RelatedDropdownFilter), ('rco_voucher_status', RelatedDropdownFilter), ('np_voucher_status',RelatedDropdownFilter), ('zone',RelatedDropdownFilter),('entity_name', RelatedDropdownFilter))
+    list_display = ('is_cancelled', '__str__', 'rco_voucher_status', 'approved_date', 'email_sent', 'np_voucher_status')
+    list_filter = (('program_schedule__start_date', DateRangeFilter),('program_schedule__program', RelatedDropdownFilter),  ('account_type', RelatedDropdownFilter), ('rco_voucher_status', RelatedDropdownFilter), ('np_voucher_status',RelatedDropdownFilter), ('zone',RelatedDropdownFilter),('entity_name', RelatedDropdownFilter), 'email_sent')
 
     search_fields = ('program_schedule__program__name', )
 

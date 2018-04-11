@@ -53,7 +53,8 @@
         <ul class="object-tools">
           {% block object-tools-items %}
             <li>
-              <a href="/admin/ipcaccounts/voucher_report" class="historylink" target="_blank">Advanced Search & Report</a>
+              <a href="/admin/ipcaccounts/compose_email" style="display:none" id="send_email" class="historylink" target="_blank">hidden</a>
+              <a href="/admin/ipcaccounts/voucher_report" class="historylink" target="_blank">Vouchers Report</a>
               {% url cl.opts|admin_urlname:'add' as add_url %}
               <a href="{% add_preserved_filters add_url is_popup to_field %}" class="addlink">
                 {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
