@@ -1,11 +1,12 @@
 from django.db import models
 from contacts.models import Contact, Zone
+from django.contrib.auth.models import User
 
 
 class TravelRequest(models.Model):
-    _from = models.CharField( max_length=100, blank=True)
-    _to = models.CharField(max_length=100, blank=True)
-    onward_date = models.DateField('Date of Journey', blank=True, null=True)
+    source = models.CharField('From', max_length=100)
+    destination = models.CharField('To', max_length=100)
+    onward_date = models.DateField('Date of Journey')
     TRAVEL_MODE_VALUES = (('TR', 'Train'),
                            ('BS', 'Bus'),
                            ('FL', 'Flight'))
@@ -21,8 +22,12 @@ class TravelRequest(models.Model):
 
     status = models.CharField(max_length=2, choices=STATUS_VALUES,
                                    default=STATUS_VALUES[0][0])
+    email_sent = models.BooleanField(blank=True, default=False)
+    created_by = models.ForeignKey(User)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
+
+
 
     def status_flag(self):
         if self.status == "CL":
@@ -37,8 +42,10 @@ class TravelRequest(models.Model):
 
     def __str__(self):
         vd = Travellers.objects.filter(travel_request=self)
-        if vd:
+        if vd and len(vd)>1:
             return vd[0].teacher.full_name + ' + ' +str(len(vd) - 1)
+        if vd and len(vd) == 1:
+            return vd[0].teacher.full_name
         else:
             return ''
 

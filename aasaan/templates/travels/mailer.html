@@ -1,0 +1,37 @@
+{% extends "ipcaccounts/base_site.html" %}
+{% load django_markdown %}
+
+{% block title %}IPC{% endblock %}
+
+{% block branding %} <h1 id="site-name">aasaan</h1> {% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block extrahead %}{{ block.super }}
+<script>
+window.onload = function(e){
+    document.getElementById("id_sender").disabled = true
+
+}
+function myFunction() {
+    document.getElementById("temp_message").value = tinyMCE.activeEditor.getContent({format : 'raw'});
+    document.getElementById("id_sender").disabled = false
+    }
+
+</script>
+{% endblock %}
+
+{% block content %}
+    <h2>IPC Communication</h2>
+   <form onsubmit="myFunction()" action="/admin/travels/sendApprovalMessage" method="post">{% csrf_token %}
+      {{ form.media }}
+        <table>
+        {{ form }}
+        </table>
+       <input type="hidden" name="temp_message" id="temp_message" value="">
+    <input type="submit" value="Send" />
+</form>
+{% endblock %}
+
+{% load admin_static %}{% load firstof from future %}<!DOCTYPE html>
+

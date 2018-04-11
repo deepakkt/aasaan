@@ -3,11 +3,11 @@ from .models import TravelRequest,Travellers
 from .forms import TravelRequestForm
 from contacts.models import Contact, IndividualRole, Zone, Center
 from django.core.exceptions import ObjectDoesNotExist
-
+from utils.filters import RelatedDropdownFilter
 
 class TravellersInline(admin.TabularInline):
     model = Travellers
-    extra = 0
+    extra = 1
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
 
@@ -24,17 +24,26 @@ class TravellersInline(admin.TabularInline):
 
 class TravelRequestAdmin(admin.ModelAdmin):
     form = TravelRequestForm
-    list_display = ('status_flag', '__str__', '_from', '_to', 'onward_date', 'status')
+    list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'email_sent')
     list_editable = ('status',)
     list_display_links = ['status_flag', '__str__']
-
+    save_on_top = True
+    date_hierarchy = 'onward_date'
+    list_filter = (('zone', RelatedDropdownFilter),)
     fieldsets = (
         ('', {
-            'fields': (('_from', '_to'),('onward_date', 'travel_mode'), ('status', 'zone'), ('remarks',)
+            'fields': (('source', 'destination'),('onward_date', 'travel_mode'), ('status', 'zone'), ('remarks',)
                        ),
             'classes': ('has-cols', 'cols-2')
         }),
     )
+
+    def make_email(modeladmin, request, queryset):
+        pass
+
+    make_email.short_description = "Send selected as Email"
+
+    actions = [make_email]
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
 
@@ -44,7 +53,20 @@ class TravelRequestAdmin(admin.ModelAdmin):
         return super(TravelRequestAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     inlines = [TravellersInline,]
+
+    # filter tickets records based on user permissions
+    def get_queryset(self, request):
+        qs = super(TravelRequestAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
+        return TravelRequest.objects.filter(zone__in=user_zones)
+
+    def save_model(self, request, obj, form, change):
+        obj.created_by = request.user
+        obj.save()
+
     class Media:
-        js = ('/static/aasaan/ipcaccounts/treasurer.js',)
+        js = ('/static/aasaan/travels/travels.js',)
 
 admin.site.register(TravelRequest, TravelRequestAdmin)

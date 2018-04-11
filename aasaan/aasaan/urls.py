@@ -31,6 +31,7 @@ urlpatterns = patterns('',
     url(r'^schedules/', include(schedulemaster.urls, namespace='schedules')),
     url(r'^chaining/', include('smart_selects.urls')),
     url(r'^tinymce/', include('tinymce.urls')),
+    url(r'^admin/travels/', include('travels.urls', namespace='travels')),
 )
 
 if settings.ASYNC:
