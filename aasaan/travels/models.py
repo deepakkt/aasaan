@@ -1,12 +1,13 @@
 from django.db import models
 from contacts.models import Contact, Zone
 from django.contrib.auth.models import User
+import datetime
 
 
 class TravelRequest(models.Model):
-    source = models.CharField('From', max_length=100)
-    destination = models.CharField('To', max_length=100)
-    onward_date = models.DateField('Date of Journey')
+    source = models.CharField('From', max_length=100,default='')
+    destination = models.CharField('To', max_length=100,default='')
+    onward_date = models.DateField('Date of Journey', default=datetime.date.today)
     TRAVEL_MODE_VALUES = (('TR', 'Train'),
                            ('BS', 'Bus'),
                            ('FL', 'Flight'))
@@ -23,7 +24,7 @@ class TravelRequest(models.Model):
     status = models.CharField(max_length=2, choices=STATUS_VALUES,
                                    default=STATUS_VALUES[0][0])
     email_sent = models.BooleanField(blank=True, default=False)
-    created_by = models.ForeignKey(User)
+    created_by = models.ForeignKey(User, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
