@@ -22,13 +22,13 @@ function myFunction() {
 
 {% block content %}
     <h2>IPC Communication</h2>
-   <form onsubmit="myFunction()" action="/admin/ipcaccounts/sendApprovalMessage" method="post">{% csrf_token %}
+   <form onsubmit="myFunction()" action="/admin/travels/sendApprovalMessage" method="post">{% csrf_token %}
       {{ form.media }}
         <table>
         {{ form }}
         </table>
        <input type="hidden" name="temp_message" id="temp_message" value="">
-    <input type="submit" value="Send for Approval" />
+    <input type="submit" value="Send" />
 </form>
 {% endblock %}
 

@@ -11,7 +11,7 @@ from .settings import GENDER_VALUES, STATUS_VALUES, ID_PROOF_VALUES,\
                         ADDRESS_TYPE_VALUES, CATEGORY_VALUES, \
                         CENTER_CATEGORY_VALUES,MARITAL_STATUS_VALUES
 
-from django_markdown.models import MarkdownField
+
 from config.models import SmartModel, Tag
 from smart_selects.db_fields import GroupedForeignKey
 from PIL import Image
@@ -62,7 +62,7 @@ class Contact(SmartModel):
     id_proof_other = models.CharField("type of govt ID if other", max_length=30, blank=True)
     id_proof_scan = models.ImageField(upload_to=_generate_idproof_path, blank=True)
     profile_picture = models.ImageField(upload_to=_generate_profile_path, blank=True)
-    remarks = MarkdownField(max_length=500, blank=True)
+    remarks = models.TextField(max_length=500, blank=True)
 
     def profile_image(self):
         image_style = 'style="width:50px; height:50px"'
@@ -231,7 +231,7 @@ class ContactNote(models.Model):
     contact = models.ForeignKey(Contact)
     note_type = models.CharField(max_length=2, choices=NOTE_TYPE_VALUES,
                                  default=NOTE_TYPE_VALUES[0][0])
-    note = MarkdownField(max_length=500)
+    note = models.TextField(max_length=500)
     note_timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

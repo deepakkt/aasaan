@@ -53,8 +53,11 @@
         <ul class="object-tools">
           {% block object-tools-items %}
             <li>
-              <a href="/admin/ipcaccounts/compose_email" style="display:none" id="send_email" class="historylink" target="_blank">hidden</a>
-              <a href="/admin/ipcaccounts/voucher_report" class="historylink" target="_blank">Vouchers Report</a>
+              <form id="id_email_form" style="display:none" action="/admin/travels/compose_email/" method="POST">
+                {% csrf_token %}
+                    <button type="submit">Make Immortal</button>
+            </form>
+              <a href="/admin/travels/compose_email" style="display:none" id="send_email" class="historylink" target="_blank">Travel Report</a>
               {% url cl.opts|admin_urlname:'add' as add_url %}
               <a href="{% add_preserved_filters add_url is_popup to_field %}" class="addlink">
                 {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
@@ -83,6 +86,9 @@
         {% endif %}
       {% endblock %}
 
+
+
+
       <form id="changelist-form" method="post"{% if cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
       {% if cl.formset %}
         <div>{{ cl.formset.management_form }}</div>
@@ -90,6 +96,7 @@
 
       {% block result_list %}
           {% if action_form and actions_on_top and cl.show_admin_actions %}{% admin_actions %}{% endif %}
+
           {% result_list cl %}
           {% if action_form and actions_on_bottom and cl.show_admin_actions %}{% admin_actions %}{% endif %}
       {% endblock %}

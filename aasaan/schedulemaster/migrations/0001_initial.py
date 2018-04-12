@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 import django.db.models.deletion
-import django_markdown.models
+
 
 
 class Migration(migrations.Migration):
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=50)),
                 ('program_type', models.CharField(blank=True, choices=[('NONE', 'Please Select'), ('IP', 'Introductory Programs'), ('AP', 'Advanced Programs'), ('RP', 'Rejuvenation Programs'), ('CP', 'Childrens Programs'), ('SS', 'Sadhgurus Schedule'), ('SP', 'Special Events & Other Programs')], default='NONE', max_length=4)),
                 ('language_type', models.CharField(blank=True, choices=[('NONE', 'Please Select'), ('TM', 'Tamil'), ('EG', 'English'), ('HI', 'Hindi'), ('BI', 'bilingual'), ('CH', 'Chinese')], default='NONE', max_length=4)),
-                ('description', django_markdown.models.MarkdownField(blank=True)),
+                ('description', models.TextField(blank=True)),
             ],
             options={
                 'ordering': ['name', 'program_type'],
@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
             name='ScheduleNote',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('note', django_markdown.models.MarkdownField(max_length=500)),
+                ('note', models.TextField(max_length=500)),
                 ('contact', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='schedulemaster.ProgramSchedule')),
             ],
             options={

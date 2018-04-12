@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import django_markdown.models
 
 
 class Migration(migrations.Migration):
@@ -28,7 +27,7 @@ class Migration(migrations.Migration):
                 ('use_tls', models.BooleanField(default=True, verbose_name='TLS settings (email only)')),
                 ('use_ssl', models.BooleanField(default=False, verbose_name='SSL settings (email only)')),
                 ('default', models.BooleanField(default=False, verbose_name='use this as default profile?')),
-                ('remarks', django_markdown.models.MarkdownField(blank=True)),
+                ('remarks', models.TextField(blank=True)),
             ],
         ),
         migrations.DeleteModel(
@@ -43,7 +42,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='payload',
             name='communication_status_message',
-            field=django_markdown.models.MarkdownField(blank=True),
+            field=models.TextField(blank=True),
         ),
         migrations.AddField(
             model_name='payload',
@@ -53,7 +52,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='payloaddetail',
             name='communication_status_message',
-            field=django_markdown.models.MarkdownField(blank=True),
+            field=models.TextField(blank=True),
         ),
         migrations.AlterUniqueTogether(
             name='communicationprofile',

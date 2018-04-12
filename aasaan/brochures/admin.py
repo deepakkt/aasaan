@@ -1,6 +1,6 @@
 from contacts.models import Zone
 from django.contrib import admin
-from django_markdown.admin import MarkdownInlineAdmin
+
 from .models import Brochures, BrochureMaster, StockPointMaster, StockPoint, BrochuresTransaction, \
     BrochuresTransactionItem, TransactionTypeMaster, \
     StockPointAddress, BrochuresShipment, BrochureSet, BrochureSetItem, BroucherTransferNote, StockPointNote
@@ -70,13 +70,13 @@ class BrochuresShipmentInline(admin.StackedInline):
     )
 
 
-class BroucherTransferNoteInline(MarkdownInlineAdmin, admin.TabularInline):
+class BroucherTransferNoteInline(admin.TabularInline):
     model = BroucherTransferNote
     extra = 1
     can_delete = False
 
 
-class StockPointNoteInline(MarkdownInlineAdmin, admin.TabularInline):
+class StockPointNoteInline(admin.TabularInline):
     model = StockPointNote
     extra = 0
     can_delete = False

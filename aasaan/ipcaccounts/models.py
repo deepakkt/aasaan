@@ -1,7 +1,6 @@
 from django.db import models
 from contacts.models import Center, Contact, IndividualContactRoleZone, Zone
 from schedulemaster.models import ProgramSchedule, ProgramMaster
-from django_markdown.models import MarkdownField
 import json
 from config.models import Configuration, SmartModel
 from django.core.exceptions import ValidationError
@@ -225,7 +224,7 @@ class RCOAccountsMaster(SmartModel):
 
     class Meta:
         ordering = ['account_type', 'entity_name']
-        verbose_name = 'RCO Voucher Approval Tracking'
+        verbose_name = 'RCO Voucher'
 
 
 class VoucherDetails(SmartModel):
@@ -291,7 +290,7 @@ class NPAccountsMaster(RCOAccountsMaster):
 
     class Meta:
         proxy = True
-        verbose_name = 'NP Voucher Approval Tracking'
+        verbose_name = 'NP Voucher'
 
 
 class CourierDetails(models.Model):
@@ -310,7 +309,7 @@ class CourierDetails(models.Model):
 
 class TransactionNotes(models.Model):
     accounts_master = models.ForeignKey(RCOAccountsMaster)
-    note = MarkdownField(blank=True)
+    note = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.CharField(max_length=100, null=True, blank=True)
     modified = models.DateTimeField(auto_now=True)

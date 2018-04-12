@@ -1,5 +1,4 @@
 from django.db import models
-from django_markdown.models import MarkdownField
 from django.utils.text import slugify
 from contacts.models import Zone
 from schedulemaster.models import ProgramSchedule, LanguageMaster, ProgramMaster
@@ -74,7 +73,7 @@ class BrochureMaster(models.Model):
     language = models.ForeignKey(LanguageMaster, default=1)
     active = models.BooleanField(default=True)
     brochure_image = models.ImageField(upload_to=_brochure_image_path, blank=True)
-    description = MarkdownField(blank=True)
+    description = models.TextField(blank=True)
 
     objects = models.Manager()
     active_objects = ActiveManager()
@@ -199,7 +198,7 @@ class Brochures(models.Model):
 
 class StockPointNote(models.Model):
     stock_point = models.ForeignKey(StockPoint)
-    note = MarkdownField()
+    note = models.TextField()
     note_timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -320,7 +319,7 @@ class BrochuresTransaction(models.Model):
 
 class BroucherTransferNote(models.Model):
     brochure_transfer = models.ForeignKey(BrochuresTransaction)
-    note = MarkdownField()
+    note = models.TextField()
     note_timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

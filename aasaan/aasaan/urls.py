@@ -21,7 +21,6 @@ urlpatterns = patterns('',
     url(r'^contacts/', include(contacts.urls, namespace='contacts')),
     url(r'^reports/', include(reports.urls, namespace='reports')),
     url(r'^misc/', include(misc.urls, namespace='misc')),
-    url(r'^markdown/', include('django_markdown.urls')),
     url(r'^accounts/', include('allauth.urls')),
     url(r'^comm/', include('iconnect.urls')),
     url(r'^admin/lookups/', include(ajax_select_urls)),
@@ -31,6 +30,7 @@ urlpatterns = patterns('',
     url(r'^schedules/', include(schedulemaster.urls, namespace='schedules')),
     url(r'^chaining/', include('smart_selects.urls')),
     url(r'^tinymce/', include('tinymce.urls')),
+    url(r'^admin/travels/', include('travels.urls', namespace='travels')),
 )
 
 if settings.ASYNC:

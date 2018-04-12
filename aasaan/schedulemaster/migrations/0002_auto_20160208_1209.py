@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import datetime
 from django.db import migrations, models
 import django.db.models.deletion
-import django_markdown.models
 
 
 class Migration(migrations.Migration):
@@ -21,7 +20,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=50)),
-                ('description', django_markdown.models.MarkdownField(blank=True)),
+                ('description', models.TextField(blank=True)),
             ],
             options={
                 'ordering': ['name'],
@@ -33,7 +32,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=50)),
-                ('description', django_markdown.models.MarkdownField(blank=True)),
+                ('description', models.TextField(blank=True)),
             ],
             options={
                 'ordering': ['name'],
@@ -57,7 +56,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=50)),
-                ('description', django_markdown.models.MarkdownField(blank=True)),
+                ('description', models.TextField(blank=True)),
                 ('display', models.BooleanField(default=True)),
             ],
             options={
@@ -96,7 +95,7 @@ class Migration(migrations.Migration):
             name='ProgramScheduleNote',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('note', django_markdown.models.MarkdownField()),
+                ('note', models.TextField()),
             ],
             options={
                 'verbose_name_plural': 'notes about program',

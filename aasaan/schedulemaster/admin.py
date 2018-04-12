@@ -12,18 +12,16 @@ from .models import LanguageMaster, ProgramCategory, ProgramMaster, \
 
 from config.models import Tag
 
-from django_markdown.admin import MarkdownModelAdmin, MarkdownInlineAdmin
 
-
-class LanguageMasterAdmin(MarkdownModelAdmin):
+class LanguageMasterAdmin(admin.ModelAdmin):
     list_display = ('name',)
 
 
-class BatchMasterAdmin(MarkdownModelAdmin):
+class BatchMasterAdmin(admin.ModelAdmin):
     list_display = ('name',)
 
 
-class ProgramCategoryAdmin(MarkdownModelAdmin):
+class ProgramCategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)
 
 
@@ -36,7 +34,7 @@ class ProgramMasterCategoryAdmin(admin.TabularInline):
     extra = 1
 
 
-class ProgramMasterAdmin(MarkdownModelAdmin):
+class ProgramMasterAdmin(admin.ModelAdmin):
     list_display = ('name', 'active')
     list_filter = ('active',)
 
@@ -82,7 +80,7 @@ class ProgramVenueAdmin(admin.StackedInline):
     extra = 0
 
 
-class ProgramScheduleNoteAdmin(MarkdownInlineAdmin, admin.TabularInline):
+class ProgramScheduleNoteAdmin(admin.TabularInline):
     model = ProgramScheduleNote
     fields = ('note',)
     extra = 0

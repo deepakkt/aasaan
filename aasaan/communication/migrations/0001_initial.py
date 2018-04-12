@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 import django.db.models.deletion
-import django_markdown.models
 
 
 class Migration(migrations.Migration):
@@ -25,8 +24,8 @@ class Migration(migrations.Migration):
                 ('communication_context', models.CharField(choices=[('Communication', 'Planned Communication'), ('Transaction', 'Transactional Communication')], default='Communication', max_length=15)),
                 ('communication_date', models.DateField(auto_now_add=True)),
                 ('communication_hash', models.CharField(max_length=100)),
-                ('communication_notes', django_markdown.models.MarkdownField()),
-                ('communication_message', django_markdown.models.MarkdownField()),
+                ('communication_notes', models.TextField()),
+                ('communication_message', models.TextField()),
             ],
             options={
                 'ordering': ['-communication_date', 'communication_title'],

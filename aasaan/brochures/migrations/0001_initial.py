@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import brochures.models
 from django.db import migrations, models
 import django.db.models.deletion
-import django_markdown.models
+
 
 
 class Migration(migrations.Migration):
@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
                 ('version', models.CharField(blank=True, max_length=10)),
                 ('active', models.BooleanField(default=True)),
                 ('brochure_image', models.ImageField(blank=True, upload_to=brochures.models._brochure_image_path)),
-                ('description', django_markdown.models.MarkdownField(blank=True)),
+                ('description', models.TextField(blank=True)),
                 ('language', models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to='schedulemaster.LanguageMaster')),
             ],
             options={
@@ -126,7 +126,7 @@ class Migration(migrations.Migration):
             name='BroucherTransferNote',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('note', django_markdown.models.MarkdownField()),
+                ('note', models.TextField()),
                 ('note_timestamp', models.DateTimeField(auto_now_add=True)),
                 ('brochure_transfer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='brochures.BrochuresTransaction')),
             ],
@@ -170,7 +170,7 @@ class Migration(migrations.Migration):
             name='StockPointNote',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('note', django_markdown.models.MarkdownField()),
+                ('note', models.TextField()),
                 ('note_timestamp', models.DateTimeField(auto_now_add=True)),
             ],
             options={

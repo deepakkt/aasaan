@@ -17,6 +17,7 @@ from .forms import FilterFieldsForm, VoucherAdvancedSearchFieldsForm
 from contacts.models import Contact, Zone, IndividualRole, IndividualContactRoleZone, IndividualContactRoleCenter
 from datetime import timedelta
 from django.utils import timezone
+
 @login_required
 def get_budget_code(request):
     if request.method == 'GET':
@@ -31,7 +32,7 @@ def get_budget_code(request):
         return JsonResponse(budget_code, safe=False)
 
 @login_required
-def send_email(request):
+def compose_email(request):
     if request.method == 'GET':
         account_id = request.GET['account_id']
         account_master = RCOAccountsMaster.objects.get(id=account_id)
@@ -54,11 +55,11 @@ def send_email(request):
         message_body = add_voucher_details(account_master, voucher_details)
 
         subject = ''
-        if (len(voucher_details) > 2):
+        if len(voucher_details) > 2:
             subject = voucher_details[0].tracking_no + ' - ' + voucher_details[len(voucher_details) - 1].tracking_no
-        elif (len(voucher_details) == 2):
+        elif len(voucher_details) == 2:
             subject = voucher_details[0].tracking_no + ' & ' + voucher_details[len(voucher_details) - 1].tracking_no
-        elif (len(voucher_details) == 1):
+        elif len(voucher_details) == 1:
             subject = voucher_details[0].tracking_no
 
         subject = '('+subject + ') - Voucher Approval needed'
