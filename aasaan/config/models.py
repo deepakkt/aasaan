@@ -94,3 +94,16 @@ class Tag(models.Model):
     def save(self, *args, **kwargs):
         self.tag_name = slugify(self.tag_name.strip().lower())
         super().save(*args, **kwargs)
+
+
+class AdminQuery(models.Model):
+    query_status = models.CharField(max_length=2, choices=(('RQ', 'Requested'),
+                                                            ('AP', 'Approved'),
+                                                            ('CO', 'Completed'),
+                                                            ('FA', 'Failed')),
+                                    default='RQ')
+    query_title = models.CharField(max_length=50)
+    query = models.TextField()
+    query_result = models.TextField(blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    executed = models.DateTimeField(null=True)
