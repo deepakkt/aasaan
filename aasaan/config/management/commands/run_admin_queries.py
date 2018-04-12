@@ -28,7 +28,7 @@ class Command(BaseCommand):
 
                 try:
                     query_result = subprocess.check_output(['psql', '-c', each_query])
-                    result += query_result
+                    result += query_result.decode("utf-8")
                     result += "\n"
                 except subprocess.CalledProcessError:
                     failed = True
