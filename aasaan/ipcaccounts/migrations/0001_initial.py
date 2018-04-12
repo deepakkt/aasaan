@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 import django.db.models.deletion
-import django_markdown.models
 import smart_selects.db_fields
 
 
@@ -120,7 +119,7 @@ class Migration(migrations.Migration):
             name='TransactionNotes',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('note', django_markdown.models.MarkdownField(blank=True)),
+                ('note', models.TextField(blank=True)),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('created_by', models.CharField(blank=True, max_length=100, null=True)),
                 ('modified', models.DateTimeField(auto_now=True)),

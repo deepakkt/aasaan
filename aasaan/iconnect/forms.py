@@ -1,9 +1,7 @@
-from ajax_select.fields import AutoCompleteField
 from django import forms
-from django_markdown.fields import MarkdownFormField
-from django_markdown.widgets import MarkdownWidget
-import ajax_select
 
+import ajax_select
+from tinymce.widgets import TinyMCE
 
 class MessageForm(forms.Form):
     subject = forms.CharField(max_length=500, widget=forms.TextInput(attrs={'size': '88'}))
@@ -12,9 +10,8 @@ class MessageForm(forms.Form):
         ('SMS', "SMS"),)
     communication_type = forms.ChoiceField(choices=STATUS_CHOICES, label="Communication Type", initial='',
                                            widget=forms.Select(), required=True)
-    message = forms.CharField(widget=MarkdownWidget())
-    reason = MarkdownFormField()
-
+    message = forms.CharField(widget=TinyMCE(attrs={'cols': 90, 'rows': 30, 'theme': "advanced", 'plugins': "table", 'menubar': "table",  'toolbar': "table",  'table_tab_navigation': 'true',}))
+    reason =forms.CharField(widget=TinyMCE(attrs={'cols': 90, 'rows': 30, 'theme': "advanced", 'plugins': "table", 'menubar': "table",  'toolbar': "table",  'table_tab_navigation': 'true',}))
 
 class RecipientForm(forms.Form):
     zone = ajax_select.fields.AutoCompleteSelectMultipleField('zone',

@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import django_markdown.models
 
 
 class Migration(migrations.Migration):
@@ -26,7 +25,7 @@ class Migration(migrations.Migration):
                 ('use_tls', models.BooleanField(default=True)),
                 ('use_ssl', models.BooleanField(default=False)),
                 ('default', models.BooleanField(default=False, verbose_name='use this as default profile?')),
-                ('remarks', django_markdown.models.MarkdownField(blank=True)),
+                ('remarks', models.TextField(blank=True)),
             ],
         ),
         migrations.AlterField(

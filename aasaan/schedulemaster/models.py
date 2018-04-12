@@ -6,7 +6,6 @@ from datetime import date
 
 from contacts.models import Center, Contact, Zone, Sector
 from config.models import SmartModel, Tag
-from django_markdown.models import MarkdownField
 from smart_selects.db_fields import GroupedForeignKey
 from utils.datedeux import DateDeux
 
@@ -18,7 +17,7 @@ class ActiveManager(models.Manager):
 
 class LanguageMaster(models.Model):
     name = models.CharField(max_length=50)
-    description = MarkdownField(blank=True)
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return "%s" % self.name
@@ -31,7 +30,7 @@ class LanguageMaster(models.Model):
 class BatchMaster(models.Model):
     name = models.CharField(max_length=50)
     batch_code = models.CharField(max_length=2)
-    description = MarkdownField(blank=True)
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return "%s (%s)" % (self.name, self.batch_code)
@@ -43,7 +42,7 @@ class BatchMaster(models.Model):
 
 class ProgramCategory(models.Model):
     name = models.CharField(max_length=50)
-    description = MarkdownField(blank=True)
+    description = models.TextField(blank=True)
     display = models.BooleanField(default=True)
 
     def __str__(self):
@@ -64,7 +63,7 @@ class ProgramMaster(models.Model):
     objects = models.Manager()
     active_objects = ActiveManager()
 
-    description = MarkdownField(blank=True)
+    description = models.TextField(blank=True)
 
     def __str__(self):
         return "%s" % self.name
@@ -92,7 +91,7 @@ class ProgramCountMaster(models.Model):
     objects = models.Manager()
     active_objects = ActiveManager()
 
-    notes = MarkdownField(blank=True)
+    notes = models.TextField(blank=True)
 
     def __str__(self):
         return self.count_category
@@ -370,7 +369,7 @@ class ProgramVenueAddress(models.Model):
 
 class ProgramScheduleNote(models.Model):
     program = models.ForeignKey(ProgramSchedule)
-    note = MarkdownField()
+    note = models.TextField()
     note_timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

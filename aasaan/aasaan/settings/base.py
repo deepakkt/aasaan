@@ -78,7 +78,6 @@ INSTALLED_APPS += (
 
 # third party apps
 INSTALLED_APPS += (
-    'django_markdown',
     'import_export',
     'allauth',
     'allauth.account',
@@ -188,9 +187,6 @@ MEDIA_URL = '/media/'
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 STATICFILES_DIRS = (STATIC_PATH,)
 
-# django_markdown settings
-MARKDOWN_EDITOR_SKIN = 'simple'
-MARKDOWN_SET_NAME = 'markdown'
 USE_DJANGO_JQUERY = True
 TINYMCE_DEFAULT_CONFIG = {
     'theme' : 'advanced',

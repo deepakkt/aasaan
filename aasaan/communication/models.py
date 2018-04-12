@@ -2,9 +2,8 @@ from datetime import datetime
 from hashlib import md5
 import random
 
-from django.core.exceptions import ValidationError
 from django.db import models
-from django_markdown.models import MarkdownField
+
 from .settings import COMMUNICATION_TYPES, COMMUNICATION_STATUS, \
     COMMUNICATION_CONTEXTS, RECIPIENT_VISIBILITY
 
@@ -13,7 +12,7 @@ from .settings import COMMUNICATION_TYPES, COMMUNICATION_STATUS, \
 class AbstractPayload(models.Model):
     communication_status = models.CharField(max_length=25, choices=COMMUNICATION_STATUS,
                                             default=COMMUNICATION_STATUS[0][0])
-    communication_status_message = MarkdownField(blank=True)
+    communication_status_message = models.TextField(blank=True)
 
     def _set_status(self, status):
         self.communication_status = status
@@ -48,8 +47,8 @@ class Payload(AbstractPayload):
                                              default=COMMUNICATION_CONTEXTS[0][0])
     communication_date = models.DateTimeField(auto_now_add=True)
     communication_hash = models.CharField(max_length=100, blank=True)
-    communication_notes = MarkdownField()
-    communication_message = MarkdownField()
+    communication_notes = models.TextField()
+    communication_message = models.TextField()
 
     recipient_visibility = models.CharField("recipient visibility (applies only to email profiles)",
                                             max_length=20, blank="",
@@ -122,7 +121,7 @@ class CommunicationProfile(models.Model):
     use_tls = models.BooleanField("TLS settings (email only)", default=True)
     use_ssl = models.BooleanField("SSL settings (email only)", default=False)
     default = models.BooleanField("use this as default profile?", default=False)
-    remarks = MarkdownField(blank=True)
+    remarks = models.TextField(blank=True)
 
     def __str__(self):
         return "%s (%s)" % (self.profile_name, self.communication_type)

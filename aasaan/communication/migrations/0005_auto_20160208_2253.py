@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from django.db import migrations, models
-import django_markdown.models
 
 
 class Migration(migrations.Migration):
@@ -22,7 +21,7 @@ class Migration(migrations.Migration):
                 ('from_email', models.EmailField(max_length=100, verbose_name='from email address')),
                 ('api_key', models.CharField(max_length=100)),
                 ('default', models.BooleanField(default=False, verbose_name='use this as default profile?')),
-                ('remarks', django_markdown.models.MarkdownField(blank=True)),
+                ('remarks', models.TextField(blank=True)),
             ],
         ),
         migrations.AlterField(

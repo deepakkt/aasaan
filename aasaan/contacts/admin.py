@@ -6,7 +6,6 @@ from .models import Contact, ContactNote, \
     IndividualContactRoleZone, ContactTag
 from config.models import Tag
 
-from django_markdown.admin import MarkdownModelAdmin, MarkdownInlineAdmin
 
 admin.AdminSite.site_header = "aasaan"
 admin.AdminSite.site_title = "aasaan"
@@ -15,7 +14,7 @@ admin.AdminSite.site_title = "aasaan"
 # Register your models here.
 
 
-class ContactNoteInline(MarkdownInlineAdmin, admin.TabularInline):
+class ContactNoteInline(admin.TabularInline):
     model = ContactNote
     extra = 0
 
@@ -190,7 +189,7 @@ class ContactTagFilter(admin.SimpleListFilter):
 
 
 
-class ContactAdmin(MarkdownModelAdmin):
+class ContactAdmin(admin.ModelAdmin):
     # filter contact records based on user permissions
     def get_queryset(self, request):
         qs = super(ContactAdmin, self).get_queryset(request)

@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 from django.db import migrations, models
 import django.db.models.deletion
-import django_markdown.models
+
 
 
 class Migration(migrations.Migration):
@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
             name='CenterItemNotes',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('note', django_markdown.models.MarkdownField()),
+                ('note', models.TextField()),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
                 ('center', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='contacts.Center')),
@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=50)),
                 ('model_no', models.CharField(blank=True, max_length=50)),
-                ('description', django_markdown.models.MarkdownField()),
+                ('description', models.TextField()),
             ],
             options={
                 'ordering': ['name'],
@@ -53,7 +53,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('transaction_type', models.CharField(blank=True, choices=[('IKDN', 'In-Kind Donation'), ('PURC', 'Cash Purchase'), ('LOAN', 'Loan'), ('LOCL', 'Loan Closure')], max_length=6)),
                 ('transaction_date', models.DateField(auto_now_add=True)),
-                ('description', django_markdown.models.MarkdownField()),
+                ('description', models.TextField()),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
             ],
@@ -74,7 +74,7 @@ class Migration(migrations.Migration):
             name='TransactionNotes',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('note', django_markdown.models.MarkdownField()),
+                ('note', models.TextField()),
                 ('created', models.DateTimeField(auto_now_add=True)),
                 ('modified', models.DateTimeField(auto_now=True)),
             ],
@@ -91,7 +91,7 @@ class Migration(migrations.Migration):
                 ('donor_mobile', models.CharField(blank=True, max_length=15)),
                 ('donor_email', models.EmailField(blank=True, max_length=50)),
                 ('donated_date', models.DateField(auto_now_add=True)),
-                ('donation_remarks', django_markdown.models.MarkdownField()),
+                ('donation_remarks', models.TextField()),
             ],
         ),
         migrations.CreateModel(
@@ -112,7 +112,7 @@ class Migration(migrations.Migration):
                 ('bill_date', models.DateTimeField(auto_now_add=True)),
                 ('bill_soft_copy', models.FileField(blank=True, upload_to='')),
                 ('total_cost', models.DecimalField(decimal_places=2, default=0, max_digits=9)),
-                ('payment_remarks', django_markdown.models.MarkdownField()),
+                ('payment_remarks', models.TextField()),
             ],
         ),
         migrations.AddField(

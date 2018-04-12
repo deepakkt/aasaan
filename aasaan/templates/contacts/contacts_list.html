@@ -1,5 +1,4 @@
 {% extends 'common/base_dashboard.html' %}
-{% load django_markdown %}
 
 {% block title %}List of contacts{% endblock %}
 
@@ -29,7 +28,7 @@
               <td>{{ contact.primary_mobile }}</td>
               <td>{{ contact.whatsapp_number }}</td>
               <td>{{ contact.primary_email }}</td>
-              <td>{{ contact.remarks|markdown }}</td>
+              <td>{{ contact.remarks }}</td>
             </tr>
         {% endfor %}
         </tbody>

@@ -2,7 +2,6 @@ from django.contrib import admin
 
 from .models import Payload, PayloadDetail, CommunicationProfile
 
-from django_markdown.admin import MarkdownModelAdmin
 from django.forms import ModelForm, PasswordInput
 from django.core.exceptions import ValidationError
 
@@ -29,7 +28,7 @@ class PayloadDetailAdmin(admin.TabularInline):
     extra = 1
 
 
-class PayloadAdmin(MarkdownModelAdmin):
+class PayloadAdmin(admin.ModelAdmin):
     list_display = ('communication_title', 'communication_type', 'communication_date',
                     'communication_status', 'communication_hash', 'recipient_count')
 
@@ -65,7 +64,7 @@ class PayloadAdmin(MarkdownModelAdmin):
     send_selected_messages.short_description = "Send selected message"
 
 
-class CommunicationProfileAdmin(MarkdownModelAdmin):
+class CommunicationProfileAdmin(admin.ModelAdmin):
     form = CommunicationProfileForm
 
     list_display = ('profile_name', 'user_name', 'communication_type')
