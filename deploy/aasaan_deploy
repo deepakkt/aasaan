@@ -16,7 +16,7 @@ export PYTHONPATH=$DJANGODIR:$PYTHONPATH
 python manage.py migrate
 python manage.py collectstatic --no-input
 
-cd /home/deepak/django/aasaan
+cd /home/deepak/django/aasaan/deploy
 
 cp aasaan_sync_sheets ~/.virtualenvs/aasaan/bin
 cp aasaan_hourly_cron ~/.virtualenvs/aasaan/bin
