@@ -39,7 +39,8 @@ def cert_renew():
     sudo('sudo certbot renew')
 
 
-def deploy():
+def deploy_old():
+    # deprecated. this is now centralized with the bash script
     local("git pull")
     push_to_git()
     with cd(_code_dir()):
@@ -66,12 +67,12 @@ def deploy():
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_deploy")
 
 
-def deploy_new():
+def deploy():
     local("git pull")
     push_to_git()
 
     with cd("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin"):
-        run("aasaan_deploy")
+        run("bash aasaan_deploy")
 
 
 def get_database_file(local_path="/tmp"):
