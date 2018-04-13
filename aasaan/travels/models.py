@@ -14,7 +14,7 @@ class TravelRequest(models.Model):
 
     travel_mode = models.CharField(max_length=2, choices=TRAVEL_MODE_VALUES,
                                     default=TRAVEL_MODE_VALUES[0][0])
-    zone = models.ForeignKey(Zone, verbose_name='Zone')
+    zone = models.ForeignKey(Zone, verbose_name='Zone', on_delete=models.CASCADE)
     remarks = models.CharField('Remarks', max_length=200, blank=True, null=True)
     STATUS_VALUES = (('IP', 'In-Progress'),
                           ('BK', 'Booked'),
@@ -24,7 +24,7 @@ class TravelRequest(models.Model):
     status = models.CharField(max_length=2, choices=STATUS_VALUES,
                                    default=STATUS_VALUES[0][0])
     email_sent = models.BooleanField(blank=True, default=False)
-    created_by = models.ForeignKey(User, blank=True, null=True)
+    created_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -56,8 +56,8 @@ class TravelRequest(models.Model):
 
 
 class Travellers(models.Model):
-    travel_request = models.ForeignKey(TravelRequest)
-    teacher = models.ForeignKey(Contact, blank=True, null=True)
+    travel_request = models.ForeignKey(TravelRequest, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Contact, blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.teacher.full_name

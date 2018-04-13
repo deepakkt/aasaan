@@ -79,7 +79,7 @@ class AccountTypeMaster(models.Model):
 class NPVoucherStatusMaster(models.Model):
     name = models.CharField(max_length=100, unique=True)
     active = models.BooleanField(default=True)
-    type = models.ForeignKey(AccountType)
+    type = models.ForeignKey(AccountType, on_delete=models.CASCADE)
 
     objects = models.Manager()
     active_objects = ActiveManager()
@@ -94,7 +94,7 @@ class NPVoucherStatusMaster(models.Model):
 class ExpensesTypeMaster(models.Model):
     name = models.CharField(max_length=100)
     active = models.BooleanField(default=True)
-    type = models.ForeignKey(AccountTypeMaster)
+    type = models.ForeignKey(AccountTypeMaster, on_delete=models.CASCADE)
 
     objects = models.Manager()
     active_objects = ActiveManager()
@@ -114,8 +114,8 @@ class Treasurer(models.Model):
     request_type = models.CharField(max_length=3, choices=TYPE_VALUES,
                                     default=TYPE_VALUES[0][0])
     center = GroupedForeignKey(Center, 'zone')
-    old_treasurer = models.ForeignKey(Contact, related_name="old_treasurer", blank=True, null=True)
-    new_treasurer = models.ForeignKey(Contact, related_name="new_treasurer")
+    old_treasurer = models.ForeignKey(Contact, related_name="old_treasurer", blank=True, null=True, on_delete=models.CASCADE)
+    new_treasurer = models.ForeignKey(Contact, related_name="new_treasurer", on_delete=models.CASCADE)
     ifsc_code = models.CharField("IFSCode", max_length=15)
     bank_name = models.CharField("Bank Name", max_length=100)
     branch_name = models.CharField("Branch Name", max_length=100)
@@ -131,19 +131,19 @@ class Treasurer(models.Model):
 
 
 class RCOAccountsMaster(SmartModel):
-    account_type = models.ForeignKey(AccountTypeMaster, default=1, verbose_name='Account Type')
-    entity_name = models.ForeignKey(EntityMaster, default=1, verbose_name='Entity')
-    zone = models.ForeignKey(Zone, verbose_name='Zone')
-    teacher = models.ForeignKey(Contact, blank=True, null=True)
+    account_type = models.ForeignKey(AccountTypeMaster, default=1, verbose_name='Account Type', on_delete=models.CASCADE)
+    entity_name = models.ForeignKey(EntityMaster, default=1, verbose_name='Entity', on_delete=models.CASCADE)
+    zone = models.ForeignKey(Zone, verbose_name='Zone', on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Contact, blank=True, null=True, on_delete=models.CASCADE)
     budget_code = models.CharField(max_length=100, blank=True)
-    program_type = models.ForeignKey(ProgramMaster, blank=True, null=True, verbose_name='Program Type',)
-    program_schedule = models.ForeignKey(ProgramSchedule, blank=True, null=True)
+    program_type = models.ForeignKey(ProgramMaster, blank=True, null=True, verbose_name='Program Type', on_delete=models.CASCADE)
+    program_schedule = models.ForeignKey(ProgramSchedule, blank=True, null=True, on_delete=models.CASCADE)
     voucher_date = models.DateField(_("Voucher Date"), default=datetime.date.today)
     approval_sent_date = models.DateField('Approval request Date', blank=True, null=True)
     approved_date = models.DateField(blank=True, null=True)
-    np_voucher_status = GroupedForeignKey(NPVoucherStatusMaster, 'type', blank=True, null=True, verbose_name='NP Voucher Status')
+    np_voucher_status = GroupedForeignKey(NPVoucherStatusMaster, 'type', blank=True, null=True, verbose_name='NP Voucher Status', on_delete=models.CASCADE)
     finance_submission_date = models.DateField(blank=True, null=True)
-    rco_voucher_status = models.ForeignKey(RCOVoucherStatusMaster, default=1, verbose_name='RCO Voucher Status')
+    rco_voucher_status = models.ForeignKey(RCOVoucherStatusMaster, default=1, verbose_name='RCO Voucher Status', on_delete=models.CASCADE)
     movement_sheet_no = models.CharField(max_length=100, blank=True)
     email_sent = models.BooleanField(blank=True, default=False)
 
@@ -228,7 +228,7 @@ class RCOAccountsMaster(SmartModel):
 
 
 class VoucherDetails(SmartModel):
-    accounts_master = models.ForeignKey(RCOAccountsMaster)
+    accounts_master = models.ForeignKey(RCOAccountsMaster, on_delete=models.CASCADE)
     tracking_no = models.CharField(max_length=100, blank=True)
     VOUCHER_TYPE_VALUES = (('BV', 'Bank Voucher'),
                      ('CV', 'Cash Voucher'),
@@ -236,8 +236,8 @@ class VoucherDetails(SmartModel):
 
     voucher_type = models.CharField(max_length=2, choices=VOUCHER_TYPE_VALUES,
                               default=VOUCHER_TYPE_VALUES[0][0])
-    nature_of_voucher = models.ForeignKey(VoucherMaster, default=1)
-    head_of_expenses = GroupedForeignKey(ExpensesTypeMaster, 'type', blank=True, null=True, verbose_name='Head of Expenses')
+    nature_of_voucher = models.ForeignKey(VoucherMaster, default=1, on_delete=models.CASCADE)
+    head_of_expenses = GroupedForeignKey(ExpensesTypeMaster, 'type', blank=True, null=True, verbose_name='Head of Expenses', on_delete=models.CASCADE)
     expenses_description = models.CharField(max_length=100, blank=True)
     party_name = models.CharField(max_length=100, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
@@ -294,7 +294,7 @@ class NPAccountsMaster(RCOAccountsMaster):
 
 
 class CourierDetails(models.Model):
-    accounts_master = models.ForeignKey(RCOAccountsMaster)
+    accounts_master = models.ForeignKey(RCOAccountsMaster, on_delete=models.CASCADE)
     agency = models.CharField(max_length=100, null=True, blank=True)
     tracking_number = models.CharField(max_length=100, null=True, blank=True)
     sent_date = models.DateField(null=True, blank=True)
@@ -308,7 +308,7 @@ class CourierDetails(models.Model):
 
 
 class TransactionNotes(models.Model):
-    accounts_master = models.ForeignKey(RCOAccountsMaster)
+    accounts_master = models.ForeignKey(RCOAccountsMaster, on_delete=models.CASCADE)
     note = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     created_by = models.CharField(max_length=100, null=True, blank=True)

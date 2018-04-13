@@ -1,5 +1,5 @@
-from django.conf.urls import patterns, url
+from django.urls import include, path
 from . import views
 
-urlpatterns = patterns('',
-                       url(r'^list/([0-9]+)/$', views.display_single_schedule, name='display_single_schedule'),)
+app_name = 'schedules'
+urlpatterns = [path('list/([0-9]+)/', views.display_single_schedule, name='display_single_schedule'),]

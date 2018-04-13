@@ -228,7 +228,7 @@ class Contact(SmartModel):
 
 class ContactNote(models.Model):
     """Notes about the contact"""
-    contact = models.ForeignKey(Contact)
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
     note_type = models.CharField(max_length=2, choices=NOTE_TYPE_VALUES,
                                  default=NOTE_TYPE_VALUES[0][0])
     note = models.TextField(max_length=500)
@@ -244,7 +244,7 @@ class ContactNote(models.Model):
 class ContactAddress(models.Model):
     """Addresses of contacts"""
 
-    contact = models.ForeignKey(Contact)
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
     address_type = models.CharField("address Type", max_length=2, choices=ADDRESS_TYPE_VALUES)
 
     address_line_1 = models.CharField(max_length=100)
@@ -310,8 +310,8 @@ class ContactAddress(models.Model):
 
 
 class ContactTag(models.Model):
-    contact= models.ForeignKey(Contact)
-    tag = models.ForeignKey(Tag)
+    contact= models.ForeignKey(Contact, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ['contact', 'tag']
@@ -349,8 +349,8 @@ class RoleGroup(models.Model):
 
 class ContactRoleGroup(models.Model):
     """Mapping of roles and contacts"""
-    contact = models.ForeignKey(Contact)
-    role = models.ForeignKey(RoleGroup)
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
+    role = models.ForeignKey(RoleGroup, on_delete=models.CASCADE)
 
     def __str__(self):
         return "%s (%s)" %(self.contact.full_name, self.role.role_name)
@@ -385,7 +385,7 @@ class Zone(models.Model):
 
 class Sector(models.Model):
     """Sector definitions. All sectors should be mapped to a zone"""
-    zone = models.ForeignKey(Zone)
+    zone = models.ForeignKey(Zone, on_delete=models.CASCADE)
     sector_name = models.CharField(max_length=50)
 
     def __str__(self):
@@ -399,13 +399,13 @@ class PreCenterManager(models.Manager):
 
 class Center(models.Model):
     """Center definitions. All centers should be mapped to sectors and zones"""
-    zone = models.ForeignKey(Zone)
+    zone = models.ForeignKey(Zone, on_delete=models.CASCADE)
     center_name = models.CharField(max_length=50)
     city = models.CharField(max_length=50, blank=True)
     center_category = models.CharField(max_length=1, choices=CENTER_CATEGORY_VALUES,
                                        default=CENTER_CATEGORY_VALUES[0][0])
     pre_center = models.BooleanField(default=False)
-    parent_center = models.ForeignKey('self', null=True, blank=True)
+    parent_center = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE)
 
     latitude = models.CharField(max_length=15, blank=True)
     longitude = models.CharField(max_length=15, blank=True)
@@ -481,9 +481,9 @@ class IndividualContactRoleCenter(models.Model):
     """ Maps individual contacts to individual roles.
     They always need to be mapped to a center
     """
-    contact = models.ForeignKey(Contact)
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
     center = GroupedForeignKey(Center, 'zone')
-    role = models.ForeignKey(IndividualRole)
+    role = models.ForeignKey(IndividualRole, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['contact', 'role', 'center']
@@ -511,9 +511,9 @@ class IndividualContactRoleZone(models.Model):
     """ Maps individual contacts to individual roles.
     They always need to be mapped to a center
     """
-    contact = models.ForeignKey(Contact)
-    zone = models.ForeignKey(Zone)
-    role = models.ForeignKey(IndividualRole)
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
+    zone = models.ForeignKey(Zone, on_delete=models.CASCADE)
+    role = models.ForeignKey(IndividualRole, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['contact', 'role', 'zone']
@@ -541,9 +541,9 @@ class IndividualContactRoleSector(models.Model):
     """ Maps individual contacts to individual roles.
     They always need to be mapped to a center
     """
-    contact = models.ForeignKey(Contact)
-    sector = models.ForeignKey(Sector)
-    role = models.ForeignKey(IndividualRole)
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE)
+    sector = models.ForeignKey(Sector, on_delete=models.CASCADE)
+    role = models.ForeignKey(IndividualRole, on_delete=models.CASCADE)
 
     class Meta:
         ordering = ['contact', 'role', 'sector']

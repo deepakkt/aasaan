@@ -74,8 +74,8 @@ class ProgramMaster(models.Model):
 
 
 class ProgramMasterCategory(models.Model):
-    program = models.ForeignKey(ProgramMaster)
-    category = models.ForeignKey(ProgramCategory)
+    program = models.ForeignKey(ProgramMaster, on_delete=models.CASCADE)
+    category = models.ForeignKey(ProgramCategory, on_delete=models.CASCADE)
 
     def __str__(self):
         return "%s - %s" % (self.program, self.category)
@@ -102,7 +102,7 @@ class ProgramCountMaster(models.Model):
 
 
 class ProgramSchedule(SmartModel):
-    program = models.ForeignKey(ProgramMaster)
+    program = models.ForeignKey(ProgramMaster, on_delete=models.CASCADE)
     event_name = models.CharField(max_length=100, blank=True)
 
     center = GroupedForeignKey(Center, 'zone')
@@ -116,7 +116,7 @@ class ProgramSchedule(SmartModel):
     gender = models.CharField(max_length=2, choices=GENDER_VALUES,
                               default=GENDER_VALUES[0][0])
 
-    primary_language = models.ForeignKey(LanguageMaster)
+    primary_language = models.ForeignKey(LanguageMaster, on_delete=models.CASCADE)
 
     start_date = models.DateField(verbose_name='Program Start Date')
     end_date = models.DateField(verbose_name='Program End Date')
@@ -288,15 +288,15 @@ class ProgramSchedule(SmartModel):
         self.reset_changed_values()
 
 class ProgramAdditionalLanguages(models.Model):
-    program = models.ForeignKey(ProgramSchedule)
-    language = models.ForeignKey(LanguageMaster)
+    program = models.ForeignKey(ProgramSchedule, on_delete=models.CASCADE)
+    language = models.ForeignKey(LanguageMaster, on_delete=models.CASCADE)
 
     def __str__(self):
         return "%s - %s" % (self.program, self.language)
 
 
 class ProgramVenueAddress(models.Model):
-    program = models.ForeignKey(ProgramSchedule)
+    program = models.ForeignKey(ProgramSchedule, on_delete=models.CASCADE)
     venue_name = models.CharField(max_length=100)
     address_line_1 = models.CharField(max_length=100)
     address_line_2 = models.CharField(max_length=100)
@@ -368,7 +368,7 @@ class ProgramVenueAddress(models.Model):
 
 
 class ProgramScheduleNote(models.Model):
-    program = models.ForeignKey(ProgramSchedule)
+    program = models.ForeignKey(ProgramSchedule, on_delete=models.CASCADE)
     note = models.TextField()
     note_timestamp = models.DateTimeField(auto_now_add=True)
 
@@ -382,7 +382,7 @@ class ProgramScheduleNote(models.Model):
 
 
 class ProgramTeacher(models.Model):
-    program = models.ForeignKey(ProgramSchedule)
+    program = models.ForeignKey(ProgramSchedule, on_delete=models.CASCADE)
 
     TEACHER_VALUES = (('MO', 'Morning'),
                       ('NO', 'Noon'),
@@ -399,7 +399,7 @@ class ProgramTeacher(models.Model):
 
     teacher = models.ForeignKey(Contact,
                                     null=True,
-                                    blank=True)
+                                    blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return '%s - %s' % (self.program, self.teacher)
@@ -411,8 +411,8 @@ class ProgramTeacher(models.Model):
 
 
 class ProgramBatch(models.Model):
-    program = models.ForeignKey(ProgramSchedule)
-    batch = models.ForeignKey(BatchMaster)
+    program = models.ForeignKey(ProgramSchedule, on_delete=models.CASCADE)
+    batch = models.ForeignKey(BatchMaster, on_delete=models.CASCADE)
     start_time = models.CharField(max_length=10, blank=True)
     end_time = models.CharField(max_length=10, blank=True)
 
@@ -424,8 +424,8 @@ class ProgramBatch(models.Model):
 
 
 class ProgramScheduleCounts(models.Model):
-    program = models.ForeignKey(ProgramSchedule)
-    category = models.ForeignKey(ProgramCountMaster)
+    program = models.ForeignKey(ProgramSchedule, on_delete=models.CASCADE)
+    category = models.ForeignKey(ProgramCountMaster, on_delete=models.CASCADE)
     value = models.IntegerField(default=0)
 
     def __str__(self):
@@ -438,8 +438,8 @@ class ProgramScheduleCounts(models.Model):
 
 
 class ProgramReceiptAmounts(models.Model):
-    program = models.ForeignKey(ProgramSchedule)
-    category = models.ForeignKey(ProgramCountMaster)
+    program = models.ForeignKey(ProgramSchedule, on_delete=models.CASCADE)
+    category = models.ForeignKey(ProgramCountMaster, on_delete=models.CASCADE)
     receipt_count = models.IntegerField(default=0)
     receipt_amount = models.DecimalField(max_digits=9, decimal_places=2)
 
@@ -453,7 +453,7 @@ class ProgramReceiptAmounts(models.Model):
 
 
 class ProgramAdditionalInformation(models.Model):
-    program = models.ForeignKey(ProgramSchedule)
+    program = models.ForeignKey(ProgramSchedule, on_delete=models.CASCADE)
     key = models.CharField('title', max_length=50)
     value = models.TextField('information')
 
@@ -465,8 +465,8 @@ class ProgramAdditionalInformation(models.Model):
 
 
 class ProgramTag(models.Model):
-    program = models.ForeignKey(ProgramSchedule)
-    tag = models.ForeignKey(Tag)
+    program = models.ForeignKey(ProgramSchedule, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
     def __str__(self):
         return '%s - %s' % (self.program, self.tag)

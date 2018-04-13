@@ -1,7 +1,7 @@
-from django.conf.urls import patterns, url
+from django.urls import include, path
 from travels import views
 
-urlpatterns = patterns('',
-                       url(r'^compose_email', views.send_email, name='compose_email'),
-                       url(r'^sendApprovalMessage', views.SendEmailView.as_view(), name='ipcaccounts')
-                       )
+app_name = 'travels'
+urlpatterns = [path('compose_email', views.send_email, name='compose_email'),
+               path('send_email', views.SendEmailView.as_view(), name='send_email'),
+             ]
