@@ -15,7 +15,7 @@ from .settings import GENDER_VALUES, STATUS_VALUES, ID_PROOF_VALUES,\
 from config.models import SmartModel, Tag
 from smart_selects.db_fields import GroupedForeignKey
 from PIL import Image
-
+from django.utils.html import format_html
 
 def _generate_profile_path(instance, filename):
     image_extension = os.path.splitext(filename)[-1]
@@ -70,12 +70,12 @@ class Contact(SmartModel):
             image_url = "%s/%s" %(settings.MEDIA_URL, self.profile_picture)
             image_html = '<img src="%s" %s/>' % (image_url, image_style)
             image_hyperlink = '<a href="%s">%s</a>' %(image_url, image_html)
-            return image_hyperlink
+            return format_html(image_hyperlink)
         else:
             no_picture = "profile_pictures/no-photo.jpg"
             image_url = "%s/%s" %(settings.MEDIA_URL, no_picture)
             image_html = '<img src="%s" %s/>' % (image_url, image_style)
-            return image_html
+            return format_html(image_html)
 
     profile_image.short_description = "Profile picture"
     profile_image.allow_tags = True
@@ -86,9 +86,9 @@ class Contact(SmartModel):
             image_url = "%s/%s" %(settings.MEDIA_URL, self.profile_picture)
             image_html = '<img src="%s" %s/>' % (image_url, image_style)
             image_hyperlink = '<a href="%s">%s</a>' %(image_url, image_html)
-            return image_hyperlink
+            return format_html(image_hyperlink)
         else:
-            return "<strong>No profile picture available</strong>"
+            return format_html("<strong>No profile picture available</strong>")
 
     profile_image_display.short_description = "Profile picture"
     profile_image_display.allow_tags = True

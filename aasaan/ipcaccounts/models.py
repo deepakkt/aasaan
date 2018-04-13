@@ -8,7 +8,7 @@ from smart_selects.db_fields import GroupedForeignKey
 import datetime
 from django.utils.translation import gettext as _
 from django.utils import formats
-
+from django.utils.html import format_html
 
 class ActiveManager(models.Manager):
     def get_queryset(self):
@@ -170,11 +170,11 @@ class RCOAccountsMaster(SmartModel):
 
     def is_cancelled(self):
         if self.rco_voucher_status.name == "Cancelled":
-            return "<span style='color : red;'>&#10006;</span>"
+            return format_html("<span style='color : red;'>&#10006;</span>")
         if self.np_voucher_status and self.np_voucher_status.name == "Voucher Processed":
-            return "<span style='color : green;'>&#10004;</span>"
+            return format_html("<span style='color : green;'>&#10004;</span>")
 
-        return "<span style='color : black;'>&#9940;</span>"
+        return format_html("<span style='color : black;'>&#9940;</span>")
 
     is_cancelled.allow_tags = True
     is_cancelled.short_description = " "

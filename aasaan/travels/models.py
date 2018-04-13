@@ -2,7 +2,7 @@ from django.db import models
 from contacts.models import Contact, Zone
 from django.contrib.auth.models import User
 import datetime
-
+from django.utils.html import format_html
 
 class TravelRequest(models.Model):
     source = models.CharField('From', max_length=100,default='')
@@ -32,11 +32,11 @@ class TravelRequest(models.Model):
 
     def status_flag(self):
         if self.status == "CL":
-            return "<span style='color : red;'>&#10006;</span>"
+            return format_html("<span style='color : red;'>&#10006;</span>")
         if self.status == "PD":
-            return "<span style='color : green;'>&#10004;</span>"
+            return format_html("<span style='color : green;'>&#10004;</span>")
 
-        return "<span style='color : black;'>&#9940;</span>"
+        return format_html("<span style='color : black;'>&#9940;</span>")
 
     status_flag.allow_tags = True
     status_flag.short_description = " "
