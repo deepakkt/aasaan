@@ -17,6 +17,8 @@ class Command(BaseCommand):
         for commit in MasterDeploy.objects.filter(deploy_status='ST'):
             print(commit.commit_title)
 
+            failed = False
+
             try:
                 commit_result = subprocess.check_output(["/home/deepak/django/aasaan/.virtualenvs/aasaan/bin/aasaan_deploy"])
             except subprocess.CalledProcessError:
