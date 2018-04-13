@@ -32,6 +32,6 @@ chmod +x ~/.virtualenvs/aasaan/bin/aasaan_backup_db
 chmod +x ~/.virtualenvs/aasaan/bin/aasaan_backup_metabase
 chmod +x ~/.virtualenvs/aasaan/bin/aasaan_deploy
 
-restart_aasaan
+sudo restart_aasaan
 
 
