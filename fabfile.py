@@ -65,6 +65,15 @@ def deploy():
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_backup_metabase")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_deploy")
 
+
+def deploy_new():
+    local("git pull")
+    push_to_git()
+
+    with cd("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin"):
+        run("aasaan_deploy")
+
+
 def get_database_file(local_path="/tmp"):
     with cd("/home/deepak/dropbox/aasaan/database-backups"):
         dbfile = run("ls -1t | head -1")

@@ -107,3 +107,15 @@ class AdminQuery(models.Model):
     query_result = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     executed = models.DateTimeField(null=True)
+
+
+class MasterDeploy(models.Model):
+    deploy_status = models.CharField(max_length=2, choices=(('ST', 'Staged'),
+                                                            ('CO', 'Completed'),
+                                                            ('FA', 'Failed')),
+                                    default='ST')
+    commit_title = models.CharField(max_length=50)                                    
+    deploy_result = models.TextField(blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    executed = models.DateTimeField(null=True)
+    

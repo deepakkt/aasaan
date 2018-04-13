@@ -12,3 +12,4 @@ export DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
 export PYTHONPATH=$DJANGODIR:$PYTHONPATH
 
 python manage.py run_admin_queries
+python manage.py deploy_master_changes
