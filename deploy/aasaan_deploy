@@ -25,12 +25,14 @@ cp aasaan_backup_db ~/.virtualenvs/aasaan/bin
 cp aasaan_backup_metabase ~/.virtualenvs/aasaan/bin
 cp database_backup_clean.py ~/.virtualenvs/aasaan/bin
 cp aasaan_deploy ~/.virtualenvs/aasaan/bin
+cp gunicorn_start ~/.virtualenvs/aasaan/bin
 chmod +x ~/.virtualenvs/aasaan/bin/aasaan_sync_sheets
 chmod +x ~/.virtualenvs/aasaan/bin/aasaan_hourly_cron
 chmod +x ~/.virtualenvs/aasaan/bin/aasaan_worker_start
 chmod +x ~/.virtualenvs/aasaan/bin/aasaan_backup_db
 chmod +x ~/.virtualenvs/aasaan/bin/aasaan_backup_metabase
 chmod +x ~/.virtualenvs/aasaan/bin/aasaan_deploy
+chmod +x ~/.virtualenvs/aasaan/bin/gunicorn_start
 
 sudo restart_aasaan
 
