@@ -11,9 +11,9 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('contacts/', include(contacts.urls, namespace='contacts'), name='contacts'),
-    path('ipcaccounts/', include(ipcaccounts.urls, namespace='ipcaccounts'), name='ipcaccounts'),
+    path('admin/ipcaccounts/', include(ipcaccounts.urls, namespace='ipcaccounts'), name='ipcaccounts'),
     path('schedules/', include(schedulemaster.urls, namespace='schedules'), name='schedules'),
-    path('travels/', include(travels.urls, namespace='travels'), name='travels'),
+    path('admin/travels/', include(travels.urls, namespace='travels'), name='travels'),
     url('tinymce/', include('tinymce.urls')),
     url('accounts/', include('allauth.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
