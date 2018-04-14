@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles'
+    'django.contrib.staticfiles',
+    'django.contrib.sites',
 ]
 # apps built for this application
 INSTALLED_APPS += [
@@ -53,9 +54,13 @@ INSTALLED_APPS += [
     'ashramvisit',
     'travels'
 ]
-
+SITE_ID = 1
 # third party apps
 INSTALLED_APPS += [
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
     'tinymce',
     'daterange_filter',
 ]
@@ -68,10 +73,29 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'AasaanUser.util.RequestMiddleware',
 ]
 
 ROOT_URLCONF = 'aasaan.urls'
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend'
+]
+
+LOGIN_REDIRECT_URL = '/admin/'
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_PROVIDERS = {
+    'google':
+        {'SCOPE': ['profile', 'email'],
+         'AUTH_PARAMS': {'access_type': 'online'}},
+
+    'facebook': {
+        'SCOPE': ['email', 'publish_stream'],
+        'METHOD': 'js_sdk'  # instead of 'oauth2'
+    },
+}
+SOCIALACCOUNT_ADAPTER = 'AasaanUser.social_login.SocialAccountAdapter'
 
 TEMPLATES = [
     {
