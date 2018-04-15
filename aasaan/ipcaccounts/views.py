@@ -31,9 +31,10 @@ def get_budget_code(request):
         budget_code = prefix+'-'+program_schedule.center.center_name+'-'+program_master.abbreviation+ '-'+formatted_start_date + ' ('+program_id+')'
         return JsonResponse(budget_code, safe=False)
 
-@login_required
-def compose_email(request):
-    if request.method == 'GET':
+
+class ComposeEmailView(LoginRequiredMixin, TemplateView):
+    def get(self, request, *args, **kwargs):
+
         account_id = request.GET['account_id']
         account_master = RCOAccountsMaster.objects.get(id=account_id)
         if account_master.account_type.name == 'Class Accounts':
@@ -69,7 +70,7 @@ def compose_email(request):
         message_body = message_body.replace('SENDER_SIGNATURE', accounts_incharge)
         form = MessageForm(
             initial={'sender':sender, 'to':approvar, 'cc':cc, 'bcc':bcc, 'subject': subject, 'message': message_body, 'account_id' : account_id})
-    return render(request, 'ipcaccounts/mailer.html', {'form': form})
+        return render(request, 'ipcaccounts/mailer.html', {'form': form})
 
 
 def add_voucher_details(account_master, voucher_details):

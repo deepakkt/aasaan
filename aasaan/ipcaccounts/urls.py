@@ -2,7 +2,7 @@ from django.urls import include, path
 from ipcaccounts import views
 app_name = 'ipcaccounts'
 urlpatterns = [path('get_budget_code', views.get_budget_code, name='get_budget_code'),
-               path('compose_email', views.compose_email, name='compose_email'),
+               path('compose_email', views.ComposeEmailView.as_view(), name='compose_email'),
                path('sendApprovalMessage', views.SendEmailView.as_view(), name='ipcaccounts'),
                path('treasurer_report', views.TreasurerSummaryDashboard.as_view(), name='treasurer_report'),
                path('treasurer_refresh', views.treasurer_refresh, name='treasurer_refresh'),

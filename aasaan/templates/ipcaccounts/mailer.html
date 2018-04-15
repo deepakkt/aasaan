@@ -9,7 +9,11 @@
 {% block extrahead %}{{ block.super }}
 <script>
 window.onload = function(e){
-    document.getElementById("id_sender").disabled = true
+    document.getElementById("id_sender").disabled = true;
+    console.log('asdjkj andskjan kajsd')
+    tinyMCE.init({
+     width : "640"
+    });
 
 }
 function myFunction() {
@@ -32,5 +36,5 @@ function myFunction() {
 </form>
 {% endblock %}
 
-{% load admin_static %}{% load firstof from future %}<!DOCTYPE html>
+
 

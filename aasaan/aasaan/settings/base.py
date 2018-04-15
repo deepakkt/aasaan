@@ -24,8 +24,6 @@ STATICFILES_DIRS = (STATIC_PATH,)
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '_*gk(b!c6eo#gkch2iw(1#j+bm)9-5=%y1y+&j5vwu2p_je1^j'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -76,6 +74,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'aasaan.urls'
+ASYNC = False
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -157,7 +156,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
@@ -169,4 +168,32 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
-STATIC_URL = '/static/'
+TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
+STATICFILES_DIRS = (STATIC_PATH,)
+
+
+USE_DJANGO_JQUERY = True
+TINYMCE_DEFAULT_CONFIG = {
+    'theme' : 'advanced',
+    'width': "840",
+    'height': "400",
+     'theme_advanced_buttons1' : "save,newdocument,|,bold,italic,underline,strikethrough,|,justifyleft,justifycenter,justifyright,justifyfull,|,styleselect,formatselect,fontselect,fontsizeselect",
+     'theme_advanced_buttons2' : "cut,copy,paste,pastetext,pasteword,|,search,replace,|,bullist,numlist,|,outdent,indent,blockquote,|,undo,redo,|,link,unlink,anchor,image,cleanup,help,code,|,insertdate,inserttime,preview,|,forecolor,backcolor",
+     'theme_advanced_buttons3' : "tablecontrols,|,hr,removeformat,visualaid,|,sub,sup,|,charmap,emotions,iespell,media,advhr,|,print,|,ltr,rtl,|,fullscreen",
+    'theme_advanced_toolbar_location' : 'top',
+    'theme_advanced_toolbar_align': 'left',
+    'paste_text_sticky': True,
+    'paste_text_sticky_default' : True,
+    'valid_styles' : 'font-weight,font-style,text-decoration',
+   'plugins': "table,spellchecker,paste,searchreplace",
+    'menubar': "table",
+    'toolbar': "table",
+    'table_tab_navigation': 'false',
+    'cleanup_on_startup': True,
+    'custom_undo_redo_levels': 10,
+    'skin' : "default",
+    'nowrap' : 'false',
+    'overflow': 'scroll',
+}
+TINYMCE_JS_ROOT = MEDIA_ROOT + '/js/'
+TINYMCE_JS_URL = STATIC_URL + '/tiny_mce/tiny_mce.js'
