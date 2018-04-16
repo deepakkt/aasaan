@@ -19,7 +19,7 @@ export PYTHONPATH=$DJANGODIR:$PYTHONPATH
 # the below is a temporary query written to clean off orphan entries in the schedulemaster_programteacher
 # table. it interferes with enrollments sync. until a permenant fix is done
 # Deepak - 6-Jan-2017, Saturday
-echo "delete from schedulemaster_programteacher where teacher_id is null" | psql
+docker exec -it aasaan_db psql -U aasaan -c "delete from schedulemaster_programteacher where teacher_id is null"
 
 python manage.py create_ors_programs
 python manage.py create_joomla_programs
@@ -29,10 +29,8 @@ python manage.py sync_joomla_counts
 python manage.py sync_ereceipts
 python manage.py sync_ereceipt_amounts
 
-psql -f /home/deepak/django/aasaan/sql/refresh_irc_dashboard.sql
-psql -f /home/deepak/django/aasaan/sql/statistics_dashboard.sql
-echo "REFRESH MATERIALIZED VIEW SCHEDULE_SNAPSHOT" | psql
-echo "VACUUM FULL VERBOSE ANALYZE" | psql
+docker exec -it aasaan_db psql -U aasaan -c "REFRESH MATERIALIZED VIEW SCHEDULE_SNAPSHOT"
+docker exec -it aasaan_db psql -U aasaan -c "VACUUM FULL VERBOSE ANALYZE"
 
 # run dropbox for 10 minutes so everything is synced
 docker start dropbox
