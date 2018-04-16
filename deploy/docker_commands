@@ -1,2 +1,4 @@
 docker run --name aasaan_db -e POSTGRES_USER=aasaan -e POSTGRES_PASSWORD=<password> -v /home/deepak/django/aasaan/database:/var/lib/postgresql/data -p 5432:5432 -d postgres:9.6
 docker run --name aasaan_redis -p 6379:6379 -d redis:3.2.11
+docker run -d -p 3000:3000 --name metabase --add-host=docker:172.17.0.1 -e "MB_DB_TYPE=postgres" -e "MB_DB_NAME=metabase" -e "MB_DB_PORT=5432" -e "MB_DB_USER=aasaan" -e "MB_DB_PASS=<password>" -e "MB_DB_HOST=172.17.0.2" metabase/metabase
+
