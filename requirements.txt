@@ -2,6 +2,7 @@ amqp==1.4.9
 anyjson==0.3.3
 appdirs==1.4.2
 asn1crypto==0.24.0
+beautifulsoup4==4.6.0
 billiard==3.3.0.23
 celery==3.1.23
 cffi==1.11.5
@@ -53,6 +54,7 @@ pytz==2016.3
 redis==2.10.5
 requests==2.14.2
 requests-oauthlib==0.6.0
+requests-toolbelt==0.8.0
 rq==0.10.0
 rsa==3.2.3
 sendgrid==1.6.20
