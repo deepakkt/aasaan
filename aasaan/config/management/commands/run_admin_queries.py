@@ -2,8 +2,11 @@
 
 from datetime import datetime
 import subprocess
+import os
 
 from django.core.management.base import BaseCommand
+from django.conf import settings
+
 from config.models import AdminQuery
 
 
@@ -14,6 +17,9 @@ class Command(BaseCommand):
     print("starting query admin")
 
     def handle(self, *args, **options):
+        # set postgres password for non interactive execution
+        os.environ['PGPASSWORD'] = settings.DB_PASSWORD
+
         for queries in AdminQuery.objects.filter(query_status='AP'):
             query = queries.query
             print(query)
@@ -27,7 +33,7 @@ class Command(BaseCommand):
                 result += "\n"
 
                 try:
-                    query_result = subprocess.check_output(['psql', '-c', each_query])
+                    query_result = subprocess.check_output(["psql", "-h", "localhost", "-U", "aasaan", "-c", each_query])
                     result += query_result.decode("utf-8")
                     result += "\n"
                 except subprocess.CalledProcessError:
