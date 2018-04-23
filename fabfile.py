@@ -103,6 +103,7 @@ def refresh_dashboards():
 
 def backup_db():
     run("source /home/deepak/django/aasaan/.virtualenvs/aasaan/bin/aasaan_backup_db")
+    run("ls -l /home/deepak/dropbox/aasaan/database-backups")
 
 def joomla_history_sync():
     with cd(os.path.join(_code_dir(), 'aasaan')):
