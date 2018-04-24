@@ -8,7 +8,7 @@ from contacts.models import Center, Contact, Zone, Sector
 from config.models import SmartModel, Tag
 from smart_selects.db_fields import GroupedForeignKey
 from utils.datedeux import DateDeux
-
+from django.utils.html import format_html
 
 class ActiveManager(models.Manager):
     def get_queryset(self):
@@ -177,14 +177,14 @@ class ProgramSchedule(SmartModel):
 
     def _cancelled(self, field_value):
         if self.get_status_display() == "Cancelled":
-            return "<span style='background-color: rgb(222, 186, 99);'>%s</span>" % field_value
+            return format_html("<span style='background-color: rgb(222, 186, 99);'>%s</span>" % field_value)
         else:
             return field_value
 
     def is_cancelled(self):
-        return "<span style='color : red;'>&#10006;</span>" \
+        return format_html("<span style='color : red;'>&#10006;</span>" )\
             if self.get_status_display() == "Cancelled" \
-            else "<span style='color : green;'>&#10004;</span>"
+            else format_html("<span style='color : green;'>&#10004;</span>")
     is_cancelled.allow_tags = True
     is_cancelled.short_description = " "
 
