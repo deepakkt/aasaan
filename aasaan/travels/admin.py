@@ -13,6 +13,7 @@ import json
 from config.models import Configuration, SmartModel
 from django.http import HttpResponse, HttpResponseNotFound, Http404,  HttpResponseRedirect
 
+
 class TravelRequestAdmin(admin.ModelAdmin):
     form = TravelRequestForm
     list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'email_sent')
@@ -31,7 +32,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
 
         }),
         ('Booking details', {
-            'fields': ('invoice_no', 'amount', 'attachments'),
+            'fields': ('invoice_no', 'amount', 'attachments', 'invoice'),
             'classes': ('collapse', 'open')
         }),
     )
@@ -42,7 +43,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
         rc.account_type = AccountTypeMaster.objects.get(id=3)
         amount = 0
         for tr in list(queryset):
-            if tr.status=='VC' or tr.status=='CL' or tr.status=='PD':
+            if tr.status=='VC' or tr.status=='CL' or tr.status=='PD' or tr.statur=='IP':
                 self.message_user(request, "Voucher already created or processed", level=messages.WARNING)
                 return
             rc.zone = tr.zone
@@ -81,6 +82,11 @@ class TravelRequestAdmin(admin.ModelAdmin):
         return HttpResponseRedirect('/admin/ipcaccounts/rcoaccountsmaster/'+str(rc.id)+'/change/')
 
     create_voucher.short_description = "Create Vouchers"
+
+    def email_ticket_passanger(self, request, queryset):
+        pass
+
+    email_ticket_passanger.short_description = "Email ticket to Teacher"
 
     def make_email(self, request, queryset):
         pass
@@ -121,7 +127,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
 
     view_passanger_details.short_description = "View Passanger Details"
 
-    actions = [make_email, view_passanger_details, create_voucher]
+    actions = [make_email, view_passanger_details, create_voucher, email_ticket_passanger]
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
 

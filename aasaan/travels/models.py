@@ -29,6 +29,7 @@ class TravelRequest(models.Model):
     invoice_no = models.CharField(max_length=200, blank=True, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
     attachments = models.FileField(upload_to='documents/%Y/%m/%d/', null=True, blank=True)
+    invoice = models.FileField(upload_to='invoice/%Y/%m/%d/', null=True, blank=True)
     created_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)

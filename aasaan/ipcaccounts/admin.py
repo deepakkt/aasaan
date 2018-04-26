@@ -206,7 +206,7 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
     list_display = ('is_cancelled', '__str__', 'rco_voucher_status', 'approved_date', 'email_sent', 'np_voucher_status')
     list_filter = (('program_schedule__start_date', DateRangeFilter),('program_schedule__program', RelatedDropdownFilter),  ('account_type', RelatedDropdownFilter), ('rco_voucher_status', RelatedDropdownFilter), ('np_voucher_status',RelatedDropdownFilter), ('zone',RelatedDropdownFilter),('entity_name', RelatedDropdownFilter), 'email_sent')
 
-    search_fields = ('program_schedule__program__name', )
+    search_fields = ('program_schedule__program__name', 'voucherdetails__tracking_no', 'voucherdetails__party_name')
 
     list_display_links = ['__str__']
 
