@@ -4,11 +4,55 @@ import json
 from config.management.commands.notify_utils import dispatch_notification, setup_sendgrid_connection
 from django.utils import formats
 from django.conf import settings
-from .models import TravelRequest, Travellers
+from .models import TravelRequest
 from ipcaccounts.forms import MessageForm
 from datetime import date, timedelta
 from django.views.generic import TemplateView
 from braces.views import LoginRequiredMixin
+from contacts.models import Contact,Zone, IndividualRole, IndividualContactRoleZone, IndividualContactRoleCenter
+from django.http import JsonResponse
+
+
+class PassangerDetailsView(LoginRequiredMixin, TemplateView):
+    def get(self, request):
+        if request.method == 'GET':
+            request_id = request.GET['emailforid']
+            if request_id.find(',') > 0:
+                rd = request_id.split(',')
+            else:
+                rd = [request_id, ]
+            t_request = TravelRequest.objects.filter(pk__in=rd)
+
+            cft = Configuration.objects.get(configuration_key='IPCTRAVELS_EMAIL_NOTIFY')
+            data = json.loads(cft.configuration_value)
+            sender = request.user.email
+            travels_incharge = request.user.get_full_name()
+            cc = ''
+            bcc = ''
+            travel_agent = ''
+
+            namaskaram = Configuration.objects.get(
+                configuration_key='IPCTRAVELS_EMAIL_CONTENT_START_TEMPLATE').configuration_value
+            ticket_details = Configuration.objects.get(
+                configuration_key='IPCTRAVELS_EMAIL_TICKET_TEMPLATE').configuration_value
+            pranam = Configuration.objects.get(
+                configuration_key='IPCTRAVELS_EMAIL_CONTENT_END_TEMPLATE').configuration_value
+            message_body = ''
+            for t in t_request:
+                ticket_request = add_travel_request_details(t, ticket_details)
+                zone = t.zone.zone_name
+                ticket_request = ticket_request.replace('TRAVELS_INCHARGE', travels_incharge)
+                ticket_request = ticket_request.replace('ZONE_NAME', zone)
+                travel_agent = data[zone]['travel_agent']
+                message_body += ticket_request
+            subject = 'Ticket booking request'
+            pranam = pranam.replace('SENDER_SIGNATURE', travels_incharge)
+            message_body = namaskaram + message_body + pranam
+            form = MessageForm(
+                initial={'sender': sender, 'to': travel_agent, 'cc': cc, 'bcc': bcc, 'subject': subject,
+                         'message': message_body, 'account_id': request_id})
+            return render(request, 'travels/mailer.html', {'form': form})
+
 
 class ComposeEmailView(LoginRequiredMixin, TemplateView):
     def get(self, request):
@@ -59,25 +103,22 @@ def add_travel_request_details(travel_request, ticket_details):
         ticket_row = ticket_row.replace('DATEOFJOURNEY', onward_date)
         ticket_row = ticket_row.replace('TRAVELMODE', travel_request.get_travel_mode_display())
         ticket_row = ticket_row.replace('REMARKS', travel_request.remarks)
-
-        traveller_details = Travellers.objects.filter(travel_request=travel_request)
-
+        traveller_details = list(travel_request.teacher.all())
         traveller_details_start = Configuration.objects.get(
             configuration_key='IPCTRAVELS_EMAIL_TRAVELLER_START_TEMPLATE').configuration_value
         traveller_row = Configuration.objects.get(
             configuration_key='IPCTRAVELS_EMAIL_TRAVELLER_LIST_TEMPLATE').configuration_value
         traveller_row = str(traveller_row)
         t_data = ''
-
         for index, tr in enumerate(traveller_details):
             t_row = traveller_row
             t_row = t_row.replace('#SNO#', str(index+1))
-            t_row = t_row.replace('NAME', tr.teacher.full_name)
+            t_row = t_row.replace('NAME', tr.full_name)
             age = 'Age not known'
-            if tr.teacher.date_of_birth:
-                age = (date.today() - tr.teacher.date_of_birth) // timedelta(days=365.2425)
-            t_row = t_row.replace('GENDER_AGE', tr.teacher.get_gender_display() + ' - ' +str(age))
-            t_row = t_row.replace('MOBILENO', tr.teacher.primary_mobile)
+            if tr.date_of_birth:
+                age = (date.today() - tr.date_of_birth) // timedelta(days=365.2425)
+            t_row = t_row.replace('GENDER_AGE', tr.get_gender_display() + ' - ' +str(age))
+            t_row = t_row.replace('MOBILENO', tr.primary_mobile)
             # t_row = t_row.replace('IDCARD_TYPE', tr.teacher.id_proof_type)
             # t_row = t_row.replace('IDCARDNO', tr.teacher.id_proof_number)
             t_data+=t_row
@@ -121,3 +162,34 @@ def get_email_list(_emails):
     else:
         e_list = [_emails, ]
     return e_list
+
+
+class PassengerListView(LoginRequiredMixin, TemplateView):
+    template = "travels/passanger_list.html"
+    template_name = "travels/passanger_list.html"
+    login_url = "/admin/login/?next=/"
+
+    def get(self, request):
+
+        return render(request, self.template)
+
+
+def passanger_refresh(request):
+    teacher_role = IndividualRole.objects.get(role_name='Teacher', role_level='ZO')
+    _teacher_list = Contact.objects.filter(individualcontactrolezone__role=teacher_role)
+    summary = { }
+    data = []
+    for c in _teacher_list:
+        icrz = IndividualContactRoleZone.objects.filter(contact=c)
+        zone_list = list(set([x.zone.zone_name for x in icrz]))
+        age = '-'
+        if c.date_of_birth:
+            age = (date.today() - c.date_of_birth) // timedelta(days=365.2425)
+
+        data.append({'id':c.pk, 'name':c.full_name, 't_no':c.teacher_tno, 'category':c.get_category_display(),
+                     'gender':c.get_gender_display(), 'age':age,
+                      'primary_email':c.primary_email,'phone_number':c.primary_mobile,
+                     'id_proof_type': c.get_id_proof_type_display(), 'id_proof_number': c.id_proof_number,
+                     'zone':zone_list})
+    summary['data'] = data
+    return JsonResponse( summary , safe=False)

@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 import datetime
 from django.utils.html import format_html
 
+
 class TravelRequest(models.Model):
     source = models.CharField('From', max_length=100,default='')
     destination = models.CharField('To', max_length=100,default='')
@@ -15,7 +16,7 @@ class TravelRequest(models.Model):
     travel_mode = models.CharField(max_length=2, choices=TRAVEL_MODE_VALUES,
                                     default=TRAVEL_MODE_VALUES[0][0])
     zone = models.ForeignKey(Zone, verbose_name='Zone', on_delete=models.CASCADE)
-    remarks = models.CharField('Remarks', max_length=200, blank=True, null=True)
+    remarks = models.TextField('Remarks', max_length=200, blank=True, null=True)
     STATUS_VALUES = (('IP', 'In-Progress'),
                           ('BK', 'Booked'),
                           ('CL', 'Cancelled'),
@@ -24,11 +25,13 @@ class TravelRequest(models.Model):
     status = models.CharField(max_length=2, choices=STATUS_VALUES,
                                    default=STATUS_VALUES[0][0])
     email_sent = models.BooleanField(blank=True, default=False)
+    invoice_no = models.CharField(max_length=200, blank=True, null=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
+    attachments = models.FileField(upload_to='documents/%Y/%m/%d/', null=True, blank=True)
     created_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-
-
+    teacher = models.ManyToManyField(Contact, blank=True)
 
     def status_flag(self):
         if self.status == "CL":
@@ -41,30 +44,22 @@ class TravelRequest(models.Model):
     status_flag.allow_tags = True
     status_flag.short_description = " "
 
+
+
     def __str__(self):
-        vd = Travellers.objects.filter(travel_request=self)
-        if vd and len(vd)>1:
-            return vd[0].teacher.full_name + ' + ' +str(len(vd) - 1)
-        if vd and len(vd) == 1:
-            return vd[0].teacher.full_name
-        else:
-            return ''
+        if self.teacher.all().exists():
+            vd = self.teacher.all()
+            if len(vd) > 1:
+                return vd[0].first_name + ' ' + vd[0].last_name + ' + ' + str(len(vd) - 1)
+            else:
+                return vd[0].first_name + ' ' + vd[0].last_name
+        return self.remarks[:25]
+
+
 
     class Meta:
         ordering = ['onward_date', ]
         verbose_name = 'Travel Request'
-
-
-class Travellers(models.Model):
-    travel_request = models.ForeignKey(TravelRequest, on_delete=models.CASCADE)
-    teacher = models.ForeignKey(Contact, blank=True, null=True, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.teacher.full_name
-
-    class Meta:
-        verbose_name = 'Traveller'
-
 
 
 

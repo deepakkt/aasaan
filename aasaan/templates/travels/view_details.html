@@ -1,0 +1,98 @@
+{% extends "ipcaccounts/base_site.html" %}
+
+{% block title %}IPC{% endblock %}
+
+{% block branding %} <h1 id="site-name">aasaan</h1> {% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block extrahead %}{{ block.super }}
+<script>
+window.onload = function(e){
+    document.getElementById("id_sender").disabled = true
+    tinyMCE.init({
+     width : "640"
+    });
+
+}
+function myFunction() {
+    document.getElementById("temp_message").value = tinyMCE.activeEditor.getContent({format : 'raw'});
+    document.getElementById("id_sender").disabled = false
+    }
+
+</script>
+{% endblock %}
+  <div class="page-header">
+      <h2 class="text-center">Ticket Details</h2>
+      </div>
+    </div>
+{% block content %}
+<div class="container">
+
+
+
+   <form action="/admin/travels/travelrequest/" method="get">{% csrf_token %}
+      {{ form.media }}
+        {% for tr in travel_request %}
+        <p>
+            <table style="width: 800px; height: 12px; background-color: #5dbcd2; margin-left: auto; margin-right: auto;" border="1" cellspacing="0" cellpadding="1">
+                <tbody>
+                    <tr style="height: 15px;">
+                    <td style="width: 669px; height: 15px; text-align: center;"><strong>{{tr.zone}}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+       <table style="width: 800px; height: 5px; margin-left: auto; margin-right: auto;" border="1" cellspacing="0" cellpadding="1">
+        <tbody>
+        <tr style="height: 17px;">
+        <td style="width: 80px; height: 17px;">
+        <p><strong>Tracking No</strong></p>
+        </td>
+        <td style="width: 100px; height: 17px;"><strong>From</strong></td>
+        <td style="width: 100px; height: 17px;"><strong>To</strong></td>
+        <td style="width: 150px; height: 17px;"><strong>Date of Journey</strong></td>
+        <td style="width: 246px; height: 17px;"><strong>Travel Mode</strong></td>
+        <td style="width: 206px; height: 17px;"><strong>Description</strong></td>
+        </tr>
+        <tr style="height: 17px;">
+        <td style="width: 80px; height: 17px;">
+        <p><strong>{{tr.tracking_no}}</strong></p>
+        </td>
+        <td style="width: 100px; height: 17px;"><strong>{{tr.source}}</strong></td>
+        <td style="width: 100px; height: 17px;"><strong>{{tr.destination}}</strong></td>
+        <td style="width: 150px; height: 17px;"><strong>{{tr.onward_date}}</strong></td>
+        <td style="width: 246px; height: 17px;"><strong>{{tr.travel_mode}}</strong></td>
+        <td style="width: 206px; height: 17px;"><strong>{{tr.remarks}}</strong></td>
+        </tr>
+        </tbody>
+       </table>
+
+        <table style="width: 800px; height: 5px; margin-left: auto; margin-right: auto;" border="1" cellspacing="0" cellpadding="1">
+        <tbody>
+
+        {% for t in tr.travellers %}
+
+
+            <tr style="height: 12px;">
+            <td style="width: 20px; height: 12px;">
+            <p><strong>{{t.SNo}}</strong></p>
+            </td>
+            <td style="width: 100px; height: 12px;"><strong>{{t.full_name}}</strong></td>
+            <td style="width: 100px; height: 12px;"><strong>{{t.age}}</strong></td>
+            <td style="width: 150px; height: 12px;"><strong>{{t.primary_mobile}}</strong></td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+        </table>
+
+        </p>
+        <input type="hidden" name="_selected_action" value="{{ order.pk }}" />
+      {% endfor %}
+
+    <input type="submit" value="back" />
+</form>
+{% endblock %}
+
+
+

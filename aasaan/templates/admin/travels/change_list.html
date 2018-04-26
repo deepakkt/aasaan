@@ -58,6 +58,7 @@
                     <button type="submit">Make Immortal</button>
             </form>
               <a href="/admin/travels/compose_email" style="display:none" id="send_email" class="historylink" target="_blank">Travel Report</a>
+               <a href="/admin/travels/passanger_list" class="historylink" target="_blank">Passangers</a>
               {% url cl.opts|admin_urlname:'add' as add_url %}
               <a href="{% add_preserved_filters add_url is_popup to_field %}" class="addlink">
                 {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
