@@ -19,6 +19,7 @@ class TravelRequest(models.Model):
     remarks = models.TextField('Remarks', max_length=200, blank=True, null=True)
     STATUS_VALUES = (('IP', 'In-Progress'),
                           ('BK', 'Booked'),
+                          ('VC', 'Voucher Created'),
                           ('CL', 'Cancelled'),
                           ('PD', 'Processed'))
 

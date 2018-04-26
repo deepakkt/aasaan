@@ -3,10 +3,15 @@ from .models import TravelRequest
 from .forms import TravelRequestForm
 from contacts.models import Contact, IndividualRole, Zone, Center
 from django.core.exceptions import ObjectDoesNotExist
-from utils.filters import RelatedDropdownFilter
+from utils.filters import RelatedDropdownFilter, ChoiceDropdownFilter
 from django.shortcuts import render
 from django.utils import formats
 from datetime import date, timedelta
+from ipcaccounts.models import RCOAccountsMaster, VoucherDetails, AccountTypeMaster,EntityMaster,RCOVoucherStatusMaster,ExpensesTypeMaster, VoucherMaster
+from django.contrib import messages
+import json
+from config.models import Configuration, SmartModel
+from django.http import HttpResponse, HttpResponseNotFound, Http404,  HttpResponseRedirect
 
 class TravelRequestAdmin(admin.ModelAdmin):
     form = TravelRequestForm
@@ -15,7 +20,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
     list_display_links = ['status_flag', '__str__']
     save_on_top = True
     date_hierarchy = 'onward_date'
-    list_filter = (('zone', RelatedDropdownFilter),)
+    list_filter = (('zone', RelatedDropdownFilter), ('status',ChoiceDropdownFilter))
     fieldsets = (
         ('', {
             'fields': (('source', 'destination'),),
@@ -31,7 +36,53 @@ class TravelRequestAdmin(admin.ModelAdmin):
         }),
     )
     filter_horizontal = ('teacher',)
-    def make_email(modeladmin, request, queryset):
+
+    def create_voucher(self, request, queryset):
+        rc = RCOAccountsMaster()
+        rc.account_type = AccountTypeMaster.objects.get(id=3)
+        amount = 0
+        for tr in list(queryset):
+            if tr.status=='VC' or tr.status=='CL' or tr.status=='PD':
+                self.message_user(request, "Voucher already created or processed", level=messages.WARNING)
+                return
+            rc.zone = tr.zone
+            amount += tr.amount
+
+
+            cft = Configuration.objects.get(configuration_key='IPC_ACCOUNTS_TRACKING_CONST')
+            data = json.loads(cft.configuration_value)
+            prefix = data[rc.zone.zone_name]['prefix']
+            rc.budget_code = 'Teachers budget '+prefix
+            rc.save()
+            v1 = VoucherDetails()
+            v1.voucher_type = 'BV'
+            v1.nature_of_voucher = VoucherMaster.objects.get(id=4)
+            v1.head_of_expenses = ExpensesTypeMaster.objects.get(id=5)
+            v1.expenses_description = 'Booked tickets for Teachers'
+            v1.party_name = 'Kathir Travel Line'
+            v1.amount = amount
+            v1.accounts_master = rc
+            v1.save()
+
+            v2 = VoucherDetails()
+            v2.voucher_type = 'JV'
+            v2.nature_of_voucher = VoucherMaster.objects.get(id=3)
+            v2.head_of_expenses = ExpensesTypeMaster.objects.get(id=5)
+            v2.expenses_description = 'Booked tickets for Teachers'
+            v2.party_name = 'Kathir Travel Line'
+            v2.amount = amount
+            v2.accounts_master = rc
+            v2.save()
+
+            for tr in list(queryset):
+                tr.status = 'VC'
+                tr.save()
+
+        return HttpResponseRedirect('/admin/ipcaccounts/rcoaccountsmaster/'+str(rc.id)+'/change/')
+
+    create_voucher.short_description = "Create Vouchers"
+
+    def make_email(self, request, queryset):
         pass
 
     make_email.short_description = "Send selected as Email"
@@ -70,7 +121,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
 
     view_passanger_details.short_description = "View Passanger Details"
 
-    actions = [make_email, view_passanger_details]
+    actions = [make_email, view_passanger_details, create_voucher]
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
 
