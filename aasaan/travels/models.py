@@ -3,6 +3,7 @@ from contacts.models import Contact, Zone
 from django.contrib.auth.models import User
 import datetime
 from django.utils.html import format_html
+from ipcaccounts.models import RCOAccountsMaster
 
 
 class TravelRequest(models.Model):
@@ -31,9 +32,11 @@ class TravelRequest(models.Model):
     attachments = models.FileField(upload_to='documents/%Y/%m/%d/', null=True, blank=True)
     invoice = models.FileField(upload_to='invoice/%Y/%m/%d/', null=True, blank=True)
     created_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
+    booked_date = models.DateField('Booked Date', blank=True, null=True, default=datetime.date.today)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     teacher = models.ManyToManyField(Contact, blank=True)
+    voucher = models.ForeignKey(RCOAccountsMaster, blank=True, null=True, on_delete=models.CASCADE)
 
     def status_flag(self):
         if self.status == "CL":
@@ -45,8 +48,6 @@ class TravelRequest(models.Model):
 
     status_flag.allow_tags = True
     status_flag.short_description = " "
-
-
 
     def __str__(self):
         if self.teacher.all().exists():

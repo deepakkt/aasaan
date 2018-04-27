@@ -21,7 +21,8 @@ class TravelRequestAdmin(admin.ModelAdmin):
     list_display_links = ['status_flag', '__str__']
     save_on_top = True
     date_hierarchy = 'onward_date'
-    list_filter = (('zone', RelatedDropdownFilter), ('status',ChoiceDropdownFilter))
+    list_filter = (('zone', RelatedDropdownFilter), ('status', ChoiceDropdownFilter), 'email_sent')
+    search_fields = ('source', 'destination', 'teacher__first_name', 'teacher__last_name')
     fieldsets = (
         ('', {
             'fields': (('source', 'destination'),),
@@ -32,54 +33,53 @@ class TravelRequestAdmin(admin.ModelAdmin):
 
         }),
         ('Booking details', {
-            'fields': ('invoice_no', 'amount', 'attachments', 'invoice'),
+            'fields': ('booked_date', 'invoice_no', 'amount', 'attachments', 'invoice'),
             'classes': ('collapse', 'open')
         }),
     )
     filter_horizontal = ('teacher',)
 
     def create_voucher(self, request, queryset):
-        rc = RCOAccountsMaster()
-        rc.account_type = AccountTypeMaster.objects.get(id=3)
+        accounts_voucher = RCOAccountsMaster()
+        accounts_voucher.account_type = AccountTypeMaster.objects.get(id=3)
         amount = 0
         for tr in list(queryset):
-            if tr.status=='VC' or tr.status=='CL' or tr.status=='PD' or tr.statur=='IP':
+            if tr.status=='VC' or tr.status=='CL' or tr.status=='PD' or tr.status=='IP':
                 self.message_user(request, "Voucher already created or processed", level=messages.WARNING)
                 return
-            rc.zone = tr.zone
+            accounts_voucher.zone = tr.zone
             amount += tr.amount
-
-
             cft = Configuration.objects.get(configuration_key='IPC_ACCOUNTS_TRACKING_CONST')
             data = json.loads(cft.configuration_value)
-            prefix = data[rc.zone.zone_name]['prefix']
-            rc.budget_code = 'Teachers budget '+prefix
-            rc.save()
-            v1 = VoucherDetails()
-            v1.voucher_type = 'BV'
-            v1.nature_of_voucher = VoucherMaster.objects.get(id=4)
-            v1.head_of_expenses = ExpensesTypeMaster.objects.get(id=5)
-            v1.expenses_description = 'Booked tickets for Teachers'
-            v1.party_name = 'Kathir Travel Line'
-            v1.amount = amount
-            v1.accounts_master = rc
-            v1.save()
+            prefix = data[accounts_voucher.zone.zone_name]['prefix']
+            accounts_voucher.budget_code = 'Teachers budget '+prefix
+            accounts_voucher.save()
+            bank_voucher = VoucherDetails()
+            bank_voucher.voucher_type = 'BV'
+            bank_voucher.nature_of_voucher = VoucherMaster.objects.get(id=4)
+            bank_voucher.head_of_expenses = ExpensesTypeMaster.objects.get(id=5)
+            bank_voucher.expenses_description = 'Booked Teachers Tickets'
+            bank_voucher.party_name = 'Kathir Travel Line'
+            bank_voucher.amount = amount
+            bank_voucher.accounts_master = accounts_voucher
+            bank_voucher.save()
 
-            v2 = VoucherDetails()
-            v2.voucher_type = 'JV'
-            v2.nature_of_voucher = VoucherMaster.objects.get(id=3)
-            v2.head_of_expenses = ExpensesTypeMaster.objects.get(id=5)
-            v2.expenses_description = 'Booked tickets for Teachers'
-            v2.party_name = 'Kathir Travel Line'
-            v2.amount = amount
-            v2.accounts_master = rc
-            v2.save()
+            journal_voucher= VoucherDetails()
+            journal_voucher.voucher_type = 'JV'
+            journal_voucher.nature_of_voucher = VoucherMaster.objects.get(id=3)
+            journal_voucher.head_of_expenses = ExpensesTypeMaster.objects.get(id=5)
+            journal_voucher.expenses_description = 'Booked tickets for Teachers'
+            journal_voucher.party_name = 'Kathir Travel Line'
+            journal_voucher.amount = amount
+            journal_voucher.accounts_master = accounts_voucher
+            journal_voucher.save()
 
             for tr in list(queryset):
                 tr.status = 'VC'
+                tr.voucher = accounts_voucher
                 tr.save()
 
-        return HttpResponseRedirect('/admin/ipcaccounts/rcoaccountsmaster/'+str(rc.id)+'/change/')
+        return HttpResponseRedirect('/admin/ipcaccounts/rcoaccountsmaster/'+str(accounts_voucher.id)+'/change/')
 
     create_voucher.short_description = "Create Vouchers"
 

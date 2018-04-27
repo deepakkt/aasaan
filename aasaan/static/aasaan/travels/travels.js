@@ -27,5 +27,7 @@
                 }
             }
          })
+
+         $("#searchbar").attr('title', "Search Source or Destination or Teacher Name")
     });
 })(django.jQuery);
