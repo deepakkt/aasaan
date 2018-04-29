@@ -11,7 +11,7 @@ from .models import LanguageMaster, ProgramCategory, ProgramMaster, \
     ProgramTag, ProgramReceiptAmounts
 
 from config.models import Tag
-
+from utils.filters import RelatedDropdownFilter
 
 class LanguageMasterAdmin(admin.ModelAdmin):
     list_display = ('name',)
@@ -221,11 +221,11 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
 
     exclude = ('cancelled_date', 'receipts')
 
-    list_filter = [ProgramScheduleZoneFilter, ProgramScheduleProgramFilter,
+    list_filter = [('primary_language',RelatedDropdownFilter), ProgramScheduleProgramFilter, ProgramScheduleZoneFilter,
                    ProgramScheduleTagFilter,
                    ProgramScheduleHiddenFilter]
 
-    search_fields = ['center__center_name', 'program_location']
+    search_fields = ['program__name', 'center__center_name', 'event_name']
 
     save_on_top = True
 
