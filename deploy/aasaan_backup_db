@@ -3,7 +3,7 @@
 BACKUP_DIR=/home/deepak/dropbox/aasaan/database-backups
 TODAY=$(date +\%Y-\%m-\%d)
 BACKUP_FILE=$BACKUP_DIR/aasaan_db_$TODAY.dat
-pg_dump > $BACKUP_FILE
+docker exec -it aasaan_db pg_dump -U aasaan -d aasaan > $BACKUP_FILE
 BACKUP_FILE_ARCHIVE=${BACKUP_FILE}.gz
 tar -czf ${BACKUP_FILE_ARCHIVE} ${BACKUP_FILE}
 rm ${BACKUP_FILE}

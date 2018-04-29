@@ -1,3 +1,17 @@
 #!/bin/bash
 
-# cron to run every 30 minutes for management tasks
+# cron to run every 15 minutes for management tasks
+
+DJANGODIR=/home/deepak/django/aasaan/aasaan
+DJANGO_SETTINGS_MODULE=aasaan.settings.prod
+
+# Activate the virtual environment
+cd $DJANGODIR
+source /home/deepak/django/aasaan/.virtualenvs/aasaan/bin/activate
+export DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE
+export PYTHONPATH=$DJANGODIR:$PYTHONPATH
+
+docker exec -it aasaan_db psql -U aasaan -c "REFRESH MATERIALIZED VIEW VOUCHER_SNAPSHOT"
+
+python manage.py run_admin_queries
+python manage.py deploy_master_changes

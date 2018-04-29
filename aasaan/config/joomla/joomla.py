@@ -100,6 +100,7 @@ class JoomlaInterface(object):
         if self.last_response.status_code != 200:
             return False
 
+        # print(self.last_response.text)
         soup = BeautifulSoup(self.last_response.text, "html.parser")
         csrf_token = soup.find_all('input')[-1]['name']
         headers_copy['Content-Type'] = "application/x-www-form-urlencoded"

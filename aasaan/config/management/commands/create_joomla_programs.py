@@ -56,7 +56,7 @@ class Command(BaseCommand):
             programs_created += 1
             print(each_schedule)
             program_code = joomla.create_new_program(each_schedule, config_dict)
-
+            print(each_schedule.id, program_code)
             each_schedule.online_registration_code = program_code
             each_schedule.save()
 

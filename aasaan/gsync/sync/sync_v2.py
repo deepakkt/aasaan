@@ -170,10 +170,10 @@ class SheetSync:
         for model in self.model_map:
             if cache:
                 tempfile = NTF()
-                print("tempfile ==> ", tempfile.name)
+                #print("tempfile ==> ", tempfile.name)
 
             for instance in self.model_map[model]['queryset']:
-                print(instance)
+                #print(instance)
                 result = self.model_map[model]['translate'](instance)
                 if self.model_map[model]['filters']:
                     result = self.filter(instance, result, self.model_map[model]['filters'])
@@ -370,6 +370,7 @@ class ScheduleEnrollmentSync(SheetSyncCache):
         timing_codes = '-'.join([x.batch.batch_code for x in instance.programbatch_set.all()])
 
         # get a list of teachers and their roles for this program as a comma separated field
+        print("instance ==> ", instance, instance.id)
         program_teachers = '\n'.join([t.teacher.full_name + ' - ' + (t.get_teacher_type_display() or '')
                             for t in instance.programteacher_set.all()])
 

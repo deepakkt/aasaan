@@ -1,0 +1,6 @@
+[program:aasaan-worker]
+command = /home/deepak/django/aasaan/.virtualenvs/aasaan/bin/aasaan_worker_start   ; Command to start app
+user = aasaan                                                          ; User to run as
+stdout_logfile = /home/deepak/django/aasaan/logs/aasaan_worker.log   ; Where to write log messages
+redirect_stderr = true                                                ; Save stderr in the same log
+environment=LANG=en_US.UTF-8,LC_ALL=en_US.UTF-8

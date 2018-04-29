@@ -39,7 +39,8 @@ def cert_renew():
     sudo('sudo certbot renew')
 
 
-def deploy():
+def deploy_old():
+    # deprecated. this is now centralized with the bash script
     local("git pull")
     push_to_git()
     with cd(_code_dir()):
@@ -57,11 +58,21 @@ def deploy():
         run("cp aasaan_backup_db ~/.virtualenvs/aasaan/bin")
         run("cp aasaan_backup_metabase ~/.virtualenvs/aasaan/bin")
         run("cp database_backup_clean.py ~/.virtualenvs/aasaan/bin")
+        run("cp aasaan_deploy ~/.virtualenvs/aasaan/bin")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_sync_sheets")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_hourly_cron")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_worker_start")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_backup_db")
         run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_backup_metabase")
+        run("chmod +x ~/.virtualenvs/aasaan/bin/aasaan_deploy")
+
+
+def deploy():
+    local("git pull")
+    push_to_git()
+
+    with cd("/home/deepak/django/aasaan/.virtualenvs/aasaan/bin"):
+        run("bash aasaan_deploy")
 
 
 def get_database_file(local_path="/tmp"):
@@ -92,6 +103,7 @@ def refresh_dashboards():
 
 def backup_db():
     run("source /home/deepak/django/aasaan/.virtualenvs/aasaan/bin/aasaan_backup_db")
+    run("ls -l /home/deepak/dropbox/aasaan/database-backups")
 
 def joomla_history_sync():
     with cd(os.path.join(_code_dir(), 'aasaan')):

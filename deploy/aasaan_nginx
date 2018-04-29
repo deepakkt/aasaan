@@ -1,0 +1,47 @@
+upstream aasaan_app_server {
+  server unix:/home/deepak/django/aasaan/run/gunicorn.sock fail_timeout=0;
+}
+
+server {
+    listen   80;
+    server_name <host>; #change domain name here
+
+    client_max_body_size 4G;
+
+    access_log /home/deepak/django/aasaan/logs/nginx-access.log;
+    error_log /home/deepak/django/aasaan/logs/nginx-error.log;
+
+    location = /googlecfd4a6d0bb5dc3b8.html {
+            rewrite ^/(.*)  $1;
+            return 200 "google-site-verification: $uri";
+    }
+
+    location /static/ {
+        alias   /var/www/aasaan/static/;
+    }
+
+    location /media/ {
+        alias   /var/www/aasaan/media/;
+    }
+
+    location / {
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_redirect off;
+        if (!-f $request_filename) {
+            proxy_pass http://aasaan_app_server;
+            break;
+        }
+    }
+
+    listen 443 ssl; # managed by Certbot
+ssl_certificate /etc/letsencrypt/live/aasaan.isha.in/fullchain.pem; # managed by Certbot
+ssl_certificate_key /etc/letsencrypt/live/aasaan.isha.in/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+
+
+    if ($scheme != "https") {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+}
