@@ -21,7 +21,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
     list_display_links = ['status_flag', '__str__']
     save_on_top = True
     date_hierarchy = 'onward_date'
-    list_filter = (('zone', RelatedDropdownFilter), ('status', ChoiceDropdownFilter), 'email_sent')
+    list_filter = (('status', ChoiceDropdownFilter), ('travel_mode',ChoiceDropdownFilter), 'email_sent', ('zone', RelatedDropdownFilter), )
     search_fields = ('source', 'destination', 'teacher__first_name', 'teacher__last_name')
     fieldsets = (
         ('', {

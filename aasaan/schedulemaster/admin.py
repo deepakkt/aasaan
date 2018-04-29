@@ -225,7 +225,7 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
                    ProgramScheduleTagFilter,
                    ProgramScheduleHiddenFilter]
 
-    search_fields = ['program__name', 'center__center_name', 'event_name']
+    search_fields = ['program__name', 'center__center_name', 'event_name', 'event_management_code', 'online_registration_code']
 
     save_on_top = True
 

@@ -221,10 +221,10 @@ class ContactAdmin(admin.ModelAdmin):
     list_display = ('full_name', 'primary_mobile', 'whatsapp_number',
                     'primary_email', 'teacher_tno', 'status', 'profile_image')
 
-    list_filter = (ContactZoneFilter, ContactRoleFilter, ContactTagFilter)
+    list_filter = (ContactRoleFilter, ContactZoneFilter, ContactTagFilter)
 
     search_fields = ('teacher_tno', 'first_name', 'last_name',
-                     'cug_mobile', 'other_mobile_1')
+                     'cug_mobile', 'other_mobile_1', 'primary_email', 'individualcontactrolecenter__center__center_name')
 
     save_on_top = True
 
