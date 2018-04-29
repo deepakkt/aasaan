@@ -10,6 +10,8 @@
 <script>
 window.onload = function(e){
     document.getElementById("id_sender").disabled = true
+    document.getElementById("id_bcc").required = false
+    document.getElementById("id_cc").required = false
     tinyMCE.init({
      width : "640"
     });
