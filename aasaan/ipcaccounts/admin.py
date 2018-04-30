@@ -166,20 +166,20 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
         except ObjectDoesNotExist:
             return RCOAccountsMaster.objects.none()
         try:
-            if contact_role_group.get(role=trs_role_group):
+            if contact_role_group.get(role=trs_role_group[:1]):
                 trs_account = RCOAccountsMaster.objects.filter(zone__in=user_zones).filter(account_type__name='Teacher Accounts')
                 all_accounts = trs_account
         except ContactRoleGroup.DoesNotExist:
             all_accounts = None
         try:
-            if contact_role_group.get(role=acc_role_group):
+            if contact_role_group.get(role=acc_role_group[:1]):
                 class_accounts = RCOAccountsMaster.objects.filter(program_schedule__center__zone__in=user_zones)
                 other_accounts = RCOAccountsMaster.objects.filter(zone__in=user_zones).filter(~Q(account_type__name='Teacher Accounts'))
                 all_accounts = class_accounts | other_accounts
         except ContactRoleGroup.DoesNotExist:
             pass
         try:
-            if contact_role_group.get(role=acc_role_group) and contact_role_group.get(role=trs_role_group):
+            if contact_role_group.get(role=acc_role_group[:1]) and contact_role_group.get(role=trs_role_group[:1]):
                 all_accounts = trs_account | class_accounts | other_accounts
         except ContactRoleGroup.DoesNotExist:
             pass
