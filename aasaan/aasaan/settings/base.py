@@ -44,7 +44,8 @@ INSTALLED_APPS += [
     'ipcaccounts',
     'config',
     'ashramvisit',
-    'travels'
+    'travels',
+    'gsync',
 ]
 SITE_ID = 1
 # third party apps
