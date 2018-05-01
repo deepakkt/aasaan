@@ -45,7 +45,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
         amount = 0
         for tr in list(queryset):
             if tr.status=='VC' or tr.status=='CL' or tr.status=='PD' or tr.status=='IP':
-                self.message_user(request, "Voucher already created or processed", level=messages.WARNING)
+                self.message_user(request, "Voucher already created or processed or Inprogress. Update booking details to create vouchers", level=messages.WARNING)
                 return
             accounts_voucher.zone = tr.zone
             amount += tr.amount

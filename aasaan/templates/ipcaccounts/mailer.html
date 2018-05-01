@@ -1,6 +1,6 @@
 {% extends "ipcaccounts/base_site.html" %}
 
-{% block title %}IPC{% endblock %}
+{% block title %}IPC Accounts{% endblock %}
 
 {% block branding %} <h1 id="site-name">aasaan</h1> {% endblock %}
 
@@ -12,6 +12,8 @@ window.onload = function(e){
     document.getElementById("id_sender").disabled = true;
     document.getElementById("id_bcc").required = false
     document.getElementById("id_cc").required = false
+    document.getElementById("id_file_field").required = false
+
     tinyMCE.init({
      width : "640"
     });
@@ -26,8 +28,8 @@ function myFunction() {
 {% endblock %}
 
 {% block content %}
-    <h2>IPC Communication</h2>
-   <form onsubmit="myFunction()" action="/admin/ipcaccounts/sendApprovalMessage" method="post">{% csrf_token %}
+    <h2>IPC Accounts Voucher Email Approval</h2>
+   <form onsubmit="myFunction()" enctype="multipart/form-data" action="/admin/ipcaccounts/sendApprovalMessage" method="post">{% csrf_token %}
       {{ form.media }}
         <table>
         {{ form }}
