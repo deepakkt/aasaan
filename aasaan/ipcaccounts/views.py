@@ -151,7 +151,7 @@ def treasurer_refresh(request):
         role_list = list(set(z_role_list + c_role_list))
         zone_list = list(set(z_zone_list + c_zone_list))
         try:
-            tr = Treasurer.objects.get(new_treasurer=c)
+            tr = Treasurer.objects.filter(new_treasurer=c)[:1]
         except Treasurer.DoesNotExist:
             tr = None
         account_holder = ''
@@ -160,11 +160,11 @@ def treasurer_refresh(request):
         account_number = ''
         ifsc_code = ''
         if tr :
-            account_holder = tr.account_holder
-            bank_name = tr.bank_name
-            branch_name = tr.branch_name
-            account_number = tr.account_number
-            ifsc_code = tr.ifsc_code
+            account_holder = tr[0].account_holder
+            bank_name = tr[0].bank_name
+            branch_name = tr[0].branch_name
+            account_number = tr[0].account_number
+            ifsc_code = tr[0].ifsc_code
 
         data.append(
             {'id': c.pk, 'name': c.full_name, 'phone_number': c.primary_mobile, 'primary_email': c.primary_email,

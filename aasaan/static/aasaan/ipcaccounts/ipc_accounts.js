@@ -58,7 +58,7 @@
             }
              $.ajax({
                     type: 'GET',
-                    url: '/admin/ipcaccounts/get_budget_code/',
+                    url: '/admin/ipcaccounts/get_budget_code',
                     data: {
                             'program_schedule': $(this).val()
                             },
@@ -164,7 +164,7 @@
      function refresh_Programs(){
         $.ajax({
             type: 'GET',
-            url: '/admin/ipcaccounts/get_program_schedules/',
+            url: '/admin/ipcaccounts/get_program_schedules',
             data: {
                     'zone': $(id_zone).val(),
                     'program_type': $(id_program_type).val()
