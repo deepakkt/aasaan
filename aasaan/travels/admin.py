@@ -90,7 +90,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
     def make_email(self, request, queryset):
         pass
 
-    make_email.short_description = "Send selected as Email"
+    make_email.short_description = "Send Email to Travel Agency"
 
     def view_passanger_details(self, request, queryset):
         all_tickets = []
