@@ -180,6 +180,7 @@ def passanger_refresh(request):
     for c in _teacher_list:
         icrz = IndividualContactRoleZone.objects.filter(contact=c)
         zone_list = list(set([x.zone.zone_name for x in icrz]))
+        zone = str(zone_list).replace('[', '').replace(']','').replace("'", '')
         age = '-'
         if c.date_of_birth:
             age = (date.today() - c.date_of_birth) // timedelta(days=365.2425)
@@ -188,6 +189,6 @@ def passanger_refresh(request):
                      'gender':c.get_gender_display(), 'age':age,
                       'primary_email':c.primary_email,'phone_number':c.primary_mobile,
                      'id_proof_type': c.get_id_proof_type_display(), 'id_proof_number': c.id_proof_number,
-                     'zone':zone_list})
+                     'zone':zone})
     summary['data'] = data
     return JsonResponse( summary , safe=False)

@@ -59,7 +59,7 @@ function reload(){
             { "data": "zone" },
         ],
         columnDefs: [
-            {   "targets": [1,2,7,8],
+            {   "targets": [1,2,3,4,7,8],
                 "visible": false,
                 "searchable": false
             }
