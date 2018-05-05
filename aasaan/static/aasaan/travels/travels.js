@@ -29,5 +29,7 @@
          })
 
          $("#searchbar").attr('title', "Search Source or Destination or Teacher Name")
+         $("#id_zone option[value='']").remove();
     });
+
 })(django.jQuery);

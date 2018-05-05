@@ -13,6 +13,7 @@ function reload(){
      var url = "/admin/travels/passanger_refresh?"
 
     var options =  {
+        responsive: true,
         "destroy": true,
        "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
         autoFill: true,
