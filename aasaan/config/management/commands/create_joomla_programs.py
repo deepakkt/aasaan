@@ -10,7 +10,6 @@ from config.joomla.joomla import JoomlaInterface
 from django.core.management.base import BaseCommand
 from django.conf import settings
 
-from communication.api import stage_pushover, send_communication
 from schedulemaster.models import ProgramSchedule
 from config.models import Configuration
 
@@ -60,5 +59,3 @@ class Command(BaseCommand):
             each_schedule.online_registration_code = program_code
             each_schedule.save()
 
-        send_communication("Pushover", stage_pushover(communication_message="%d Joomla programs created! " % programs_created,
-                                                      role_groups = ["Aasaan Admin"]))
