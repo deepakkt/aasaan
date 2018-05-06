@@ -5,7 +5,7 @@ from config.management.commands.notify_utils import dispatch_notification, setup
 from django.utils import formats
 from django.conf import settings
 from .models import TravelRequest
-from ipcaccounts.forms import MessageForm
+from .forms import MessageForm
 from datetime import date, timedelta
 from django.views.generic import TemplateView
 from braces.views import LoginRequiredMixin
@@ -119,8 +119,6 @@ def add_travel_request_details(travel_request, ticket_details):
                 age = (date.today() - tr.date_of_birth) // timedelta(days=365.2425)
             t_row = t_row.replace('GENDER_AGE', tr.get_gender_display() + ' - ' +str(age))
             t_row = t_row.replace('MOBILENO', tr.primary_mobile)
-            # t_row = t_row.replace('IDCARD_TYPE', tr.teacher.id_proof_type)
-            # t_row = t_row.replace('IDCARDNO', tr.teacher.id_proof_number)
             t_data+=t_row
 
         traveller_details_end = Configuration.objects.get(
@@ -182,6 +180,7 @@ def passanger_refresh(request):
     for c in _teacher_list:
         icrz = IndividualContactRoleZone.objects.filter(contact=c)
         zone_list = list(set([x.zone.zone_name for x in icrz]))
+        zone = str(zone_list).replace('[', '').replace(']','').replace("'", '')
         age = '-'
         if c.date_of_birth:
             age = (date.today() - c.date_of_birth) // timedelta(days=365.2425)
@@ -190,6 +189,6 @@ def passanger_refresh(request):
                      'gender':c.get_gender_display(), 'age':age,
                       'primary_email':c.primary_email,'phone_number':c.primary_mobile,
                      'id_proof_type': c.get_id_proof_type_display(), 'id_proof_number': c.id_proof_number,
-                     'zone':zone_list})
+                     'zone':zone})
     summary['data'] = data
     return JsonResponse( summary , safe=False)

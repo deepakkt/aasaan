@@ -12,17 +12,16 @@ from django.contrib import messages
 import json
 from config.models import Configuration, SmartModel
 from django.http import HttpResponse, HttpResponseNotFound, Http404,  HttpResponseRedirect
-
+from .utils import sendEmailTicket
 
 class TravelRequestAdmin(admin.ModelAdmin):
     form = TravelRequestForm
-    list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'email_sent')
+    list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'created_by', 'email_sent')
     list_editable = ('status',)
     list_display_links = ['status_flag', '__str__']
-    save_on_top = True
     date_hierarchy = 'onward_date'
     list_filter = (('status', ChoiceDropdownFilter), ('travel_mode',ChoiceDropdownFilter), 'email_sent', ('zone', RelatedDropdownFilter), )
-    search_fields = ('source', 'destination', 'teacher__first_name', 'teacher__last_name')
+    search_fields = ('source', 'destination', 'teacher__first_name', 'teacher__last_name', 'created_by__first_name')
     fieldsets = (
         ('', {
             'fields': (('source', 'destination'),),
@@ -33,7 +32,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
 
         }),
         ('Booking details', {
-            'fields': ('booked_date', 'invoice_no', 'amount', 'attachments', 'invoice'),
+            'fields': ('status', 'booked_date', 'invoice_no', 'amount', 'attachments', 'invoice'),
             'classes': ('collapse', 'open')
         }),
     )
@@ -45,7 +44,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
         amount = 0
         for tr in list(queryset):
             if tr.status=='VC' or tr.status=='CL' or tr.status=='PD' or tr.status=='IP':
-                self.message_user(request, "Voucher already created or processed", level=messages.WARNING)
+                self.message_user(request, "Voucher already created or processed or Inprogress. Update booking details to create vouchers", level=messages.WARNING)
                 return
             accounts_voucher.zone = tr.zone
             amount += tr.amount
@@ -91,7 +90,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
     def make_email(self, request, queryset):
         pass
 
-    make_email.short_description = "Send selected as Email"
+    make_email.short_description = "Send Email to Travel Agency"
 
     def view_passanger_details(self, request, queryset):
         all_tickets = []
@@ -136,10 +135,13 @@ class TravelRequestAdmin(admin.ModelAdmin):
             kwargs["queryset"] = Zone.objects.filter(pk__in=user_zones)
         return super(TravelRequestAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
+    def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         if db_field.name == 'teacher':
+
             try:
                 teacher_role = IndividualRole.objects.get(role_name='Teacher', role_level='ZO')
                 _teacher_list = Contact.objects.filter(individualcontactrolezone__role=teacher_role)
+                print(len(_teacher_list))
                 kwargs["queryset"] = _teacher_list.distinct()
             except ObjectDoesNotExist:
                 kwargs["queryset"] = Contact.objects.none()
@@ -150,8 +152,12 @@ class TravelRequestAdmin(admin.ModelAdmin):
         qs = super(TravelRequestAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
-        user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
-        return TravelRequest.objects.filter(zone__in=user_zones)
+        if 'Teacher' in [x.name for x in request.user.groups.all()]:
+            return TravelRequest.objects.filter(created_by=request.user)
+        else:
+            user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
+            return TravelRequest.objects.filter(zone__in=user_zones)
+
 
     def save_model(self, request, obj, form, change):
         obj.created_by = request.user

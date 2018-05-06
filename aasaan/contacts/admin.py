@@ -188,15 +188,27 @@ class ContactTagFilter(admin.SimpleListFilter):
             return queryset.filter(contacttag__tag__tag_name=self.value())
 
 
-
 class ContactAdmin(admin.ModelAdmin):
+
+    def get_actions(self, request):
+        actions = super(ContactAdmin, self).get_actions(request)
+        if 'Teacher' in [x.name for x in request.user.groups.all()] and  'delete_selected' in actions:
+            del actions['delete_selected']
+            return actions
+        return actions
+
     # filter contact records based on user permissions
     def get_queryset(self, request):
         qs = super(ContactAdmin, self).get_queryset(request)
 
         # give entire set if user is a superuser irrespective of zone and center assignments
-        if (request.user.is_superuser) or ('view-all' in [x.name for x in request.user.groups.all()]):
+        if request.user.is_superuser:
             return qs
+
+        if 'Teacher' in [x.name for x in request.user.groups.all()]:
+            self.list_filter = []
+            self.search_fields = []
+            return Contact.objects.filter(primary_email=request.user.email)
 
         # get all centers this user belongs to
         user_centers = [x.center for x in request.user.aasaanusercenter_set.all()]
@@ -226,8 +238,6 @@ class ContactAdmin(admin.ModelAdmin):
     search_fields = ('teacher_tno', 'first_name', 'last_name',
                      'cug_mobile', 'other_mobile_1', 'primary_email', 'individualcontactrolecenter__center__center_name')
 
-    save_on_top = True
-
     list_per_page = 30
 
     fieldsets = [
@@ -254,9 +264,6 @@ class ContactAdmin(admin.ModelAdmin):
                IndividualContactRoleZoneInline,
                IndividualContactRoleCenterInline,
                ContactNoteInline, ContactRoleGroupInline]
-
-    class Media:
-        js = ('/static/aasaan/js/disable_notes_v2.js',)
 
 
 class RoleGroupAdmin(admin.ModelAdmin):

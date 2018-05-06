@@ -10,6 +10,7 @@
 </style>
 <link rel="stylesheet" type="text/css" href="/static/datatables/DataTables/css/jquery.dataTables.css">
 <link rel="stylesheet" type="text/css" href="/static/datatables/Buttons/css/buttons.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="/static/datatables/Responsive/css/responsive.dataTables.min.css">
 
 <script type="text/javascript" charset="utf8"  src='/static/bootstrap/js/jquery.js'></script>
 <script type="text/javascript" charset="utf8" src="/static/datatables/DataTables/js/jquery.dataTables.min.js"></script>
@@ -18,6 +19,7 @@
 <script type="text/javascript" charset="utf8" src="/static/datatables/Buttons/js/buttons.html5.min.js"></script>
 <script type="text/javascript" charset="utf8" src="/static/datatables/Buttons/js/buttons.print.min.js"></script>
 <script type="text/javascript" charset="utf8" src="/static/datatables/Buttons/js/buttons.colVis.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/static/datatables/Responsive/js/dataTables.responsive.min.js"></script>
 <script type="text/javascript" charset="utf8" src='/static/pdfmake/pdfmake.min.js'></script>
 <script type="text/javascript" charset="utf8"  src='/static/pdfmake/vfs_fonts.js'></script>
 <script type="text/javascript" charset="utf8"  src='/static/jszip/jszip.min.js'></script>
@@ -39,7 +41,7 @@
 
 
 {% block pagetitle %}
-Passanger Summary
+Teachers List
 {% endblock pagetitle %}
 
 {% block main %}
@@ -47,13 +49,11 @@ Passanger Summary
 <form>{% csrf_token %}
 
 
-
-
 </form>
 
 <div id="row-tn-ie-table" class="row placeholders">
         <h4 id="header_ie_table"></h4>
-        <table id="passanger_table" class="display table table-striped cell-border" width="100%">
+        <table id="passanger_table" class="display responsive nowrap table table-striped cell-border" width="100%">
             <thead>
                 <tr>
                     <th>Name</th>

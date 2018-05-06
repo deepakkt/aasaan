@@ -17,6 +17,8 @@ from .forms import FilterFieldsForm, VoucherAdvancedSearchFieldsForm
 from contacts.models import Contact, Zone, IndividualRole, IndividualContactRoleZone, IndividualContactRoleCenter
 from datetime import timedelta
 from django.utils import timezone
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
 
 @login_required
 def get_budget_code(request):
@@ -103,6 +105,13 @@ class SendEmailView(FormView):
         to = get_email_list(request.POST.get('to'))
         cc = get_email_list(request.POST.get('cc'))
         bcc = get_email_list(request.POST.get('bcc'))
+        files = request.FILES.getlist('attachments')
+        for f in files:
+            fs = FileSystemStorage()
+            fs.location = settings.MEDIA_ROOT+'/ipcaccounts/vouchers/email/'
+            filename = fs.save(f.name, f)
+            uploaded_file_url = fs.url(filename)
+
 
         sendgrid_contnection = setup_sendgrid_connection(settings.SENDGRID_KEY)
         _dispatch_status = dispatch_notification(sender, to, msg_subject,

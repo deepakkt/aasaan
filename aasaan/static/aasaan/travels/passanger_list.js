@@ -13,6 +13,7 @@ function reload(){
      var url = "/admin/travels/passanger_refresh?"
 
     var options =  {
+        responsive: true,
         "destroy": true,
        "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
         autoFill: true,
@@ -58,7 +59,7 @@ function reload(){
             { "data": "zone" },
         ],
         columnDefs: [
-            {   "targets": [1,2,7,8],
+            {   "targets": [1,2,3,4,7,8],
                 "visible": false,
                 "searchable": false
             }

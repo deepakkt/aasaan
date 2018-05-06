@@ -15,7 +15,7 @@ aasaan_v1_api = Api(api_name='v1')
 aasaan_v1_api.register(ScheduleResource())
 
 urlpatterns = [
-    path('', lambda _: redirect('admin:index'), name="index"),
+    path('', lambda _: redirect('/accounts/google/login/?process=login'), name="login"),
     path('admin/', admin.site.urls),
     path('aasaan_api/', include(aasaan_v1_api.urls)),
     path('contacts/', include(contacts.urls, namespace='contacts'), name='contacts'),

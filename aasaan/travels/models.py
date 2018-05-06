@@ -35,7 +35,7 @@ class TravelRequest(models.Model):
     booked_date = models.DateField('Booked Date', blank=True, null=True, default=datetime.date.today)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-    teacher = models.ManyToManyField(Contact, blank=True)
+    teacher = models.ManyToManyField(Contact)
     voucher = models.ForeignKey(RCOAccountsMaster, blank=True, null=True, on_delete=models.CASCADE)
 
     def status_flag(self):
