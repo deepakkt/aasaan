@@ -12,7 +12,7 @@ from django.contrib import messages
 import json
 from config.models import Configuration, SmartModel
 from django.http import HttpResponse, HttpResponseNotFound, Http404,  HttpResponseRedirect
-from .utils import sendEmailTicket
+
 
 class TravelRequestAdmin(admin.ModelAdmin):
     form = TravelRequestForm
@@ -32,7 +32,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
 
         }),
         ('Booking details', {
-            'fields': ('status', 'booked_date', 'invoice_no', 'amount', 'attachments', 'invoice'),
+            'fields': ('status', 'booked_date', 'invoice_no', 'amount', 'attachments', 'invoice', 'refund_amount'),
             'classes': ('collapse', 'open')
         }),
     )

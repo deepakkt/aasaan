@@ -249,11 +249,10 @@ class ContactAdmin(admin.ModelAdmin):
                                          'primary_email', 'profile_picture'
                                          ]}),
         ('Secondary Information', {'fields': ['other_mobile_2', 'secondary_email',
-                                              'id_card_type', 'id_card_number',
-                                              'id_proof_type', 'id_proof_other',
+                                              'id_proof_type',
                                               'id_proof_number',
                                               'id_proof_scan',
-                                              'pushover_token',
+                                              'name_as_in_id',
                                               'remarks',
                                               ], 'classes': ['collapse']}),
     ]

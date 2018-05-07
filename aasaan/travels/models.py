@@ -9,7 +9,7 @@ from ipcaccounts.models import RCOAccountsMaster
 class TravelRequest(models.Model):
     source = models.CharField('From', max_length=100,default='')
     destination = models.CharField('To', max_length=100,default='')
-    onward_date = models.DateField('Date of Journey', default=datetime.date.today)
+    onward_date = models.DateTimeField('Date of Journey', default=datetime.date.today)
     TRAVEL_MODE_VALUES = (('TR', 'Train'),
                            ('BS', 'Bus'),
                            ('FL', 'Flight'))
@@ -22,6 +22,7 @@ class TravelRequest(models.Model):
                           ('BK', 'Booked'),
                           ('VC', 'Voucher Created'),
                           ('CL', 'Cancelled'),
+                          ('CB', 'Cancel Booked Ticket'),
                           ('PD', 'Processed'))
 
     status = models.CharField(max_length=2, choices=STATUS_VALUES,
@@ -29,6 +30,7 @@ class TravelRequest(models.Model):
     email_sent = models.BooleanField(blank=True, default=False)
     invoice_no = models.CharField(max_length=200, blank=True, null=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
+    refund_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
     attachments = models.FileField(upload_to='documents/%Y/%m/%d/', null=True, blank=True)
     invoice = models.FileField(upload_to='invoice/%Y/%m/%d/', null=True, blank=True)
     created_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
