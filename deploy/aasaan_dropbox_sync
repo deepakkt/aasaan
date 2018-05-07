@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 docker start dropbox
 sleep 2m
