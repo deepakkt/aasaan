@@ -18,7 +18,7 @@ class Command(BaseCommand):
     print("starting deploy")
 
     def handle(self, *args, **options):
-        for refresh_request in DatabaseRefresh.objects.filter(deploy_status='ST'):
+        for refresh_request in DatabaseRefresh.objects.filter(refresh_status='ST'):
             print('processing ', refresh_request.id)
             if enqueue:
                 print('queueing into rq')
