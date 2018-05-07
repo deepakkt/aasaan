@@ -5,7 +5,7 @@ WORKING_DIR=$(mktemp -d)
 TODAY=$(date +\%Y-\%m-\%d)
 BACKUP_FILE_BASE=aasaan_db_$TODAY.dat
 BACKUP_FILE=${WORKING_DIR}/${BACKUP_FILE_BASE}
-docker exec -it aasaan_db pg_dump -U aasaan -d aasaan > $BACKUP_FILE
+docker exec aasaan_db pg_dump -U aasaan -d aasaan > $BACKUP_FILE
 BACKUP_FILE_ARCHIVE=${BACKUP_FILE}.gz
 tar -czf ${BACKUP_FILE_ARCHIVE} ${BACKUP_FILE}
 rm ${BACKUP_FILE}
