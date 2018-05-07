@@ -66,7 +66,7 @@ def refresh_database_backup(request_id=None, update_db_status=True):
         _status = "BF"
         
     try:
-        _docker_script = subprocess.check_output([_docker_script])
+        _docker_result = subprocess.check_output([_docker_script])
     except subprocess.CalledProcessError:
         _status = "SF"
 
