@@ -30,6 +30,20 @@
 
          $("#searchbar").attr('title', "Search Source or Destination or Teacher Name")
          $("#id_zone option[value='']").remove();
+
+         if($('#id_status').val()!='CB'){
+            $('.form-row.field-refund_amount').hide()
+         }
+
+         $('#id_status').click(function(event) {
+             if($('#id_status').val()=='CB'){
+                $('.form-row.field-refund_amount').show()
+             }
+             else{
+                $('.form-row.field-refund_amount').hide()
+             }
+         });
+
     });
 
 })(django.jQuery);
