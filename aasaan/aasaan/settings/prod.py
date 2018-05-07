@@ -7,6 +7,7 @@ from .base import *
 del STATIC_PATH
 STATIC_ROOT = "/var/www/aasaan/static"
 MEDIA_ROOT = "/var/www/aasaan/media"
+BIN_ROOT = "/home/deepak/django/aasaan/.virtualenvs/aasaan/bin"
 # STATICFILES_DIRS = (STATIC_ROOT,)
 
 DEBUG = False

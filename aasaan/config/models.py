@@ -119,3 +119,13 @@ class MasterDeploy(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     executed = models.DateTimeField(null=True)
     
+
+class DatabaseRefresh(models.Model):
+    refresh_status = models.CharField(max_length=2, choices=(('ST', 'Staged'),
+                                                            ('SU', 'Success'),
+                                                            ('BF', 'Backup Failed'),
+                                                            ('SF', 'Sync Failed')),
+                                    default='ST')
+    created = models.DateTimeField(auto_now_add=True)
+    executed = models.DateTimeField(null=True)
+

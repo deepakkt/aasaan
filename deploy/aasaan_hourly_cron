@@ -15,3 +15,4 @@ docker exec -it aasaan_db psql -U aasaan -c "REFRESH MATERIALIZED VIEW VOUCHER_S
 
 python manage.py run_admin_queries
 python manage.py deploy_master_changes
+python manage.py refresh_database

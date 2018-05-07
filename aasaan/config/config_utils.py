@@ -1,4 +1,12 @@
+from os.path import join as path_join
+import subprocess
+from datetime import datetime
+
 from django.utils.text import slugify
+from django.conf import settings
+
+from .models import DatabaseRefresh
+
 
 def getformatdateddmmyy(mydate):
     return "%02d/%02d/%d" % (mydate.day, mydate.month, mydate.year)
@@ -41,3 +49,33 @@ def parse_config(configuration_dict, program_name, program_zone_name, config,
             config_value = fallback_value
 
     return config_value
+
+
+def refresh_database_backup(request_id=None, update_db_status=True):
+    if not request_id:
+        return None
+
+    _bin_path = settings.BIN_ROOT
+    _backup_script = path_join(_bin_path, "aasaan_backup_db")
+    _docker_script = path_join(_bin_path, "aasaan_dropbox_sync")
+    _status = "SU"
+
+    try:
+        _backup_result = subprocess.check_output([_backup_script])
+    except subprocess.CalledProcessError:
+        _status = "BF"
+        
+    try:
+        _docker_script = subprocess.check_output([_docker_script])
+    except subprocess.CalledProcessError:
+        _status = "SF"
+
+    if update_db_status:
+        _db_object = DatabaseRefresh.objects.get(id=request_id)
+        _db_object.refresh_status = _status
+        _db_object.executed = datetime.now()
+        _db_object.save()
+
+         
+        
+    

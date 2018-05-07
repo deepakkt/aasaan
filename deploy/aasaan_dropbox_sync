@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+
+docker start dropbox
+sleep 2m
+docker stop dropbox
