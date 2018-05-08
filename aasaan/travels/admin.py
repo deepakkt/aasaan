@@ -16,11 +16,11 @@ from django.http import HttpResponse, HttpResponseNotFound, Http404,  HttpRespon
 
 class TravelRequestAdmin(admin.ModelAdmin):
     form = TravelRequestForm
-    list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'created_by', 'email_sent')
+    list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'created_by')
     list_editable = ('status',)
     list_display_links = ['status_flag', '__str__']
     date_hierarchy = 'onward_date'
-    list_filter = (('status', ChoiceDropdownFilter), ('travel_mode',ChoiceDropdownFilter), 'email_sent', ('zone', RelatedDropdownFilter), )
+    list_filter = (('travel_mode', ChoiceDropdownFilter), ('status', ChoiceDropdownFilter), ('zone', RelatedDropdownFilter), )
     search_fields = ('source', 'destination', 'teacher__first_name', 'teacher__last_name', 'created_by__first_name')
     fieldsets = (
         ('', {

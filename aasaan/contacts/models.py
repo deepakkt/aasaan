@@ -94,6 +94,14 @@ class Contact(SmartModel):
         return "%s %s" %(self.first_name, self.last_name)
     full_name = property(_get_full_name)
 
+    def _get_actual_name(self):
+        if self.name_as_in_id is "":
+            return "%s %s" %(self.first_name, self.last_name)
+        else:
+            return self.name_as_in_id
+
+    actual_name = property(_get_actual_name)
+
     def _get_age(self):
         "Get age of contact"
         return self.date_of_birth.year - date.today().year
@@ -216,6 +224,9 @@ class Contact(SmartModel):
                 resized_image.save(self.id_proof_scan.file.name)
 
         self.reset_changed_values()
+
+    def __str__(self):
+        return "%s" % self._get_full_name()
 
     class Meta:
         ordering = ['first_name', 'last_name']

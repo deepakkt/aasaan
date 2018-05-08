@@ -113,7 +113,7 @@ def add_travel_request_details(travel_request, ticket_details):
         for index, tr in enumerate(traveller_details):
             t_row = traveller_row
             t_row = t_row.replace('#SNO#', str(index+1))
-            t_row = t_row.replace('NAME', tr.full_name)
+            t_row = t_row.replace('NAME', tr._get_actual_name())
             age = 'Age not known'
             if tr.date_of_birth:
                 age = (date.today() - tr.date_of_birth) // timedelta(days=365.2425)
@@ -185,7 +185,7 @@ def passanger_refresh(request):
         if c.date_of_birth:
             age = (date.today() - c.date_of_birth) // timedelta(days=365.2425)
 
-        data.append({'id':c.pk, 'name':c.full_name, 't_no':c.teacher_tno, 'category':c.get_category_display(),
+        data.append({'id':c.pk, 'name':c._get_actual_name(), 't_no':c.teacher_tno, 'category':c.get_category_display(),
                      'gender':c.get_gender_display(), 'age':age,
                       'primary_email':c.primary_email,'phone_number':c.primary_mobile,
                      'id_proof_type': c.get_id_proof_type_display(), 'id_proof_number': c.id_proof_number,
