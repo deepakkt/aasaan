@@ -29,8 +29,8 @@ python manage.py sync_joomla_counts
 python manage.py sync_ereceipts
 python manage.py sync_ereceipt_amounts
 
-docker exec -it aasaan_db psql -U aasaan -c "REFRESH MATERIALIZED VIEW SCHEDULE_SNAPSHOT"
-docker exec -it aasaan_db psql -U aasaan -c "VACUUM FULL VERBOSE ANALYZE"
+docker exec aasaan_db psql -U aasaan -c "REFRESH MATERIALIZED VIEW SCHEDULE_SNAPSHOT"
+docker exec aasaan_db psql -U aasaan -c "VACUUM FULL VERBOSE ANALYZE"
 
 # run dropbox for 10 minutes so everything is synced
 docker start dropbox
