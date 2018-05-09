@@ -7,19 +7,6 @@ TRAVEL_MODE_VALUES = (('TR', 'Train'),
                            ('BS', 'Bus'),
                            ('FL', 'Flight'))
 
-class TravelRequestForm(forms.ModelForm):
-    remarks = forms.CharField(widget=forms.Textarea(attrs={'rows':2, 'cols':40}), required=False)
-    source = forms.CharField(label='From')
-    destination = forms.CharField(label='To')
-    onward_date = forms.DateTimeField(label = 'Date of Journey',widget = AdminSplitDateTime)
-    travel_mode = forms.ChoiceField(choices=TRAVEL_MODE_VALUES, widget=forms.Select(),
-                      required=True)
-
-    class Meta:
-        model = TravelRequest
-        fields = ['source', 'destination', 'onward_date', 'travel_mode', 'remarks']
-
-
 class MessageForm(forms.Form):
     sender = forms.CharField(max_length=500, widget=forms.TextInput(attrs={'size': '88'}))
     to = forms.CharField(max_length=500, widget=forms.TextInput(attrs={'size': '88', 'type': 'email', 'multiple': 'true',

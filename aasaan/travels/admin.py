@@ -1,6 +1,5 @@
 from django.contrib import admin
 from .models import TravelRequest
-from .forms import TravelRequestForm
 from contacts.models import Contact, IndividualRole, Zone, Center
 from django.core.exceptions import ObjectDoesNotExist
 from utils.filters import RelatedDropdownFilter, ChoiceDropdownFilter
@@ -15,7 +14,6 @@ from django.http import HttpResponse, HttpResponseNotFound, Http404,  HttpRespon
 
 
 class TravelRequestAdmin(admin.ModelAdmin):
-    form = TravelRequestForm
     list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'created_by')
     list_editable = ('status',)
     list_display_links = ['status_flag', '__str__']

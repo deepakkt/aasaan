@@ -9,7 +9,7 @@ from ipcaccounts.models import RCOAccountsMaster
 class TravelRequest(models.Model):
     source = models.CharField('From', max_length=100,default='')
     destination = models.CharField('To', max_length=100,default='')
-    onward_date = models.DateTimeField('Date of Journey', default=datetime.date.today)
+    onward_date = models.DateTimeField('Date of Journey')
     TRAVEL_MODE_VALUES = (('TR', 'Train'),
                            ('BS', 'Bus'),
                            ('FL', 'Flight'))
