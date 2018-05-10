@@ -247,7 +247,7 @@ def voucher_refresh(request):
         am = v.accounts_master
         data.append(
             {'id': am.pk, 'tracking_no': v.tracking_no, 'voucher_type': v.get_voucher_type_display() if v.voucher_type else '', 'nature_of_voucher': v.nature_of_voucher.name, 'head_of_expenses': v.head_of_expenses.name if v.head_of_expenses else '', 'party_name': v.party_name,
-             'amount': v.amount, 'budget_code': am.budget_code, 'rco_voucher_status': am.rco_voucher_status.name, 'entity_name': am.entity_name.name,'account_type': am.account_type.name,
+             'amount': v.amount, 'utr_no': v.utr_no, 'budget_code': am.budget_code, 'rco_voucher_status': am.rco_voucher_status.name, 'entity_name': am.entity_name.name,'account_type': am.account_type.name,
              'np_voucher_status': am.np_voucher_status.name if am.np_voucher_status else '', 'zone': am.zone.zone_name})
         summary['data'] = data
     if not vd:
@@ -255,7 +255,7 @@ def voucher_refresh(request):
             {'id': '', 'tracking_no': '',
              'voucher_type': '', 'nature_of_voucher': '',
              'head_of_expenses': '', 'party_name': '',
-             'amount': '', 'budget_code': '', 'rco_voucher_status': '',
+             'amount': '', 'utr_no':'', 'budget_code': '', 'rco_voucher_status': '',
              'entity_name': '', 'account_type': '',
              'np_voucher_status': '', 'zone': ''})
         summary['data'] = data

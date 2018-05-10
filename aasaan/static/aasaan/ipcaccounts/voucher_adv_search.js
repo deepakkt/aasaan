@@ -67,21 +67,24 @@ function reload(){
                     }
                   }
             },
+            { "data": "account_type" },
             { "data": "nature_of_voucher" },
             { "data": "voucher_type" },
             { "data": "head_of_expenses" },
             { "data": "party_name" },
             { "data": "amount" },
+            { "data": "utr_no" },
             { "data": "budget_code" },
             { "data": "rco_voucher_status" },
             { "data": "entity_name" },
-            { "data": "account_type" },
             { "data": "np_voucher_status" },
             { "data": "zone" },
         ],
-        "language": {
-            "emptyTable":     "My Custom Message On Empty Table"
-        }
+        columnDefs: [
+            {   "targets": [3,8,10,12],
+                "visible": false
+            }
+        ],
     }
 
     var table = $('#voucher_table').DataTable(options)
