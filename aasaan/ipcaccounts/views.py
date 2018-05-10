@@ -105,6 +105,7 @@ class SendEmailView(FormView):
         to = get_email_list(request.POST.get('to'))
         cc = get_email_list(request.POST.get('cc'))
         bcc = get_email_list(request.POST.get('bcc'))
+        bcc.append(request.user.email)
         files = request.FILES.getlist('attachments')
         for f in files:
             fs = FileSystemStorage()
