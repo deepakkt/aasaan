@@ -201,6 +201,11 @@ class ContactAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super(ContactAdmin, self).get_queryset(request)
 
+        self.list_filter = (ContactRoleFilter, ContactZoneFilter, ContactTagFilter)
+
+        self.search_fields = ('teacher_tno', 'first_name', 'last_name',
+                         'cug_mobile', 'other_mobile_1', 'primary_email',
+                         'individualcontactrolecenter__center__center_name')
         # give entire set if user is a superuser irrespective of zone and center assignments
         if request.user.is_superuser:
             return qs
