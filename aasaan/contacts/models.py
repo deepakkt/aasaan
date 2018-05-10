@@ -225,8 +225,6 @@ class Contact(SmartModel):
 
         self.reset_changed_values()
 
-    def __str__(self):
-        return "%s" % self._get_full_name()
 
     class Meta:
         ordering = ['first_name', 'last_name']

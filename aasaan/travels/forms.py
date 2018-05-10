@@ -1,11 +1,5 @@
 from django import forms
-from .models import TravelRequest
-from django.contrib.admin.widgets import AdminSplitDateTime
 from tinymce.widgets import TinyMCE
-
-TRAVEL_MODE_VALUES = (('TR', 'Train'),
-                           ('BS', 'Bus'),
-                           ('FL', 'Flight'))
 
 class MessageForm(forms.Form):
     sender = forms.CharField(max_length=500, widget=forms.TextInput(attrs={'size': '88'}))

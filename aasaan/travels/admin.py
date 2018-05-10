@@ -26,7 +26,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
             'classes': ('has-cols', 'cols-2')
         }),
         ('', {
-            'fields': ('onward_date', 'travel_mode', 'zone', 'teacher', 'remarks')
+            'fields': ('onward_date', 'travel_mode', 'travel_class', 'zone', 'teacher', 'remarks')
 
         }),
         ('Booking details', {
@@ -166,3 +166,5 @@ class TravelRequestAdmin(admin.ModelAdmin):
 
 
 admin.site.register(TravelRequest, TravelRequestAdmin)
+
+
