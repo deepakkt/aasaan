@@ -16,8 +16,8 @@ class TravelRequest(models.Model):
 
     travel_mode = models.CharField(max_length=2, choices=TRAVEL_MODE_VALUES,
                                     default=TRAVEL_MODE_VALUES[0][0])
-    train_list = [('1', 'Second Sleeper'), ('2', '2 AC'), ('3', '3 AC'), ('4', '2S'),('5', 'Chair Car'),]
-    bus_list = [('6', 'Sleeper '), ('7', 'Semi Sleeper')]
+    train_list = [('1', 'SL'), ('2', '2 AC'), ('3', '3 AC'), ('4', '2S'),('5', 'Chair Car'),]
+    bus_list = [('6', 'Sleeper Non AC'), ('7', 'Semi Sleeper AC'), ('10', 'Semi Sleeper Non AC'), ('11', 'Semi Sleeper AC')]
     flight_list = [('8', 'Economy'), ('9', 'Business')]
     item_list = (('Train', tuple(train_list)), ('Bus', tuple(bus_list)),('Flight', tuple(flight_list)))
 

@@ -47,16 +47,21 @@
 
          handleOptGroup();
 
-         $("#id_travel_mode").click(function () {
+         $("#id_travel_mode").change(function () {
             handleOptGroup()
+//            setTimeout(handleOptGroup, 1000)
+        });
+
+        $("#id_travel_mode").click(function () {
+
             if($("#id_travel_mode").val()=="FL"){
-                $('#id_travel_class').val('8')
+                $('#id_travel_class').val('')
             }
             else if($("#id_travel_mode").val()=="BS"){
-                $('#id_travel_class').val('6')
+                $('#id_travel_class').val('')
             }
             else{
-                $('#id_travel_class').val('1')
+                $('#id_travel_class').val('')
             }
 
 
