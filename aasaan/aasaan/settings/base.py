@@ -46,6 +46,7 @@ INSTALLED_APPS += [
     'ashramvisit',
     'travels',
     'gsync',
+    'materials',
 ]
 SITE_ID = 1
 # third party apps
