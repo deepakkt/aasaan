@@ -31,6 +31,7 @@
          $("#searchbar").attr('title', "Search Source or Destination or Teacher Name")
          $("#id_zone option[value='']").remove();
          $("#id_travel_class option[value='']").remove();
+         $('#content').find('h1').remove()
 
          if($('#id_status').val()!='CB'){
             $('.form-row.field-refund_amount').hide()
@@ -66,6 +67,28 @@
 
 
         });
+
+        if(document.URL.indexOf('agenttravelrequest')>-1){
+            var i = document.URL.indexOf('agenttravelrequest');
+            var url = document.URL;
+            var id = url.substring(i).split('/')[1];
+            $.ajax({
+                type: 'GET',
+                url: '/admin/travels/get_passanger_details?id='+id,
+                contentType: 'application/json; charset=utf-8',
+                cache: false,
+                success: function(data) {
+                  $('.form-row.field-teacher').find('.readonly').html(data)
+                  console.log(data)
+                }
+            });
+        }
+
+                //hide one transaction set for new voucher
+        if($('#id_travelnotes_set-TOTAL_FORMS').val()==0){
+            $('#travelnotes_set-group').hide()
+        }
+
 
         function handleOptGroup(){
             if($("#id_travel_mode").val()=="FL"){
