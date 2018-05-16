@@ -17,7 +17,8 @@ class Command(BaseCommand):
     help = "Send all communications under 'scheduled'"
 
     def handle(self, *args, **options):
-        _dryrun=True
+        _dryrun=False
+        
         for _notify in Notifier.objects.filter(notify_status='Scheduled'):
             print(_notify.notify_title)
             if rq_present():
