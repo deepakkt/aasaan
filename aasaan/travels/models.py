@@ -24,7 +24,8 @@ class TravelRequest(models.Model):
     travel_class = models.CharField(max_length=2, choices=tuple(item_list))
     zone = models.ForeignKey(Zone, verbose_name='Zone', on_delete=models.CASCADE)
     remarks = models.TextField('Remarks', max_length=200, blank=True, null=True)
-    STATUS_VALUES = (('IP', 'In-Progress'),
+    STATUS_VALUES = (('IP', 'Initiated'),
+                     ('BO', 'Book the Ticket'),
                           ('BK', 'Booked'),
                           ('VC', 'Voucher Created'),
                           ('CL', 'Cancelled'),
@@ -71,7 +72,33 @@ class TravelRequest(models.Model):
 
     class Meta:
         ordering = ['onward_date', ]
+        verbose_name = 'Teacher Travel Request'
+
+
+class TrTravelRequest(TravelRequest):
+
+    class Meta:
+        proxy = True
         verbose_name = 'Travel Request'
 
 
+class AgentTravelRequest(TravelRequest):
 
+    class Meta:
+        proxy = True
+        verbose_name = 'IPC Teachers Travel Request'
+
+
+class TravelNotes(models.Model):
+    travel_request = models.ForeignKey(TravelRequest, on_delete=models.CASCADE)
+    note = models.TextField(blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.CharField(max_length=100, null=True, blank=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return ""
+
+    class Meta:
+        ordering = ['-created']
+        verbose_name = 'Travel Note'

@@ -1,7 +1,7 @@
 aasaan/aasaan/settings/config.py
 aasaan/test.py
 aasaan/.idea/workspace.xml
-aasaan/media/*.*
+aasaan/media/*
 aasaan/.idea/*.*
 *.pyc
 .vscode/*

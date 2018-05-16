@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TravelRequest
+from .models import TravelRequest, TrTravelRequest, AgentTravelRequest, TravelNotes
 from contacts.models import Contact, IndividualRole, Zone, Center
 from django.core.exceptions import ObjectDoesNotExist
 from utils.filters import RelatedDropdownFilter, ChoiceDropdownFilter
@@ -11,13 +11,63 @@ from django.contrib import messages
 import json
 from config.models import Configuration, SmartModel
 from django.http import HttpResponse, HttpResponseNotFound, Http404,  HttpResponseRedirect
+from AasaanUser.models import AasaanUserContact, AasaanUserZone
+from django.contrib.auth.models import User
+from django.utils import timezone
 
 
-class TravelRequestAdmin(admin.ModelAdmin):
+class TravelNotesInline(admin.StackedInline):
+    model = TravelNotes
+    extra = 0
+    fields = ['note', ]
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+class TravelNotesInline1(admin.StackedInline):
+
+    model = TravelNotes
+    extra = 0
+    readonly_fields = ['note',]
+
+    fieldsets = [
+        ('', {'fields': ('note',), }),
+        ('Hidden Fields',
+         {'fields': ['created_by',], 'classes': ['hidden']}),
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
+class BaseTravelAdmin(admin.ModelAdmin):
+    date_hierarchy = 'onward_date'
+    inlines = [TravelNotesInline1, TravelNotesInline]
+
+    def save_related(self, request, form, formsets, change):
+        for formset in formsets:
+            for fs in formset:
+                if isinstance(fs.instance, TravelNotes) and fs.cleaned_data:
+                    if fs.instance.pk is None:
+                        fs.instance.travel_request = form.instance
+                        fs.instance.created_by = request.user.username
+                        fs.instance.note = fs.instance.note + ' created_by : ' + request.user.username + ' created at : ' + timezone.now().strftime(
+                            "%b %d %Y %H:%M:%S")
+                        fs.instance.save()
+        super(BaseTravelAdmin, self).save_related(request, form, formsets, change)
+
+    class Media:
+        js = ('/static/aasaan/travels/travels.js',)
+
+
+class TravelRequestAdmin(BaseTravelAdmin):
     list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'created_by')
     list_editable = ('status',)
     list_display_links = ['status_flag', '__str__']
-    date_hierarchy = 'onward_date'
     list_filter = ('created',('travel_mode', ChoiceDropdownFilter), ('status', ChoiceDropdownFilter), ('zone', RelatedDropdownFilter), )
     search_fields = ('source', 'destination', 'teacher__first_name', 'teacher__last_name', 'created_by__first_name')
     fieldsets = (
@@ -26,7 +76,7 @@ class TravelRequestAdmin(admin.ModelAdmin):
             'classes': ('has-cols', 'cols-2')
         }),
         ('', {
-            'fields': ('onward_date', 'travel_mode', 'travel_class', 'zone', 'teacher', 'remarks')
+            'fields': ('onward_date', 'travel_mode', 'travel_class', 'zone', 'teacher')
 
         }),
         ('Booking details', {
@@ -161,10 +211,105 @@ class TravelRequestAdmin(admin.ModelAdmin):
         obj.created_by = request.user
         obj.save()
 
-    class Media:
-        js = ('/static/aasaan/travels/travels.js',)
+    def get_actions(self, request):
+        actions = super(TravelRequestAdmin, self).get_actions(request)
+        if request.user.is_superuser:
+            return actions
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+
+
+class TeachersTravelRequestAdmin(BaseTravelAdmin):
+    list_editable = []
+    list_filter = []
+    list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'status')
+    search_fields = []
+    list_display_links = ['status_flag', '__str__']
+
+    def get_actions(self, request):
+        actions = super(TeachersTravelRequestAdmin, self).get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+
+    fieldsets = (
+        ('', {
+            'fields': (('source', 'destination'),),
+            'classes': ('has-cols', 'cols-2')
+        }),
+        ('', {
+            'fields': ('onward_date', 'travel_mode', 'travel_class', 'remarks')
+        }),
+    )
+
+    def get_queryset(self, request):
+        return TravelRequest.objects.filter(created_by=request.user, status__in=['IP', 'BO','BK', 'CL', 'CB'])
+
+    def save_model(self, request, obj, form, change):
+        login_user = User.objects.get(username=request.user.username)
+        contact = AasaanUserContact.objects.get(user=login_user)
+        zone = AasaanUserZone.objects.get(user=login_user)
+        obj.zone = zone.zone
+        obj.created_by = request.user
+        obj.save()
+        obj.teacher.add(contact.contact)
+
+    def get_form(self, request, obj=None, **kwargs):
+        login_user = User.objects.get(username=request.user.username)
+        try:
+            AasaanUserContact.objects.get(user=login_user)
+        except AasaanUserContact.DoesNotExist:
+            self.message_user(request,
+                              "Contact is not mapped to User. Contact aasaan admin",
+                              level=messages.WARNING)
+        try:
+            AasaanUserZone.objects.get(user=login_user)
+        except AasaanUserZone.DoesNotExist:
+            self.message_user(request,
+                              "Zone is not mapped to User. Contact aasaan admin",
+                              level=messages.WARNING)
+
+        return super(TeachersTravelRequestAdmin, self).get_form(request, obj=None, **kwargs)
+
+
+class AgentTravelRequestAdmin(BaseTravelAdmin):
+    list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'created_by')
+    list_editable = ('status',)
+    list_display_links = ['status_flag', '__str__']
+    list_filter = ('created', ('travel_mode', ChoiceDropdownFilter), ('status', ChoiceDropdownFilter),
+                   ('zone', RelatedDropdownFilter),)
+    search_fields = ('source', 'destination', 'teacher__first_name', 'teacher__last_name', 'created_by__first_name')
+    fieldsets = (
+        ('', {
+            'fields': ('source', 'destination', 'onward_date', 'travel_mode', 'travel_class', 'zone', 'remarks')
+
+        }),
+        ('Passanger details', {
+            'fields': ('teacher', )
+        }),
+        ('Booking details', {
+            'fields': ('status', 'booked_date', 'invoice_no', 'amount', 'attachments', 'invoice', 'refund_amount'),
+            'classes': ('collapse', 'open')
+        }),
+    )
+    readonly_fields = ['source', 'destination', 'teacher', 'onward_date', 'travel_mode', 'travel_class', 'zone', 'remarks']
+
+    def get_queryset(self, request):
+       return TravelRequest.objects.filter(status__in=['BO', 'BK', 'CL', 'CB'])
+
+    def get_actions(self, request):
+        actions = super(AgentTravelRequestAdmin, self).get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 admin.site.register(TravelRequest, TravelRequestAdmin)
+admin.site.register(TrTravelRequest, TeachersTravelRequestAdmin)
+admin.site.register(AgentTravelRequest, AgentTravelRequestAdmin)
 
 

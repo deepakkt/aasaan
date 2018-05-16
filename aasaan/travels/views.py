@@ -10,48 +10,36 @@ from datetime import date, timedelta
 from django.views.generic import TemplateView
 from braces.views import LoginRequiredMixin
 from contacts.models import Contact,Zone, IndividualRole, IndividualContactRoleZone, IndividualContactRoleCenter
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 
 class PassangerDetailsView(LoginRequiredMixin, TemplateView):
     def get(self, request):
         if request.method == 'GET':
-            request_id = request.GET['emailforid']
-            if request_id.find(',') > 0:
-                rd = request_id.split(',')
-            else:
-                rd = [request_id, ]
-            t_request = TravelRequest.objects.filter(pk__in=rd)
+            travel_id = request.GET['id']
+            t_request = TravelRequest.objects.get(pk=travel_id)
+            message_body = get_passanger_details_list(t_request)
+            print()
+            return HttpResponse(message_body)
 
-            cft = Configuration.objects.get(configuration_key='IPCTRAVELS_EMAIL_NOTIFY')
-            data = json.loads(cft.configuration_value)
-            sender = request.user.email
-            travels_incharge = request.user.get_full_name()
-            cc = ''
-            bcc = ''
-            travel_agent = ''
 
-            namaskaram = Configuration.objects.get(
-                configuration_key='IPCTRAVELS_EMAIL_CONTENT_START_TEMPLATE').configuration_value
-            ticket_details = Configuration.objects.get(
-                configuration_key='IPCTRAVELS_EMAIL_TICKET_TEMPLATE').configuration_value
-            pranam = Configuration.objects.get(
-                configuration_key='IPCTRAVELS_EMAIL_CONTENT_END_TEMPLATE').configuration_value
-            message_body = ''
-            for t in t_request:
-                ticket_request = add_travel_request_details(t, ticket_details)
-                zone = t.zone.zone_name
-                ticket_request = ticket_request.replace('TRAVELS_INCHARGE', travels_incharge)
-                ticket_request = ticket_request.replace('ZONE_NAME', zone)
-                travel_agent = data[zone]['travel_agent']
-                message_body += ticket_request
-            subject = 'Ticket booking request'
-            pranam = pranam.replace('SENDER_SIGNATURE', travels_incharge)
-            message_body = namaskaram + message_body + pranam
-            form = MessageForm(
-                initial={'sender': sender, 'to': travel_agent, 'cc': cc, 'bcc': bcc, 'subject': subject,
-                         'message': message_body, 'account_id': request_id})
-            return render(request, 'travels/mailer.html', {'form': form})
+def get_passanger_details_list(travel_request):
+    traveller_details = list(travel_request.teacher.all())
+    traveller_row = Configuration.objects.get(
+        configuration_key='IPCTRAVELS_PASSANGER_LIST_TEMPLATE').configuration_value
+    traveller_row = str(traveller_row)
+    t_data = ''
+    for index, tr in enumerate(traveller_details):
+        t_row = traveller_row
+        t_row = t_row.replace('#SNO#', str(index + 1))
+        t_row = t_row.replace('NAME', tr._get_actual_name())
+        age = 'Age not known'
+        if tr.date_of_birth:
+            age = (date.today() - tr.date_of_birth) // timedelta(days=365.2425)
+        t_row = t_row.replace('GENDER_AGE', tr.get_gender_display() + ' - ' + str(age))
+        t_row = t_row.replace('MOBILENO', tr.primary_mobile)
+        t_data += t_row
+    return '<table>' + t_data + '</table>'
 
 
 class ComposeEmailView(LoginRequiredMixin, TemplateView):

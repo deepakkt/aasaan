@@ -48,7 +48,9 @@ INSTALLED_APPS += [
     'gsync',
     'materials',
     'notify',
+    'feedback',
 ]
+
 SITE_ID = 1
 # third party apps
 INSTALLED_APPS += [
