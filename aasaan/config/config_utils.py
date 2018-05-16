@@ -76,6 +76,12 @@ def refresh_database_backup(request_id=None, update_db_status=True):
         _db_object.executed = datetime.now()
         _db_object.save()
 
-         
+
+def rq_present():
+    try:
+        _rq = settings.RQ_QUEUES
+        return True
+    except AttributeError:
+        return False
         
     

@@ -6,9 +6,10 @@ from schedulemaster.models import ProgramSchedule
 from config.models import get_configurations
 from contacts.models import IndividualContactRoleCenter, IndividualContactRoleZone
 
+from notify.api.sendgrid_api import stage_classic_notification
+
 from utils.datedeux import DateDeux
 
-import sendgrid
 import traceback
 
 def build_template_dict(schedule):
@@ -64,6 +65,7 @@ def build_config_email_list(config, schedule):
     config_list = config.split("\r\n")
 
     email_list = []
+    _fnmail = lambda x: x.full_name + "|" + x.primary_email
 
     for config_item in config_list:
         _subitems = config_item.split(':')
@@ -77,7 +79,7 @@ def build_config_email_list(config, schedule):
                                                                 role__role_name=_subitems[-1])
             email_sublist = []
             for zone_role in zone_roles:
-                email_sublist.append(zone_role.contact.primary_email)
+                email_sublist.append(_fnmail(zone_role.contact))
             email_sublist = list(set(email_sublist))
             email_list.extend(email_sublist)
             continue
@@ -87,7 +89,7 @@ def build_config_email_list(config, schedule):
                                                                     role__role_name=_subitems[-1])
             email_sublist = []
             for center_role in center_roles:
-                email_sublist.append(center_role.contact.primary_email)
+                email_sublist.append(_fnmail(center_role.contact))
             email_sublist = list(set(email_sublist))
             email_list.extend(email_sublist)
 
@@ -95,8 +97,13 @@ def build_config_email_list(config, schedule):
 
 
 def dispatch_notification(msg_from, msg_to, msg_subject, msg_body, connection, msg_cc=[], msg_bcc=[]):
+    """
+        16-May-2018, deprecated in favor of notify.api.sendgrid_api
+        Use stage_classic_notification
+    """
     try:
-        msg = sendgrid.Mail()
+        #msg = sendgrid.Mail()
+        msg = dict()
 
         msg.set_from(msg_from)
         msg.set_subject(msg_subject)
@@ -116,7 +123,12 @@ def dispatch_notification(msg_from, msg_to, msg_subject, msg_body, connection, m
 
 
 def setup_sendgrid_connection(sendgrid_key):
-    return sendgrid.SendGridClient(sendgrid_key)
+    """
+        16-May-2018, deprecated in favor of notify.api.sendgrid_api
+        Use send_mail
+    """    
+    # return sendgrid.SendGridClient(sendgrid_key)
+    return None
 
 
 def process_notification(schedule, configurations,
@@ -173,7 +185,9 @@ def process_notification(schedule, configurations,
 
     msg_subject = build_email_body(_template_dict, msg_subject)
 
-    _dispatch_status = dispatch_notification(msg_from, _emails, msg_subject, 
-                                            message_body, connection)
+    stage_classic_notification("Program Notification", msg_from,
+                                _emails, list(), msg_subject,
+                                message_body, list(),
+                                sender_in_cc=False)
 
-    return _dispatch_status
+    return True                            

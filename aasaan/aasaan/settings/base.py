@@ -47,6 +47,7 @@ INSTALLED_APPS += [
     'travels',
     'gsync',
     'materials',
+    'notify',
 ]
 SITE_ID = 1
 # third party apps

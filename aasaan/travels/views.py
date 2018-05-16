@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from config.models import Configuration
 import json
-from config.management.commands.notify_utils import dispatch_notification, setup_sendgrid_connection
+from notify.api.sendgrid_api import stage_classic_notification
 from django.utils import formats
 from django.conf import settings
 from .models import TravelRequest
@@ -131,14 +131,14 @@ class SendEmailView(LoginRequiredMixin, TemplateView):
     def post(self, request):
         msg_subject = request.POST.get('subject')
         message_body = request.POST.get('temp_message')
-        sender = request.user.email
+        sender = request.user.first_name + "|" + request.user.email
         to = get_email_list(request.POST.get('to'))
         cc = get_email_list(request.POST.get('cc'))
         bcc = get_email_list(request.POST.get('bcc'))
 
-        sendgrid_contnection = setup_sendgrid_connection(settings.SENDGRID_KEY)
-        _dispatch_status = dispatch_notification(sender, to, msg_subject,
-                                                 message_body, sendgrid_contnection, cc, bcc)
+        stage_classic_notification("IPC Travels", sender, to, cc,
+                                    msg_subject, message_body)
+        _dispatch_status = True              
         if _dispatch_status:
             request_id = request.POST.get('account_id')
             if request_id.find(',') > 0:

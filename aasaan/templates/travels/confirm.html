@@ -11,7 +11,7 @@
 {% endblock %}
 
 {% block content %}
-    <h4>Your Message has been sent</h4>
+    <h4>Your Message has been queued</h4>
    <form action="/admin/travels/travelrequest/" method="get">{% csrf_token %}
      {{ form.media }}
     {{ form.as_p }}Click Travel Master to go to Travel Request Dashboard

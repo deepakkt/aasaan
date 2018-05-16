@@ -1,24 +1,28 @@
 import json
+from os.path import join
+from datetime import timedelta
+
+from notify.api.sendgrid_api import stage_classic_notification
+
 from django.contrib.auth.decorators import login_required
-from schedulemaster.models import ProgramSchedule, ProgramMaster
-from django.utils import formats
+from django.utils import formats, timezone
 from django.shortcuts import render
 from django.views.generic.edit import FormView, View
-from .forms import MessageForm
-from .models import RCOAccountsMaster, VoucherDetails, Treasurer, AccountTypeMaster, NPVoucherStatusMaster, RCOVoucherStatusMaster
-from config.management.commands.notify_utils import dispatch_notification, setup_sendgrid_connection
 from django.conf import settings
-from config.models import Configuration
-
 from django.views.generic import TemplateView
 from django.http import JsonResponse
-from braces.views import LoginRequiredMixin
-from .forms import FilterFieldsForm, VoucherAdvancedSearchFieldsForm
-from contacts.models import Contact, Zone, IndividualRole, IndividualContactRoleZone, IndividualContactRoleCenter
-from datetime import timedelta
-from django.utils import timezone
 from django.core.files.storage import FileSystemStorage
-from django.conf import settings
+
+from braces.views import LoginRequiredMixin
+
+from schedulemaster.models import ProgramSchedule, ProgramMaster
+from config.models import Configuration
+from contacts.models import Contact, Zone, IndividualRole, IndividualContactRoleZone, IndividualContactRoleCenter
+from .models import RCOAccountsMaster, VoucherDetails, Treasurer, AccountTypeMaster, NPVoucherStatusMaster, RCOVoucherStatusMaster
+
+from .forms import MessageForm
+from .forms import FilterFieldsForm, VoucherAdvancedSearchFieldsForm
+
 
 @login_required
 def get_budget_code(request):
@@ -101,22 +105,24 @@ class SendEmailView(FormView):
     def post(self, request, *args, **kwargs):
         msg_subject = request.POST.get('subject')
         message_body = request.POST.get('temp_message')
-        sender = request.user.email
+        sender = request.user.first_name + "|" + request.user.email
         to = get_email_list(request.POST.get('to'))
         cc = get_email_list(request.POST.get('cc'))
         bcc = get_email_list(request.POST.get('bcc'))
         bcc.append(request.user.email)
         files = request.FILES.getlist('attachments')
+        _files = []
         for f in files:
             fs = FileSystemStorage()
-            fs.location = settings.MEDIA_ROOT+'/ipcaccounts/vouchers/email/'
+            fs.location = join(settings.MEDIA_ROOT, "ipcaccounts/vouchers/email")
             filename = fs.save(f.name, f)
+            _files.append(join(fs.location, filename))
             uploaded_file_url = fs.url(filename)
 
+        stage_classic_notification("IPC Vouchers", sender, to, cc,
+                                    msg_subject, message_body, _files)
+        _dispatch_status = True
 
-        sendgrid_contnection = setup_sendgrid_connection(settings.SENDGRID_KEY)
-        _dispatch_status = dispatch_notification(sender, to, msg_subject,
-                                                 message_body, sendgrid_contnection, cc, bcc)
         if _dispatch_status:
             account_id = request.POST.get('account_id')
             account_master = RCOAccountsMaster.objects.get(id=account_id)

@@ -10,7 +10,6 @@ from config.ors.ors import ORSInterface
 from django.core.management.base import BaseCommand
 from django.conf import settings
 
-from communication.api import stage_pushover, send_communication
 from schedulemaster.models import ProgramSchedule, ProgramAdditionalInformation
 from config.models import Configuration
 
@@ -38,8 +37,6 @@ class Command(BaseCommand):
 
         ors_interface = ORSInterface(settings.ORS_USER, settings.ORS_PASSWORD)
         if not ors_interface.authenticate():
-            send_communication("Pushover", stage_pushover(communication_message="Unable to login to ORS. Aborting!",
-                                                          role_groups = ["Aasaan Admin"]))
             return
 
         program_schedules = ProgramSchedule.objects.filter(event_management_code="",
@@ -69,6 +66,3 @@ class Command(BaseCommand):
             ors_note.key = "ORS_DISPLAY_NAME"
             ors_note.value = program_code.get("display")
             ors_note.save()
-
-        send_communication("Pushover", stage_pushover(communication_message="%d ORS programs created! " % programs_created,
-                                                      role_groups = ["Aasaan Admin"]))

@@ -42,6 +42,6 @@ class Command(BaseCommand):
                                                 sendgrid_connection, 
                                                 "NOTIFY_CANCEL_PROGRAM_TEMPLATE")
             if notification:
-                print("Notification sent successfully!")
+                print("Notification queued successfully!")
             else:
-                print("Notification not sent. Check configurations for potential issue")
+                print("Notification not queued. Check configurations for potential issue")

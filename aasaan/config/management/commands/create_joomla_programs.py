@@ -38,8 +38,6 @@ class Command(BaseCommand):
                                         pwd=settings.JOOMLA_PASSWORD)
 
         if not joomla.authenticate():
-            send_communication("Pushover", stage_pushover(communication_message="Unable to login to Joomla. Aborting!",
-                                                          role_groups = ["Aasaan Admin"]))
             return
 
         program_schedules = ProgramSchedule.objects.filter(online_registration_code="",
