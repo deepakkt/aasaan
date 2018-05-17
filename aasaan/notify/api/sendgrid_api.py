@@ -1,5 +1,6 @@
 from copy import deepcopy
 import urllib
+from os import unlink
 import os.path
 from pprint import pprint
 from collections import Counter
@@ -113,6 +114,18 @@ def get_recipient_objects(_notify):
     return tuple(_recipient_list)
 
 
+def _delete_attachments(attachment_list):
+    for _att in attachment_list:
+        try:
+            unlink(_att)
+        except:
+            # do nothing in case of -any- error
+            # many things could have happened to the file
+            # and it does no harm if the file hangs around
+            pass
+
+    return True
+
 
 def send_email(notify_id, dryrun=False):
     try:
@@ -152,6 +165,9 @@ def send_email(notify_id, dryrun=False):
 
         _notify.detailed_status = "\r\n".join(_status_msg)
 
+    if _notify.delete_attachments:
+        _delete_attachments(_notify.attachment_list())
+        _notify.detailed_status = "Attachments deleted! Attempting to send this email again will cause errors! \r\n" + _notify.detailed_status
     _notify.save()
 
 
