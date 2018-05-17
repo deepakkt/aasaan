@@ -510,6 +510,20 @@ headers={"Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image
             create_data["DisplayName"] = " - ".join([program_schedule.program.name,
                                                      _ors_program_location,
                                                      getformatteddate(program_schedule.start_date)])
+            create_data["ContactPersonName"] = program_schedule.contact_name                                                   
+            create_data["ContactPersonMobile"] = program_schedule.contact_phone1
+            create_data["ContactPersonEmail"] = program_schedule.contact_email
+
+            create_data["BatchType"] = "X"
+            create_data["IsFullDayChecked"] = "false"
+            create_data["FullDayBatchSize"] = ""
+            create_data["IsMorningChecked"] = ["true", "false"]
+            create_data["MorningBatchSize"] = "100"
+            create_data["IsAfternoonChecked"] = "false"
+            create_data["AfternoonBatchSize"] = ""
+            create_data["IsEveningChecked"] = ["true", "false"]
+            create_data["EveningBatchSize"] = "100"
+            
             create_data["AdminUserID"] = ""
             create_data["LadiesSeats"] = ""
             create_data["GentsSeats"] = ""
@@ -526,7 +540,7 @@ headers={"Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image
             create_data["ReferenceProgramID"] = _parse_config_fallback("Reference Program ID")
             create_data["CaptureArrivalDepartureTimings"] = _parse_config_fallback("Capture Arrival Departure Timings",
                                                                                    "N")
-            create_data["BatchType"] = _parse_config_only("Batch")
+            #create_data["BatchType"] = _parse_config_only("Batch")
             create_data["SpecialProgram"] = _parse_config_fallback("Special Program", "N")
             create_data["LockProgram"] = _parse_config_fallback("Lock Program", "N")
             create_data["DarshanProgram"] = _parse_config_fallback("Darshan Program", "N")
