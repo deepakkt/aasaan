@@ -165,9 +165,10 @@ def send_email(notify_id, dryrun=False):
 
         _notify.detailed_status = "\r\n".join(_status_msg)
 
-    if _notify.delete_attachments:
+    if (_notify.delete_attachments and _notify.notify_status == "Completed"):
         _delete_attachments(_notify.attachment_list())
         _notify.detailed_status = "Attachments deleted! Attempting to send this email again will cause errors! \r\n" + _notify.detailed_status
+    
     _notify.save()
 
 
