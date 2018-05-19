@@ -4,7 +4,7 @@ import json
 from notify.api.sendgrid_api import stage_classic_notification
 from django.utils import formats
 from django.conf import settings
-from .models import TravelRequest
+from .models import TravelRequest, TravelNotes
 from .forms import MessageForm
 from datetime import date, timedelta
 from django.views.generic import TemplateView
@@ -90,7 +90,9 @@ def add_travel_request_details(travel_request, ticket_details):
         onward_date = formats.date_format(travel_request.onward_date, "DATE_FORMAT")
         ticket_row = ticket_row.replace('DATEOFJOURNEY', onward_date)
         ticket_row = ticket_row.replace('TRAVELMODE', travel_request.get_travel_mode_display())
-        ticket_row = ticket_row.replace('REMARKS', travel_request.remarks)
+        notes = TravelNotes.objects.filter(travel_request=travel_request)
+        note = [x.note.split('created_by')[0] for x in notes]
+        ticket_row = ticket_row.replace('REMARKS', '\n'.join(note))
         traveller_details = list(travel_request.teacher.all())
         traveller_details_start = Configuration.objects.get(
             configuration_key='IPCTRAVELS_EMAIL_TRAVELLER_START_TEMPLATE').configuration_value
