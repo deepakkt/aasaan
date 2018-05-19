@@ -204,7 +204,7 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
     date_hierarchy = 'voucher_date'
     list_editable = ('rco_voucher_status',)
     list_display = ('is_cancelled', '__str__', 'rco_voucher_status', 'approved_date', 'email_sent', 'np_voucher_status')
-    list_filter = (('program_schedule__start_date', DateRangeFilter),('program_schedule__program', RelatedDropdownFilter),  ('account_type', RelatedDropdownFilter), ('rco_voucher_status', RelatedDropdownFilter), ('np_voucher_status',RelatedDropdownFilter), ('zone',RelatedDropdownFilter),('entity_name', RelatedDropdownFilter), 'email_sent')
+    list_filter = ('program_schedule__start_date',('program_schedule__program', RelatedDropdownFilter),  ('account_type', RelatedDropdownFilter), ('rco_voucher_status', RelatedDropdownFilter), ('np_voucher_status',RelatedDropdownFilter), ('zone',RelatedDropdownFilter),('entity_name', RelatedDropdownFilter), 'email_sent')
 
     search_fields = ('program_schedule__program__name', 'voucherdetails__tracking_no', 'voucherdetails__party_name')
 
@@ -223,6 +223,50 @@ class RCOAccountsMasterAdmin(admin.ModelAdmin):
 class NPAccountsMasterAdmin(RCOAccountsMasterAdmin):
     list_editable = ('np_voucher_status', 'movement_sheet_no')
     list_display = ('is_cancelled', '__str__', 'np_voucher_status', 'finance_submission_date', 'movement_sheet_no')
+
+    # filter accounts records based on user permissions
+    def get_queryset(self, request):
+
+        qs = super(NPAccountsMasterAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
+
+        qs = qs.filter(rco_voucher_status__in=[RCOVoucherStatusMaster.objects.get(name='Panel Treasurer Approved'),RCOVoucherStatusMaster.objects.get(name='Sent to NP')])
+
+        login_user = User.objects.get(username=request.user.username)
+        contact = AasaanUserContact.objects.get(user=login_user)
+        trs_role_group = RoleGroup.objects.filter(
+            role_name=Configuration.objects.get(configuration_key='IPC_ACCOUNTS_TEACHERS_GROUP').configuration_value)
+        acc_role_group = RoleGroup.objects.filter(
+            role_name=Configuration.objects.get(configuration_key='IPC_ACCOUNTS_CLASS_GROUP').configuration_value)
+
+        try:
+            contact_role_group = ContactRoleGroup.objects.filter(contact=contact.contact)
+        except ObjectDoesNotExist:
+            return RCOAccountsMaster.objects.none()
+        try:
+            if contact_role_group.get(role=trs_role_group[:1]):
+                trs_account = qs.filter(zone__in=user_zones).filter(
+                    account_type__name='Teacher Accounts')
+                all_accounts = trs_account
+        except ContactRoleGroup.DoesNotExist:
+            all_accounts = None
+        try:
+            if contact_role_group.get(role=acc_role_group[:1]):
+                class_accounts = qs.filter(program_schedule__center__zone__in=user_zones)
+                other_accounts = qs.filter(zone__in=user_zones).filter(
+                    ~Q(account_type__name='Teacher Accounts'))
+                all_accounts = class_accounts | other_accounts
+        except ContactRoleGroup.DoesNotExist:
+            pass
+        try:
+            if contact_role_group.get(role=acc_role_group[:1]) and contact_role_group.get(role=trs_role_group[:1]):
+                all_accounts = trs_account | class_accounts | other_accounts
+        except ContactRoleGroup.DoesNotExist:
+            pass
+
+        return all_accounts.distinct()
 
 
 admin.site.register(RCOAccountsMaster, RCOAccountsMasterAdmin)

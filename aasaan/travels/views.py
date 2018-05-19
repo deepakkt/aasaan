@@ -74,7 +74,15 @@ class ComposeEmailView(LoginRequiredMixin, TemplateView):
                 ticket_request = ticket_request.replace('ZONE_NAME', zone)
                 travel_agent = data[zone]['travel_agent']
                 message_body += ticket_request
-            subject = 'Ticket booking request'
+            subject = ''
+            if len(t_request) > 2:
+                subject = 'TR' + str(t_request[0].id).zfill(6) + ' - ' + 'TR'+ str(t_request[len(t_request) - 1].id).zfill(6)
+            elif len(t_request) == 2:
+                subject = 'TR' + str(t_request[0].id).zfill(6) + ' & ' + 'TR'+ str(t_request[1].id).zfill(6)
+            elif len(t_request) == 1:
+                subject = 'TR' + str(t_request[0].id).zfill(6)
+            subject = '(' + subject + ') - Ticket booking request'
+
             pranam = pranam.replace('SENDER_SIGNATURE', travels_incharge)
             message_body = namaskaram + message_body + pranam
             form = MessageForm(

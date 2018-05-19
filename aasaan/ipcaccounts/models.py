@@ -157,9 +157,8 @@ class RCOAccountsMaster(SmartModel):
             self.zone = self.program_schedule.center.zone
         if self.old_rco_voucher_status.name != 'Panel Treasurer Approved' and self.rco_voucher_status.name == 'Panel Treasurer Approved':
             self.approved_date = datetime.date.today()
-        if self.np_voucher_status:
-            if self.old_np_voucher_status is None or self.old_np_voucher_status.name != 'Submitted to Finance' and self.np_voucher_status.name == 'Submitted to Finance':
-                self.finance_submission_date = datetime.date.today()
+        if self.np_voucher_status and self.finance_submission_date is None and self.np_voucher_status.name == 'Submitted to Finance':
+            self.finance_submission_date = datetime.date.today()
         super(RCOAccountsMaster, self).save(*args, **kwargs)
 
     def total_no_vouchers(self):
