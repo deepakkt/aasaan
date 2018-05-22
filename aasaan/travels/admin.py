@@ -55,7 +55,7 @@ class BaseTravelAdmin(admin.ModelAdmin):
                     if fs.instance.pk is None:
                         fs.instance.travel_request = form.instance
                         fs.instance.created_by = request.user.username
-                        fs.instance.note = fs.instance.note + ' created_by : ' + request.user.username + ' created at : ' + timezone.now().strftime(
+                        fs.instance.note = fs.instance.note + ' - created_by : ' + request.user.username + ' created at : ' + timezone.now().strftime(
                             "%b %d %Y %H:%M:%S")
                         fs.instance.save()
         super(BaseTravelAdmin, self).save_related(request, form, formsets, change)

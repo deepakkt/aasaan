@@ -1,10 +1,37 @@
 from django.contrib import admin
 from .models import ClassMaterialsMaster, MaterialsRequest, ClassMaterialItem, MaterialTypeMaster, ClassTypeMaster,\
     CenterMaterialsMaster,CenterMaterialItem, CourierDetails,MaterialStatusMaster, KitsMaster, OtherMaterialsMasterItem,\
-    KitsItem,OtherMaterialsMaster,MaterialsRequestIncharge
+    KitsItem,OtherMaterialsMaster,MaterialsRequestIncharge, MaterialNotes
 from contacts.models import Zone, Center
 from utils.filters import RelatedDropdownFilter, ChoiceDropdownFilter
+from django.utils import timezone
 
+class MaterialNotesInline(admin.StackedInline):
+    model = MaterialNotes
+    extra = 0
+    fields = ['note', ]
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+
+class MaterialNotesInline1(admin.StackedInline):
+
+    model = MaterialNotes
+    extra = 0
+    readonly_fields = ['note',]
+
+    fieldsets = [
+        ('', {'fields': ('note',), }),
+        ('Hidden Fields',
+         {'fields': ['created_by',], 'classes': ['hidden']}),
+    ]
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 class ClassMaterialItemInline(admin.TabularInline):
     model = ClassMaterialItem
@@ -35,7 +62,7 @@ class CourierDetailsInline(admin.TabularInline):
 
 
 class MaterialsRequestAdmin(admin.ModelAdmin):
-    inlines = [ClassMaterialItemInline, CenterMaterialItemInline, KitsItemItemInline, OtherMaterialsMasterItemInline, CourierDetailsInline,]
+    inlines = [ClassMaterialItemInline, CenterMaterialItemInline, KitsItemItemInline, OtherMaterialsMasterItemInline, CourierDetailsInline, MaterialNotesInline1, MaterialNotesInline]
     list_filter = ('created', ('material_type', RelatedDropdownFilter), ('status', RelatedDropdownFilter), ('zone',RelatedDropdownFilter))
     list_display = ('__str__', 'status', 'material_type', 'created_by', 'created', 'delivery_date')
     list_editable = ('status',)
@@ -43,7 +70,7 @@ class MaterialsRequestAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('', {
-            'fields': ('material_type', 'zone', 'center', 'delivery_date', 'status', 'remarks')
+            'fields': ('material_type', 'zone', 'center', 'delivery_date', 'status')
         }),
     )
 
@@ -75,6 +102,18 @@ class MaterialsRequestAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.created_by = request.user
         obj.save()
+
+    def save_related(self, request, form, formsets, change):
+        for formset in formsets:
+            for fs in formset:
+                if isinstance(fs.instance, MaterialNotes) and fs.cleaned_data:
+                    if fs.instance.pk is None:
+                        fs.instance.material_request = form.instance
+                        fs.instance.created_by = request.user.username
+                        fs.instance.note = fs.instance.note + ' - created_by : ' + request.user.username + ' created at : ' + timezone.now().strftime(
+                            "%b %d %Y %H:%M:%S")
+                        fs.instance.save()
+        super(MaterialsRequestAdmin, self).save_related(request, form, formsets, change)
 
     class Media:
         js = ('/static/aasaan/materials/materials_request.js',)

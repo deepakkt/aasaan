@@ -13,6 +13,12 @@
 ////            handleOptGroup()
 //        });
 
+         //hide one transaction set for new voucher
+        if($('#id_materialnotes_set-TOTAL_FORMS').val()==0){
+            $('#materialnotes_set-group').hide()
+        }
+        $("#id_status option[value='']").remove();
+
          $("#id_material_type").click(function () {
             handleOptGroup()
             $("#id_class_type").val('')

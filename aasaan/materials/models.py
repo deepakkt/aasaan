@@ -79,7 +79,6 @@ class MaterialsRequest(models.Model):
     center = GroupedForeignKey(Center, 'zone', blank=True, null=True)
     created_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
     delivery_date = models.DateField('Expected Delivery Date')
-    remarks = models.TextField('Remarks', blank=True)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -192,3 +191,18 @@ class CourierDetails(models.Model):
     class Meta:
         ordering = ['agency', 'sent_date']
         verbose_name = 'Courier Detail'
+
+
+class MaterialNotes(models.Model):
+    material_request = models.ForeignKey(MaterialsRequest, on_delete=models.CASCADE)
+    note = models.TextField(blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    created_by = models.CharField(max_length=100, null=True, blank=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return ""
+
+    class Meta:
+        ordering = ['-created']
+        verbose_name = 'Materials Note'
