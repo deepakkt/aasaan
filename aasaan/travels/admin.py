@@ -235,11 +235,7 @@ class TeachersTravelRequestAdmin(BaseTravelAdmin):
 
     fieldsets = (
         ('', {
-            'fields': (('source', 'destination'),),
-            'classes': ('has-cols', 'cols-2')
-        }),
-        ('', {
-            'fields': ('onward_date', 'travel_mode', 'travel_class', 'remarks')
+            'fields': ('source', 'destination','onward_date', 'travel_mode', 'travel_class')
         }),
     )
 
