@@ -117,6 +117,29 @@ class Contact(SmartModel):
         return primary_mobile
     primary_mobile = property(_get_primary_mobile)
 
+    @property
+    def roles(self):
+        def _translate(role_dict):
+            _map = {'role__role_name': 'role',
+                    'zone__zone_name': 'zone',
+                    'center__zone__zone_name': 'zone',
+                    'center__center_name': 'center'}
+
+            _role_dict = {_map[_k]: role_dict[_k] for _k in role_dict}                    
+            _role_dict['center'] = _role_dict.get('center', '')
+            return _role_dict
+
+        _center_roles = self.individualcontactrolecenter_set.all()
+        _zone_roles = self.individualcontactrolezone_set.all()
+
+        _center_fields = ['role__role_name', 'center__center_name', 'center__zone__zone_name']
+        _zone_fields = ['role__role_name', 'zone__zone_name']
+
+        _zone_role_values = list(_zone_roles.values(*_zone_fields))
+        _center_role_values = list(_center_roles.values(*_center_fields))
+
+        return tuple([_translate(x) for x in _zone_role_values + _center_role_values])
+
     def __str__(self):
         if self.teacher_tno:
             return "%s (%s)" % (self.full_name, self.teacher_tno)
