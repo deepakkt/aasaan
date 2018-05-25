@@ -2,7 +2,7 @@ from django.db import models
 from contacts.models import Zone, Center
 from django.contrib.auth.models import User
 from smart_selects.db_fields import GroupedForeignKey
-
+from config.models import SmartModel
 
 class MaterialTypeMaster(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -71,7 +71,7 @@ class OtherMaterialsMaster(models.Model):
         ordering = ['name']
 
 
-class MaterialsRequest(models.Model):
+class MaterialsRequest(SmartModel):
     material_type = models.ForeignKey(MaterialTypeMaster, verbose_name='Material Type', on_delete=models.CASCADE)
     class_type = models.ForeignKey(ClassTypeMaster, verbose_name='Class Type', on_delete=models.CASCADE, blank=True, null=True)
     status = models.ForeignKey(MaterialStatusMaster, verbose_name='Status', on_delete=models.CASCADE)
