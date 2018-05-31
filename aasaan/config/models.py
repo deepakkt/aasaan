@@ -12,15 +12,16 @@ class SmartModel(models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # setup a function to give expanded status values
-        # instead of the short code stored in database
-        self.display_func = lambda x: 'get_' + x + '_display'
-
         # store old values of following fields to track changes
         self.old_field_list = ['__old_' + x.name for x in self._meta.fields]
         self.field_list = [x.name for x in self._meta.fields]
 
         self.reset_changed_values()
+
+    def display_func(self, x):
+        # setup a function to give expanded status values
+        # instead of the short code stored in database
+        return 'get_' + x + '_display'
 
     # set __old_* fields to current model fields
     # use it for first time init or after comparisons for
