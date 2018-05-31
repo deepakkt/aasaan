@@ -13,6 +13,7 @@ export PYTHONPATH=$DJANGODIR:$PYTHONPATH
 
 docker exec aasaan_db psql -U aasaan -c "REFRESH MATERIALIZED VIEW VOUCHER_SNAPSHOT"
 
+python manage.py process_trigger_notifications
 python manage.py dispatch_staged_communications
 python manage.py run_admin_queries
 python manage.py deploy_master_changes

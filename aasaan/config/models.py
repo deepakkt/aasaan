@@ -1,6 +1,9 @@
+import json
+
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.text import slugify
+from django.contrib.postgres.fields import JSONField
 
 # Create your models here.
 
@@ -28,7 +31,7 @@ class SmartModel(models.Model):
                 setattr(self, '__old_' + each_field, getattr(self, self.display_func(each_field))())
             except (AttributeError, ObjectDoesNotExist):
                 try:
-                    setattr(self, '__old_' + each_field, getattr(self, each_field))
+                    setattr(self, '__old_' + each_field, str(getattr(self, each_field)))
                 except:
                     setattr(self, '__old_' + each_field, None)
 
@@ -41,7 +44,7 @@ class SmartModel(models.Model):
             try:
                 new_field_value = getattr(self, self.display_func(new_field))()
             except AttributeError:
-                new_field_value = getattr(self, new_field)
+                new_field_value = str(getattr(self, new_field))
             old_field_value = getattr(self, old_field)
 
             if new_field_value != getattr(self, old_field):
@@ -51,6 +54,69 @@ class SmartModel(models.Model):
 
     class Meta:
         abstract = True
+
+
+class NotifyModel(SmartModel):
+    notify_toggle = models.BooleanField(default=False)
+    notify_meta = JSONField(default="")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def get_notify_meta(self):
+        _notify_fields = self.__class__.NotifyMeta.notify_fields
+        changed_fields = self.changed_fields()
+
+        _notify_toggle = False
+        _notify_changed_fields = json.loads(self.notify_meta) if self.notify_meta else dict()
+
+        _valid_notifiers = list(set.intersection(set(_notify_fields),
+                                                set(changed_fields.keys())))
+
+        if _valid_notifiers:                        
+            for _notifier in _valid_notifiers:
+                _notify_changed_fields[_notifier] = changed_fields[_notifier]
+
+            _notify_toggle = True
+
+        return (_notify_toggle, _notify_changed_fields)
+
+    def save(self, *args, **kwargs):
+        self.notify_toggle, _notify_meta = self.get_notify_meta()
+        self.notify_meta = json.dumps(_notify_meta)
+
+        if not self.id:
+            try:
+                _notify_creation = self.__class__.NotifyMeta.notify_creation
+            except AttributeError:
+                _notify_creation = False
+
+            if not _notify_creation:
+                self.notify_toggle = False
+                self.notify_meta = ""
+            else:
+                _notify_meta['created'] = True
+                self.notify_meta = json.dumps(_notify_meta)
+
+        super().save(*args, **kwargs)
+
+    class Meta:
+        abstract = True
+
+    class NotifyMeta:
+        # child class should override this with 
+        # fields it should toggle for notification
+
+        # add field names to this list for notification
+        notify_fields = []
+
+        # if no records are created, does notification apply?
+        notify_creation = False
+
+        # include instance specific recipients, if applicable
+        def get_recipients(self):
+            # always return a list
+            return []
 
 
 class Configuration(models.Model):
@@ -82,7 +148,7 @@ def get_configurations(key_prefix):
             for x in Configuration.objects.filter(configuration_key__startswith=key_prefix)))
         
 
-class Tag(models.Model):
+class Tag(NotifyModel):
     tag_name = models.CharField(max_length=50, unique=True)
 
     class Meta:
@@ -94,7 +160,18 @@ class Tag(models.Model):
     def save(self, *args, **kwargs):
         self.tag_name = slugify(self.tag_name.strip().lower())
         super().save(*args, **kwargs)
+        self.reset_changed_values()
 
+
+    class NotifyMeta:
+        notify_fields = ['tag_name']
+        notify_creation = False
+
+        def get_recipients(self):
+            # always return a list
+            return ['Thamu|ipc.itsupport@ishafoundation.org',
+                    'Anand|anand.subramanian@ishafoundation.org']
+        
 
 class AdminQuery(models.Model):
     query_status = models.CharField(max_length=2, choices=(('RQ', 'Requested'),

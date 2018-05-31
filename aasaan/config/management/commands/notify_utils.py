@@ -48,7 +48,6 @@ def build_config_heirarchy(heirarchy, prefix="NOTIFY", suffix="TARGET"):
     for h in heirarchy:
         _previous += " " + h
         _config_heirarchy.append(_build_heirarchy(_previous))
-
     return tuple(_config_heirarchy)
 
 
