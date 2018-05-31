@@ -4,10 +4,9 @@ from django.contrib.auth.models import User
 import datetime
 from django.utils.html import format_html
 from ipcaccounts.models import RCOAccountsMaster
-from config.models import SmartModel
 
 
-class TravelRequest(SmartModel):
+class TravelRequest(models.Model):
     source = models.CharField('From', max_length=100,default='')
     destination = models.CharField('To', max_length=100,default='')
     onward_date = models.DateTimeField('Date of Journey')
