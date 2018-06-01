@@ -1,0 +1,73 @@
+<html style="box-sizing: border-box;font-size: 18px;">
+{% block subject %}
+	{% if subject %}
+		Admin query '{{ object.query_title }}' has changed status!
+	{% endif %}
+{% endblock %}	
+{% block frommail %}
+	{% if frommail %}
+		IPC NP|ipc.np@ishafoundation.org
+	{% endif %}
+{% endblock %}	
+
+<head style="box-sizing: border-box;">
+	<style style="box-sizing: border-box;">
+		* {
+			box-sizing: border-box;
+		}
+		html {
+			font-size: 18px;
+		}
+		header {
+		}
+		h3 {
+			color: red;
+		}
+		strong {
+			color: brown;
+			text-decoration: underline;
+			font-size: 1.15rem;
+		}
+		footer {
+			font-size: 0.9rem;	
+		}
+		.aasaan {
+			color: yellow;
+			font-style: bold;
+			margin-left: 15px;
+		}
+		.headercontainer {
+			width: 100%;
+			background-color: blue;
+			padding: 3px 3px 3px 3px;
+		}
+
+		.heading {
+			font-weight: bold;
+			text-decoration: underline;
+		}
+	</style>
+</head>
+<body style="box-sizing: border-box;">
+	<div class="headercontainer" style="box-sizing: border-box;width: 100%;background-color: blue;padding: 3px 3px 3px 3px;">
+		<header style="box-sizing: border-box;">
+			<h2 class="aasaan" style="box-sizing: border-box;color: yellow;font-style: bold;margin-left: 15px;">aasaan</h2>
+		</header>
+	</div>
+	<div class="bodycontainer" style="box-sizing: border-box;">
+		<h3 style="box-sizing: border-box;color: red;">Query status changed</h3>
+		<p style="box-sizing: border-box;">
+            The admin query has changed status.
+            The current status is marked to be {{ meta.query_status.1 }}.
+            Old status was {{ meta.query_status.0 }}.
+		</p>
+		<p style="box-sizing: border-box;">
+            Full query scheduled is as follows: <br />
+            {{ object.query }}
+		</p>
+	</div>
+	<footer style="box-sizing: border-box;font-size: 0.9rem;">	
+		<span class="heading" style="box-sizing: border-box;font-weight: bold;text-decoration: underline;">Note:</span> This is an automated notification
+	</footer>
+</body>
+</html>

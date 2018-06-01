@@ -174,7 +174,7 @@ class Tag(NotifyModel):
                     'Anand|anand.subramanian@ishafoundation.org']
         
 
-class AdminQuery(models.Model):
+class AdminQuery(NotifyModel):
     query_status = models.CharField(max_length=2, choices=(('RQ', 'Requested'),
                                                             ('AP', 'Approved'),
                                                             ('CO', 'Completed'),
@@ -185,6 +185,14 @@ class AdminQuery(models.Model):
     query_result = models.TextField(blank=True)
     created = models.DateTimeField(auto_now_add=True)
     executed = models.DateTimeField(null=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.reset_changed_values()
+    
+    class NotifyMeta:
+        notify_fields = ['query_status']
+        notify_creation = True
 
 
 class MasterDeploy(models.Model):

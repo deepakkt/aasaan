@@ -239,7 +239,7 @@ def get_notification_template_recipients(template, zone_name="", center_name="",
         _role_group_recipients = get_multi_role_group_recipients(template_parsed["rolegroup"])
 
     return remove_email_duplicates(_center_recipients + _zone_recipients + 
-                                    _email_recipients + _role_group_recipients + supplement or [])        
+                                    _email_recipients + _role_group_recipients + (supplement or []))        
 
 
 def get_notify_config_name(model_name, zone_name, center_name, 
