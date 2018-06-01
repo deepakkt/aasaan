@@ -178,22 +178,6 @@ class RCOAccountsMaster(models.Model):
     is_cancelled.allow_tags = True
     is_cancelled.short_description = " "
 
-    def clean(self):
-        if self.id:
-            _template = "%s cannot be changed once set. "
-            _error_list = ""
-            _onetime_field_list = ["account_type", "entity_name"]
-
-            _changed_fields = self.changed_fields()
-
-            for _field in _onetime_field_list:
-                if _field in _changed_fields:
-                    _field_display = " ".join([x.title() for x in _field.split("_")])
-                    _error_list += _template % _field_display
-
-            if _error_list:
-                raise ValidationError(_error_list)
-
     def __str__(self):
 
         voucher_details = VoucherDetails.objects.filter(accounts_master=self).order_by('tracking_no')
