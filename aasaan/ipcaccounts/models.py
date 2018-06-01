@@ -2,7 +2,7 @@ from django.db import models
 from contacts.models import Center, Contact, IndividualContactRoleZone, Zone
 from schedulemaster.models import ProgramSchedule, ProgramMaster
 import json
-from config.models import Configuration, SmartModel
+from config.models import Configuration
 from django.core.exceptions import ValidationError
 from smart_selects.db_fields import GroupedForeignKey
 import datetime
@@ -130,7 +130,7 @@ class Treasurer(models.Model):
         verbose_name = 'Treasurer'
 
 
-class RCOAccountsMaster(SmartModel):
+class RCOAccountsMaster(models.Model):
     account_type = models.ForeignKey(AccountTypeMaster, default=1, verbose_name='Account Type', on_delete=models.CASCADE)
     entity_name = models.ForeignKey(EntityMaster, default=1, verbose_name='Entity', on_delete=models.CASCADE)
     zone = models.ForeignKey(Zone, verbose_name='Zone', on_delete=models.CASCADE)
@@ -226,7 +226,7 @@ class RCOAccountsMaster(SmartModel):
         verbose_name = 'RCO Voucher'
 
 
-class VoucherDetails(SmartModel):
+class VoucherDetails(models.Model):
     accounts_master = models.ForeignKey(RCOAccountsMaster, on_delete=models.CASCADE)
     tracking_no = models.CharField(max_length=100, blank=True)
     VOUCHER_TYPE_VALUES = (('BV', 'Bank Voucher'),
