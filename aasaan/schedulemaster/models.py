@@ -285,7 +285,6 @@ class ProgramSchedule(SmartModel):
             self.cancelled_date = None
 
         super().save(*args, **kwargs)
-        self.reset_changed_values()
 
 class ProgramAdditionalLanguages(models.Model):
     program = models.ForeignKey(ProgramSchedule, on_delete=models.CASCADE)

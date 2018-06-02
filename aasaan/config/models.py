@@ -12,46 +12,53 @@ class SmartModel(models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # store old values of following fields to track changes
-        self.old_field_list = ['__old_' + x.name for x in self._meta.fields]
-        self.field_list = [x.name for x in self._meta.fields]
-
-        self.reset_changed_values()
 
     def display_func(self, x):
         # setup a function to give expanded status values
         # instead of the short code stored in database
         return 'get_' + x + '_display'
 
-    # set __old_* fields to current model fields
-    # use it for first time init or after comparisons for
-    # changes and actions are all done
-    def reset_changed_values(self):
-        for each_field in self.field_list:
-            try:
-                setattr(self, '__old_' + each_field, getattr(self, self.display_func(each_field))())
-            except (AttributeError, ObjectDoesNotExist):
-                try:
-                    setattr(self, '__old_' + each_field, str(getattr(self, each_field)))
-                except:
-                    setattr(self, '__old_' + each_field, None)
 
+    def _get_field_value(self, field_name):
+        _display_func = self.display_func(field_name)
+
+        try:
+            _display_func_ref = getattr(self, _display_func)
+        except:
+            _display_func_ref = None
+
+        if _display_func_ref:
+            return str(_display_func_ref())
+
+        try:
+            return str(getattr(self, field_name))
+        except:
+            return ""
 
     # return a dictionary of changed fields alone
     # along with a tuple of old versus new values
     def changed_fields(self):
-        changed_fields = {}
-        for old_field, new_field in zip(self.old_field_list, self.field_list):
-            try:
-                new_field_value = getattr(self, self.display_func(new_field))()
-            except AttributeError:
-                new_field_value = str(getattr(self, new_field))
-            old_field_value = getattr(self, old_field)
+        changes = dict()
+        fields = [_x.name for _x in self._meta.fields]
+        _base_values = {
+                _x: ("", self._get_field_value(_x)) for _x in fields
+            }
 
-            if new_field_value != getattr(self, old_field):
-                changed_fields[new_field] = (old_field_value,
-                                             new_field_value)
-        return changed_fields
+        if not self.id:
+            return _base_values
+
+        try:
+            _old_obj = self.__class__.objects.get(pk=self.id)
+        except:
+            return _base_values
+
+        _old_values = [_old_obj._get_field_value(_x) for _x in fields]
+        _new_values = [self._get_field_value(_x) for _x in fields]
+        _value_map = dict(zip(fields, zip(_old_values, _new_values)))
+        return {
+            _x: _value_map[_x] for _x in _value_map
+            if _value_map[_x][0] != _value_map[_x][1]
+            }
 
     class Meta:
         abstract = True
@@ -59,7 +66,7 @@ class SmartModel(models.Model):
 
 class NotifyModel(SmartModel):
     notify_toggle = models.BooleanField(default=False)
-    notify_meta = JSONField(default="")
+    notify_meta = JSONField(default="{}")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -136,10 +143,14 @@ class Configuration(models.Model):
         ordering = ['configuration_key']
 
 
-def get_configuration(key):
+def get_configuration(key, json_config=False):
     try:
         x = Configuration.objects.get(configuration_key=key)
-        return x.configuration_value
+
+        if json_config:
+            return json.loads(x.configuration_value)
+        else:
+            return x.configuration_value
     except:
         return ""
 
@@ -161,7 +172,6 @@ class Tag(NotifyModel):
     def save(self, *args, **kwargs):
         self.tag_name = slugify(self.tag_name.strip().lower())
         super().save(*args, **kwargs)
-        self.reset_changed_values()
 
 
     class NotifyMeta:
@@ -188,7 +198,6 @@ class AdminQuery(NotifyModel):
 
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
-        self.reset_changed_values()
     
     class NotifyMeta:
         notify_fields = ['query_status']

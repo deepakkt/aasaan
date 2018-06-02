@@ -161,9 +161,14 @@ class RCOAccountsMaster(models.Model):
             self.finance_submission_date = datetime.date.today()
         super(RCOAccountsMaster, self).save(*args, **kwargs)
 
+    @property
+    def tracking_numbers(self):
+        tnos = tuple(self.voucherdetails_set.all().values_list('tracking_no'))
+        return [x[0] for x in tnos]        
+
     def total_no_vouchers(self):
-        items_count = VoucherDetails.objects.filter(accounts_master=self).count()
-        return items_count
+        return len(self.tracking_numbers)
+
     total_no_vouchers.allow_tags = True
     total_no_vouchers.short_description = "Vouchers"
 
@@ -179,14 +184,13 @@ class RCOAccountsMaster(models.Model):
     is_cancelled.short_description = " "
 
     def __str__(self):
-
-        voucher_details = VoucherDetails.objects.filter(accounts_master=self).order_by('tracking_no')
+        voucher_details = self.tracking_numbers
         if len(voucher_details) > 2:
-            tracking_numbers = voucher_details[0].tracking_no + ' - ' + voucher_details[len(voucher_details) - 1].tracking_no[-2:]
+            tracking_numbers = voucher_details[0] + ' - ' + voucher_details[len(voucher_details) - 1][-2:]
         elif len(voucher_details) == 2:
-            tracking_numbers = voucher_details[0].tracking_no + ' & ' + voucher_details[len(voucher_details) - 1].tracking_no[-2:]
+            tracking_numbers = voucher_details[0] + ' & ' + voucher_details[len(voucher_details) - 1][-2:]
         elif len(voucher_details) == 1:
-            tracking_numbers = voucher_details[0].tracking_no
+            tracking_numbers = voucher_details[0]
         else:
             tracking_numbers = 'No Voucher'
 

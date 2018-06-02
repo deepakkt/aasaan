@@ -246,7 +246,6 @@ class Contact(SmartModel):
                 resized_image = id_proof_image.resize((640, 480))
                 resized_image.save(self.id_proof_scan.file.name)
 
-        self.reset_changed_values()
 
 
     class Meta:
