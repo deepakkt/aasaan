@@ -64,9 +64,14 @@ class SmartModel(models.Model):
         pass
 
 
+    def postsave(self, *args, **kwargs):
+        pass
+
+
     def save(self, *args, **kwargs):
         self.presave(*args, **kwargs)
         super().save(*args, **kwargs)
+        self.postsave(*args, **kwargs)
     
 
     class Meta:

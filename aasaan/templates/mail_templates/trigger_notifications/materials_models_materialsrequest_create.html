@@ -1,7 +1,7 @@
 <html style="box-sizing: border-box;font-size: 18px;">
 {% block subject %}
 	{% if subject %}
-		New admin query scheduled with title '{{ object.query_title }}'
+		New material request from {{ object.zone.zone_name }} raised
 	{% endif %}
 {% endblock %}	
 {% block frommail %}
@@ -55,20 +55,19 @@
 		</header>
 	</div>
 	<div class="bodycontainer" style="box-sizing: border-box;">
-		<h3 style="box-sizing: border-box;color: red;">New query scheduled in production</h3>
+		<h3 style="box-sizing: border-box;color: red;">New material request raised</h3>
 		<p style="box-sizing: border-box;">
-            A new query has been scheduled for execution in production.
-            The current status is marked to be {{ meta.query_status.1 }}
+            Namaskaram, a new material request from {{ object.zone.zone_name }} has been raised.
 		</p>
 		<p style="box-sizing: border-box;">
-			Full query scheduled is as follows: <br />
-			<pre>
-				{{ object.query }}
-			</pre>
-		</p>
+                Material Type: {{ object.material_type.name }}
+        </p>    
+		<p style="box-sizing: border-box;">
+                Current status is marked to be {{ object.status.name }}
+        </p>    
 	</div>
 	<footer style="box-sizing: border-box;font-size: 0.9rem;">	
-		<span class="heading" style="box-sizing: border-box;font-weight: bold;text-decoration: underline;">Note:</span> This is an automated notification
+		<span class="heading" style="box-sizing: border-box;font-weight: bold;text-decoration: underline;">Note:</span> This is an automated notification. Please reply-all to this email in case of clarifications regarding this request.
 	</footer>
 </body>
 </html>

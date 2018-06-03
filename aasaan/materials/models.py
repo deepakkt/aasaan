@@ -2,7 +2,7 @@ from django.db import models
 from contacts.models import Zone, Center
 from django.contrib.auth.models import User
 from smart_selects.db_fields import GroupedForeignKey
-from config.models import SmartModel
+from config.models import SmartModel, NotifyModel
 
 class MaterialTypeMaster(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -71,7 +71,7 @@ class OtherMaterialsMaster(models.Model):
         ordering = ['name']
 
 
-class MaterialsRequest(SmartModel):
+class MaterialsRequest(NotifyModel):
     material_type = models.ForeignKey(MaterialTypeMaster, verbose_name='Material Type', on_delete=models.CASCADE)
     class_type = models.ForeignKey(ClassTypeMaster, verbose_name='Class Type', on_delete=models.CASCADE, blank=True, null=True)
     status = models.ForeignKey(MaterialStatusMaster, verbose_name='Status', on_delete=models.CASCADE)
@@ -115,12 +115,21 @@ class MaterialsRequest(SmartModel):
         verbose_name = "Material Request"
         verbose_name_plural = "Materials Request"
 
+    class NotifyMeta:
+        notify_fields = ['status']
+        notify_creation = True
+
+        def get_recipients(self):
+            return [self.created_by.email]
+
+
 
 class MaterialsRequestIncharge(MaterialsRequest):
 
     class Meta:
         proxy = True
         verbose_name = 'Materials Incharge'
+
 
 class ClassMaterialItem(models.Model):
     class_materials = GroupedForeignKey(ClassMaterialsMaster, 'class_type', on_delete=models.CASCADE, blank=True, null=True)

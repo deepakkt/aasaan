@@ -62,10 +62,18 @@
             Old status was {{ meta.query_status.0 }}.
 		</p>
 		<p style="box-sizing: border-box;">
-            Full query scheduled is as follows: <br />
-            {{ object.query }}
+			Full query scheduled is as follows: <br />
+			<pre>
+				{{ object.query }}
+			</pre>
 		</p>
-	</div>
+		<p style="box-sizing: border-box;">
+				Query result is as follows: <br />
+				<pre>
+					{{ object.query_result }}
+				</pre>
+			</p>
+		</div>
 	<footer style="box-sizing: border-box;font-size: 0.9rem;">	
 		<span class="heading" style="box-sizing: border-box;font-weight: bold;text-decoration: underline;">Note:</span> This is an automated notification
 	</footer>
