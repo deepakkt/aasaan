@@ -47,37 +47,7 @@ def get_notify_template_dict():
 
 
 def get_notify_properties(model_class):
-    _result = {
-        "notify": False,
-        "notify_fields": [],
-        "notify_creation": False,
-        "notify_recipients": False
-    }
-
-    try:
-        notify_fields = model_class.NotifyMeta.notify_fields
-    except AttributeError:
-        return dict(_result)
-
-    if not notify_fields:
-        return dict(_result)
-
-    _result["notify_fields"] = notify_fields[:]
-    _result["notify"] = True
-
-    try:
-        notify_creation = model_class.NotifyMeta.notify_creation
-        notify_creation = bool(notify_creation)
-    except AttributeError:
-        notify_creation = False
-
-    try:
-        supplementary = model_class.NotifyMeta.get_recipients
-        notify_recipients = True
-    except AttributeError:
-        notify_recipients = False
-
-    _result["notify_creation"] = notify_creation
-    _result["notify_recipients"] = notify_recipients
-
-    return _result
+    # this is now just a wrapper function
+    # with the logic moved to the class
+    
+    return model_class.get_notify_properties()

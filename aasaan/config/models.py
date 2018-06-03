@@ -60,6 +60,15 @@ class SmartModel(models.Model):
             if _value_map[_x][0] != _value_map[_x][1]
             }
 
+    def presave(self, *args, **kwargs):
+        pass
+
+
+    def save(self, *args, **kwargs):
+        self.presave(*args, **kwargs)
+        super().save(*args, **kwargs)
+    
+
     class Meta:
         abstract = True
 
@@ -70,6 +79,43 @@ class NotifyModel(SmartModel):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    @classmethod
+    def get_notify_properties(cls):
+        _result = {
+            "notify": False,
+            "notify_fields": [],
+            "notify_creation": False,
+            "notify_recipients": False
+        }
+
+        try:
+            notify_fields = cls.NotifyMeta.notify_fields
+        except AttributeError:
+            return dict(_result)
+
+        if not notify_fields:
+            return dict(_result)
+
+        _result["notify_fields"] = notify_fields[:]
+        _result["notify"] = True
+
+        try:
+            notify_creation = cls.NotifyMeta.notify_creation
+            notify_creation = bool(notify_creation)
+        except AttributeError:
+            notify_creation = False
+
+        try:
+            supplementary = cls.NotifyMeta.get_recipients
+            notify_recipients = True
+        except AttributeError:
+            notify_recipients = False
+
+        _result["notify_creation"] = notify_creation
+        _result["notify_recipients"] = notify_recipients
+
+        return _result        
 
     def get_notify_meta(self):
         _notify_fields = self.__class__.NotifyMeta.notify_fields
@@ -89,7 +135,8 @@ class NotifyModel(SmartModel):
 
         return (_notify_toggle, _notify_changed_fields)
 
-    def save(self, *args, **kwargs):
+
+    def presave(self, *args, **kwargs):
         self.notify_toggle, _notify_meta = self.get_notify_meta()
         self.notify_meta = json.dumps(_notify_meta)
 
@@ -105,11 +152,10 @@ class NotifyModel(SmartModel):
             else:
                 _notify_meta['created'] = True
                 self.notify_meta = json.dumps(_notify_meta)
-
-        super().save(*args, **kwargs)
-
+        
     class Meta:
         abstract = True
+
 
     class NotifyMeta:
         # child class should override this with 
