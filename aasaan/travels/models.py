@@ -17,20 +17,20 @@ class TravelRequest(models.Model):
     travel_mode = models.CharField(max_length=2, choices=TRAVEL_MODE_VALUES,
                                     default=TRAVEL_MODE_VALUES[0][0])
     train_list = [('1', 'SL'), ('2', '2 AC'), ('3', '3 AC'), ('4', '2S'),('5', 'Chair Car'),]
-    bus_list = [('6', 'Sleeper Non AC'), ('7', 'Semi Sleeper AC'), ('10', 'Semi Sleeper Non AC'), ('11', 'Semi Sleeper AC')]
+    bus_list = [('6', 'Sleeper Non AC'), ('7', 'Sleeper AC'), ('10', 'Semi Sleeper Non AC'), ('11', 'Semi Sleeper AC')]
     flight_list = [('8', 'Economy'), ('9', 'Business')]
     item_list = (('Train', tuple(train_list)), ('Bus', tuple(bus_list)),('Flight', tuple(flight_list)))
 
     travel_class = models.CharField(max_length=2, choices=tuple(item_list))
     zone = models.ForeignKey(Zone, verbose_name='Zone', on_delete=models.CASCADE)
     remarks = models.TextField('Remarks', max_length=200, blank=True, null=True)
-    STATUS_VALUES = (('IP', 'Initiated'),
-                     ('BO', 'Book the Ticket'),
+    STATUS_VALUES = (('IP', 'Requested'),
+                     ('BO', 'Approved'),
                           ('BK', 'Booked'),
                           ('VC', 'Voucher Created'),
                           ('CL', 'Cancelled'),
-                          ('CB', 'Cancel Booked Ticket'),
-                          ('PD', 'Processed'))
+                          ('CB', 'Booked Ticket Cancelled'),
+                          ('PD', 'Voucher Processed'))
 
     status = models.CharField(max_length=2, choices=STATUS_VALUES,
                                    default=STATUS_VALUES[0][0])
