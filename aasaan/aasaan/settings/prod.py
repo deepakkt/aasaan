@@ -10,6 +10,7 @@ MEDIA_ROOT = "/var/www/aasaan/media"
 BIN_ROOT = "/home/deepak/django/aasaan/.virtualenvs/aasaan/bin"
 # STATICFILES_DIRS = (STATIC_ROOT,)
 
+
 DEBUG = False
 TEMPLATE_DEBUG = False
 

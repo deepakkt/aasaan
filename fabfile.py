@@ -82,6 +82,10 @@ def get_database_file(local_path="/tmp"):
         get(dbfile, local_path=local_path)
     return os.path.join("/tmp", dbfile)
 
+def email_database_file():
+    with cd("/home/deepak/bin"):
+        run("bash email_aasaan_db")
+        
 
 def sync_schedules():
     with cd(os.path.join(_code_dir(), 'aasaan')):

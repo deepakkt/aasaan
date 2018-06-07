@@ -4,6 +4,8 @@ from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.text import slugify
 from django.contrib.postgres.fields import JSONField
+from django.urls import reverse
+from django.conf import settings
 
 # Create your models here.
 
@@ -12,6 +14,17 @@ class SmartModel(models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def get_admin_url(self):
+        """the url to the Django admin interface for the model instance"""
+        info = (self._meta.app_label, self._meta.model_name)
+        _post_url = reverse('admin:%s_%s_change' % info, args=(self.pk,))        
+
+        try:
+            _post_url = settings.PRODUCTION_HOST + _post_url
+        except:
+            pass
+
+        return _post_url
 
     def display_func(self, x):
         # setup a function to give expanded status values

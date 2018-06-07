@@ -1,0 +1,106 @@
+<html style="box-sizing: border-box;font-size: 18px;">
+{% block subject %}
+	{% if subject %}
+		{{ object.get_status_display }}: Travel Update - {{ object.zone.zone_name }} - {{ object.source }} => {{ object.destination }}
+	{% endif %}
+{% endblock %}	
+{% block frommail %}
+	{% if frommail %}
+		IPC NP|ipc.np@ishafoundation.org
+	{% endif %}
+{% endblock %}	
+
+<head style="box-sizing: border-box;">
+	<style style="box-sizing: border-box;">
+		* {
+			box-sizing: border-box;
+		}
+		html {
+			font-size: 18px;
+		}
+		header {
+		}
+		h3 {
+			color: red;
+		}
+		strong {
+			color: brown;
+			text-decoration: underline;
+			font-size: 1.15rem;
+		}
+		footer {
+			font-size: 0.9rem;	
+		}
+		.aasaan {
+			color: yellow;
+			font-style: bold;
+			margin-left: 15px;
+		}
+		.headercontainer {
+			width: 100%;
+			background-color: blue;
+			padding: 3px 3px 3px 3px;
+		}
+
+		.heading {
+			font-weight: bold;
+			text-decoration: underline;
+		}
+	</style>
+</head>
+<body style="box-sizing: border-box;">
+	<div class="headercontainer" style="box-sizing: border-box;width: 100%;background-color: blue;padding: 3px 3px 3px 3px;">
+		<header style="box-sizing: border-box;">
+			<h2 class="aasaan" style="box-sizing: border-box;color: yellow;font-style: bold;margin-left: 15px;">aasaan</h2>
+		</header>
+	</div>
+	<div class="bodycontainer" style="box-sizing: border-box;">
+		<h3 style="box-sizing: border-box;color: red;">Travel request has been changed</h3>
+		<p style="box-sizing: border-box;">
+            This is a helper notification. The actual administrative site to perform updates for this request is <a href="{{ object.get_admin_url }}">{{ object.get_admin_url }}</a>
+		</p>
+        <p style="box-sizing: border-box;">
+            <b>Zone:</b>&nbsp; {{ object.zone.zone_name }}
+		</p>
+        <p style="box-sizing: border-box;">
+            <b>Travel Mode:</b>&nbsp; {{ object.get_travel_mode_display }}
+		</p>
+        <p style="box-sizing: border-box;">
+            <b>Travel Class:</b>&nbsp; {{ object.get_travel_class_display }}
+		</p>		
+		<p style="box-sizing: border-box;">
+            <b>Current Status:</b>&nbsp; {{ object.get_status_display }}
+        </p>    
+		<p style="box-sizing: border-box;">
+            <b>Previous Status:</b>&nbsp; {{ meta.status.0 }}
+        </p>    
+		<p style="box-sizing: border-box;">
+                Passenger List is as follows:
+        </p>    
+
+        <table id="passanger_table" border=1>
+            <thead>
+                <tr>
+                    <th>Name</th>>
+                    <th>Gender</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for teacher in object.teacher.get_queryset %}
+                    <tr>
+                        <th>{{ teacher.full_name }}</th>>
+                        <th>{{ teacher.gender }}</th>
+                        <th>{{ teacher.primary_mobile }}</th>
+                        <th>{{ teacher.primary_email }}</th>
+                    </tr>
+                {% endfor %}            
+            </tbody>
+        </table>        
+	</div>
+	<footer style="box-sizing: border-box;font-size: 0.9rem;">	
+		<span class="heading" style="box-sizing: border-box;font-weight: bold;text-decoration: underline;">Note:</span> This is an automated notification. Please reply-all to this email in case of clarifications regarding this request.
+	</footer>
+</body>
+</html>
