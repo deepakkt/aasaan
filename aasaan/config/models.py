@@ -104,7 +104,8 @@ class NotifyModel(SmartModel):
             "notify": False,
             "notify_fields": [],
             "notify_creation": False,
-            "notify_recipients": False
+            "notify_recipients": False,
+            "notify_attachments": False
         }
 
         try:
@@ -130,8 +131,16 @@ class NotifyModel(SmartModel):
         except AttributeError:
             notify_recipients = False
 
+
+        try:
+            attachments = cls.NotifyMeta.get_attachments
+            notify_attachments = True
+        except AttributeError:
+            notify_attachments = False
+
         _result["notify_creation"] = notify_creation
         _result["notify_recipients"] = notify_recipients
+        _result["notify_attachments"] = notify_attachments
 
         return _result        
 
@@ -189,6 +198,12 @@ class NotifyModel(SmartModel):
         def get_recipients(self):
             # always return a list
             return []
+
+        # return fully qualified filenames as list
+        def get_attachments(self):
+            # always return a list
+            return []
+
 
 
 class Configuration(models.Model):

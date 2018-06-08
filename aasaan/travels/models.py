@@ -105,6 +105,17 @@ class TravelRequest(NotifyModel):
             _recipients.append(self.created_by.email)
             return _recipients
 
+        def get_attachments(self):
+            _attachments = []
+
+            if self.status == 'BK':
+                if self.attachments:
+                    _attachments.append(self.attachments.path)
+                if self.invoice:
+                    _attachments.append(self.invoice.path)
+
+            return _attachments
+
 
 class TrTravelRequest(TravelRequest):
 
