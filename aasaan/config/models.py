@@ -139,7 +139,7 @@ class NotifyModel(SmartModel):
         _notify_fields = self.__class__.NotifyMeta.notify_fields
         changed_fields = self.changed_fields()
 
-        _notify_toggle = False
+        _notify_toggle = True if self.notify_meta else False
         _notify_changed_fields = json.loads(self.notify_meta) if self.notify_meta else dict()
 
         _valid_notifiers = list(set.intersection(set(_notify_fields),
