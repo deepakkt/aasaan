@@ -1,7 +1,7 @@
 <html style="box-sizing: border-box;font-size: 18px;">
 {% block subject %}
 	{% if subject %}
-		Material request from {{ object.zone.zone_name }} has changed status
+		{{ object.get_status_display }}: Travel Update - {{ object.zone.zone_name }} - {{ object.source }} => {{ object.destination }}
 	{% endif %}
 {% endblock %}	
 {% block frommail %}
@@ -55,37 +55,63 @@
 		</header>
 	</div>
 	<div class="bodycontainer" style="box-sizing: border-box;">
-		<h3 style="box-sizing: border-box;color: red;">New material request raised</h3>
+		<h3 style="box-sizing: border-box;color: red;">Travel request has been changed</h3>
 		<p style="box-sizing: border-box;">
-            Namaskaram, existing material request from {{ object.zone.zone_name }} has changed status
+            This is a helper notification. The actual administrative site to perform updates for this request is <a href="{{ object.get_admin_url }}">{{ object.get_admin_url }}</a>
 		</p>
+        <p style="box-sizing: border-box;">
+            <b>Zone:</b>&nbsp; {{ object.zone.zone_name }}
+		</p>
+        <p style="box-sizing: border-box;">
+            <b>Travel Mode:</b>&nbsp; {{ object.get_travel_mode_display }}
+		</p>
+        <p style="box-sizing: border-box;">
+            <b>Travel Class:</b>&nbsp; {{ object.get_travel_class_display }}
+		</p>	
+        <p style="box-sizing: border-box;">
+            <b>Travel Date:</b>&nbsp; {{ object.onward_date }}
+		</p>					
 		<p style="box-sizing: border-box;">
-                Material Type: {{ object.material_type.name }}
+            <b>Current Status:</b>&nbsp; {{ object.get_status_display }}
         </p>    
 		<p style="box-sizing: border-box;">
-                Current status is marked to be {{ object.status.name }}
+            <b>Previous Status:</b>&nbsp; {{ meta.status.0 }}
         </p>    
-	</div>
-	<div class="bodycontainer" style="box-sizing: border-box;">
-		<h3>Items for this request:</h3>
-		<ol>
-			{% for item in object.classmaterialitem_set.all %}
-				<li>
-					{{ item.class_materials.name }} - {{ item.quantity }}
-				</li>
-			{% endfor %}
-		</ol>
+		<p style="box-sizing: border-box;">
+                Passenger List is as follows:
+        </p>    
+
+        <table id="passanger_table" border=1>
+            <thead>
+                <tr>
+                    <th>Name</th>>
+                    <th>Gender</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for teacher in object.teacher.get_queryset %}
+                    <tr>
+                        <th>{{ teacher.full_name }}</th>>
+                        <th>{{ teacher.gender }}</th>
+                        <th>{{ teacher.primary_mobile }}</th>
+                        <th>{{ teacher.primary_email }}</th>
+                    </tr>
+                {% endfor %}            
+            </tbody>
+        </table>        
 	</div>
 	<div class="bodycontainer" style="box-sizing: border-box;">
 		<h3>Notes for this request:</h3>
 		<ol>
-			{% for note in object.materialnotes_set.all %}
+			{% for note in object.travelnotes_set.all %}
 				<li>
 					{{ note.created.isoformat }} - {{ note.created_by }} - {{ note.note }}
 				</li>
 			{% endfor %}
 		</ol>
-	</div>	
+	</div>		
 	<footer style="box-sizing: border-box;font-size: 0.9rem;">	
 		<span class="heading" style="box-sizing: border-box;font-weight: bold;text-decoration: underline;">Note:</span> This is an automated notification. Please reply-all to this email in case of clarifications regarding this request.
 	</footer>

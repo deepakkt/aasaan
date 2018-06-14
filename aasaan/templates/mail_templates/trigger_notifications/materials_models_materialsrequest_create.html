@@ -66,6 +66,26 @@
                 Current status is marked to be {{ object.status.name }}
         </p>    
 	</div>
+	<div class="bodycontainer" style="box-sizing: border-box;">
+		<h3>Items for this request:</h3>
+		<ol>
+			{% for item in object.classmaterialitem_set.all %}
+				<li>
+					{{ item.class_materials.name }} - {{ item.quantity }}
+				</li>
+			{% endfor %}
+		</ol>
+	</div>
+	<div class="bodycontainer" style="box-sizing: border-box;">
+		<h3>Notes for this request:</h3>
+		<ol>
+			{% for note in object.materialnotes_set.all %}
+				<li>
+					{{ note.created.isoformat }} - {{ note.created_by }} - {{ note.note }}
+				</li>
+			{% endfor %}
+		</ol>
+	</div>
 	<footer style="box-sizing: border-box;font-size: 0.9rem;">	
 		<span class="heading" style="box-sizing: border-box;font-weight: bold;text-decoration: underline;">Note:</span> This is an automated notification. Please reply-all to this email in case of clarifications regarding this request.
 	</footer>

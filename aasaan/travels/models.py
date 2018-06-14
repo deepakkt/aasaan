@@ -1,13 +1,21 @@
+import datetime
+
 from django.db import models
 from contacts.models import Contact, Zone
 from django.contrib.auth.models import User
 import datetime
 from django.utils.html import format_html
+
+from notify.api.resolvers import pair_contact
+
+from contacts.models import Contact, Zone
 from ipcaccounts.models import RCOAccountsMaster
+from config.models import NotifyModel
 from django.core.exceptions import ValidationError
 
 
-class TravelRequest(models.Model):
+
+class TravelRequest(NotifyModel):
     source = models.CharField('From', max_length=100,default='')
     destination = models.CharField('To', max_length=100,default='')
     onward_date = models.DateTimeField('Date of Journey')
@@ -79,18 +87,58 @@ class TravelRequest(models.Model):
             else:
                 return 'Others : No Teacher Added'
 
+    @property
+    def teachers(self):
+        _fields = ('first_name', 'last_name', 'primary_email')
+        _teachers =  self.teacher.values_list(*_fields)
+
+        return [
+            pair_contact(_x, 'notifier') for _x in _teachers
+        ]
+
+    def presave(self, *args, **kwargs):
+        super().presave(*args, **kwargs)
+
+        if self.status not in ['IP', 'BK', 'BO', 'CL']:
+            self.notify_toggle = False
+            self.notify_meta = "{}"
+
+
+
     class Meta:
         ordering = ['onward_date', ]
         verbose_name = 'Teacher Travel Request'
 
+    class NotifyMeta:
+        notify_fields = ['status']
+        notify_creation = True
+
+        def get_recipients(self):
+            _recipients = self.teachers[:]
+            _recipients.append(self.created_by.email)
+            return _recipients
+
+        def get_attachments(self):
+            _attachments = []
+
+            if self.status == 'BK':
+                if self.attachments:
+                    _attachments.append(self.attachments.path)
+                if self.invoice:
+                    _attachments.append(self.invoice.path)
+
+            return _attachments
+
 
 class TrTravelRequest(TravelRequest):
+
     class Meta:
         proxy = True
         verbose_name = 'Travel Request'
 
 
 class AgentTravelRequest(TravelRequest):
+
     class Meta:
         proxy = True
         verbose_name = 'IPC Teachers Travel Request'

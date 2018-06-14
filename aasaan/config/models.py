@@ -4,6 +4,8 @@ from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.text import slugify
 from django.contrib.postgres.fields import JSONField
+from django.urls import reverse
+from django.conf import settings
 
 # Create your models here.
 
@@ -12,6 +14,17 @@ class SmartModel(models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def get_admin_url(self):
+        """the url to the Django admin interface for the model instance"""
+        info = (self._meta.app_label, self._meta.model_name)
+        _post_url = reverse('admin:%s_%s_change' % info, args=(self.pk,))        
+
+        try:
+            _post_url = settings.PRODUCTION_HOST + _post_url
+        except:
+            pass
+
+        return _post_url
 
     def display_func(self, x):
         # setup a function to give expanded status values
@@ -91,7 +104,8 @@ class NotifyModel(SmartModel):
             "notify": False,
             "notify_fields": [],
             "notify_creation": False,
-            "notify_recipients": False
+            "notify_recipients": False,
+            "notify_attachments": False
         }
 
         try:
@@ -117,8 +131,16 @@ class NotifyModel(SmartModel):
         except AttributeError:
             notify_recipients = False
 
+
+        try:
+            attachments = cls.NotifyMeta.get_attachments
+            notify_attachments = True
+        except AttributeError:
+            notify_attachments = False
+
         _result["notify_creation"] = notify_creation
         _result["notify_recipients"] = notify_recipients
+        _result["notify_attachments"] = notify_attachments
 
         return _result        
 
@@ -126,7 +148,7 @@ class NotifyModel(SmartModel):
         _notify_fields = self.__class__.NotifyMeta.notify_fields
         changed_fields = self.changed_fields()
 
-        _notify_toggle = False
+        _notify_toggle = True if self.notify_meta else False
         _notify_changed_fields = json.loads(self.notify_meta) if self.notify_meta else dict()
 
         _valid_notifiers = list(set.intersection(set(_notify_fields),
@@ -176,6 +198,12 @@ class NotifyModel(SmartModel):
         def get_recipients(self):
             # always return a list
             return []
+
+        # return fully qualified filenames as list
+        def get_attachments(self):
+            # always return a list
+            return []
+
 
 
 class Configuration(models.Model):

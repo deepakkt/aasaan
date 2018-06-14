@@ -25,7 +25,7 @@ def pair_contact(individual_contact, pair_type="fnln"):
     _email = individual_contact[-1]
 
     if pair_type == "notifier":
-        return '|'.join(_fnln, _email)
+        return '|'.join([_fnln, _email])
 
     if pair_type == "fnln":
         return (_fnln, _email)

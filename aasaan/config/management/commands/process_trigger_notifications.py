@@ -47,6 +47,7 @@ def process_instance_trigger(_instance, _model_setting,
 
     targets_template = get_granular_instance_config(instance_configs, trigger_configs)
     _supplementary = _model_notify["notify_recipients"] and _model_reference.NotifyMeta.get_recipients(_instance) 
+    _attachments = (_model_notify["notify_attachments"] and _model_reference.NotifyMeta.get_attachments(_instance)) or []
 
     template_recipients = get_notification_template_recipients(targets_template, 
                                                                 **zone_center,
@@ -74,7 +75,7 @@ def process_instance_trigger(_instance, _model_setting,
 
     stage_classic_notification("Trigger Notification", email_from,
                                 template_recipients, list(), email_subject,
-                                email_message, list(),
+                                email_message, _attachments,
                                 sender_in_cc=False)
 
     _instance.notify_meta = ""                                            
