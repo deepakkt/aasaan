@@ -135,7 +135,7 @@ class RCOAccountsMaster(models.Model):
     entity_name = models.ForeignKey(EntityMaster, default=1, verbose_name='Entity', on_delete=models.CASCADE)
     zone = models.ForeignKey(Zone, verbose_name='Zone', on_delete=models.CASCADE)
     teacher = models.ForeignKey(Contact, blank=True, null=True, on_delete=models.CASCADE)
-    budget_code = models.CharField(max_length=100, blank=True)
+    budget_code = models.CharField(max_length=100, default="")
     program_type = models.ForeignKey(ProgramMaster, blank=True, null=True, verbose_name='Program Type', on_delete=models.CASCADE)
     program_schedule = models.ForeignKey(ProgramSchedule, blank=True, null=True, on_delete=models.CASCADE)
     voucher_date = models.DateField(_("Voucher Date"), default=datetime.date.today)
