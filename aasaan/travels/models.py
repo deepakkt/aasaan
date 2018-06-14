@@ -1,13 +1,8 @@
-import datetime
-
 from django.db import models
-from contacts.models import Contact, Zone
 from django.contrib.auth.models import User
 import datetime
 from django.utils.html import format_html
-
 from notify.api.resolvers import pair_contact
-
 from contacts.models import Contact, Zone
 from ipcaccounts.models import RCOAccountsMaster
 from config.models import NotifyModel

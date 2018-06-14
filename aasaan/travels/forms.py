@@ -23,8 +23,8 @@ class TravelForm(forms.ModelForm):
         exclude = ['created', 'modified',]
 
     def clean(self):
-        teacher = self.cleaned_data.get('is_others')
-        is_others = self.cleaned_data.get('language')
+        teacher = self.cleaned_data.get('teacher')
+        is_others = self.cleaned_data.get('is_others')
         if not teacher and not is_others:
-            raise ValidationError("Both Techer and Others cannot be empty")
+                raise ValidationError("Both Techer and Others cannot be empty")
         return self.cleaned_data
