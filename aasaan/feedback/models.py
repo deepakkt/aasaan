@@ -1,7 +1,7 @@
 from django.db import models
 from contacts.models import Zone
 from django.contrib.auth.models import User
-
+from django.core.exceptions import ValidationError
 
 class Feedback(models.Model):
     title = models.CharField('Title', max_length=200)
@@ -33,3 +33,23 @@ class FeedbackNotes(models.Model):
     class Meta:
         ordering = ['-created']
         verbose_name = 'Feedback'
+
+
+class Photo(models.Model):
+
+    def validate_image(fieldfile_obj):
+        filesize = fieldfile_obj.file.size
+        megabyte_limit = 2.0
+        if filesize > megabyte_limit * 1024 * 1024:
+            raise ValidationError("Max file size is %sMB" % str(megabyte_limit))
+
+    event = models.ForeignKey(Feedback, on_delete=models.CASCADE)
+    photos_multiple = models.ImageField(upload_to='feedback/%Y/%m/%d/', verbose_name='Attachments',validators=[validate_image],  blank=True, null=True)
+
+    def __str__(self):
+        return ""
+
+
+    class Meta:
+        verbose_name = 'Attachment'
+        ordering = ['event']

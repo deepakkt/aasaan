@@ -3,7 +3,6 @@ from config.models import Configuration
 import json
 from notify.api.sendgrid_api import stage_classic_notification
 from django.utils import formats
-from django.conf import settings
 from .models import TravelRequest, TravelNotes
 from .forms import MessageForm
 from datetime import date, timedelta
@@ -19,26 +18,41 @@ class PassangerDetailsView(LoginRequiredMixin, TemplateView):
             travel_id = request.GET['id']
             t_request = TravelRequest.objects.get(pk=travel_id)
             message_body = get_passanger_details_list(t_request)
-            print()
             return HttpResponse(message_body)
 
 
 def get_passanger_details_list(travel_request):
-    traveller_details = list(travel_request.teacher.all())
-    traveller_row = Configuration.objects.get(
-        configuration_key='IPCTRAVELS_PASSANGER_LIST_TEMPLATE').configuration_value
-    traveller_row = str(traveller_row)
     t_data = ''
-    for index, tr in enumerate(traveller_details):
-        t_row = traveller_row
-        t_row = t_row.replace('#SNO#', str(index + 1))
-        t_row = t_row.replace('NAME', tr._get_actual_name())
-        age = 'Age not known'
-        if tr.date_of_birth:
-            age = (date.today() - tr.date_of_birth) // timedelta(days=365.2425)
-        t_row = t_row.replace('GENDER_AGE', tr.get_gender_display() + ' - ' + str(age))
-        t_row = t_row.replace('MOBILENO', tr.primary_mobile)
-        t_data += t_row
+    if travel_request.teacher.all():
+        traveller_details = list(travel_request.teacher.all())
+        traveller_row = Configuration.objects.get(
+            configuration_key='IPCTRAVELS_PASSANGER_LIST_TEMPLATE').configuration_value
+        traveller_row = str(traveller_row)
+
+        for index, tr in enumerate(traveller_details):
+            t_row = traveller_row
+            t_row = t_row.replace('#SNO#', str(index + 1))
+            t_row = t_row.replace('NAME', tr._get_actual_name())
+            age = 'Age not known'
+            if tr.date_of_birth:
+                age = (date.today() - tr.date_of_birth) // timedelta(days=365.2425)
+            t_row = t_row.replace('GENDER_AGE', tr.get_gender_display() + ' - ' + str(age))
+            t_row = t_row.replace('MOBILENO', tr.primary_mobile)
+            t_data += t_row
+
+    if travel_request.others_set.all():
+        traveller_details = list(travel_request.others_set.all())
+        traveller_row = Configuration.objects.get(
+            configuration_key='IPCTRAVELS_PASSANGER_LIST_TEMPLATE').configuration_value
+        traveller_row = str(traveller_row)
+        trs_count = len(travel_request.teacher.all())
+        for index, tr in enumerate(traveller_details):
+            t_row = traveller_row
+            t_row = t_row.replace('#SNO#', str(index + trs_count+1))
+            t_row = t_row.replace('NAME', tr.full_name)
+            t_row = t_row.replace('GENDER_AGE', tr.get_gender_display() + ' - ' + str(tr.age))
+            t_row = t_row.replace('MOBILENO', tr.mobile)
+            t_data += t_row
     return '<table>' + t_data + '</table>'
 
 

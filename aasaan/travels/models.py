@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 import datetime
 from django.utils.html import format_html
 from ipcaccounts.models import RCOAccountsMaster
+from django.core.exceptions import ValidationError
 
 
 class TravelRequest(models.Model):
@@ -44,8 +45,9 @@ class TravelRequest(models.Model):
     booked_date = models.DateField('Booked Date', blank=True, null=True, default=datetime.date.today)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
-    teacher = models.ManyToManyField(Contact)
+    teacher = models.ManyToManyField(Contact, blank=True)
     voucher = models.ForeignKey(RCOAccountsMaster, blank=True, null=True, on_delete=models.CASCADE)
+    is_others = models.BooleanField('Others', blank=True, default=False)
 
     def status_flag(self):
         if self.status == "CL":
@@ -67,8 +69,15 @@ class TravelRequest(models.Model):
             else:
                 return "%s %s - %s (%s)" % (vd[0].first_name, vd[0].last_name,
                                             self.get_travel_mode_display(), self.get_travel_class_display())
-        return self.remarks[:25]
-
+        else:
+            _travels_others = tuple(self.others_set.all().values_list('full_name'))
+            other  = [x[0] for x in _travels_others]
+            if len(other) > 1:
+                return 'Others : %s + %s' %(other[0], str(len(other) - 1))
+            elif len(other) == 1:
+                return 'Others : %s' % other[0]
+            else:
+                return 'Others : No Teacher Added'
 
     class Meta:
         ordering = ['onward_date', ]
@@ -76,17 +85,32 @@ class TravelRequest(models.Model):
 
 
 class TrTravelRequest(TravelRequest):
-
     class Meta:
         proxy = True
         verbose_name = 'Travel Request'
 
 
 class AgentTravelRequest(TravelRequest):
-
     class Meta:
         proxy = True
         verbose_name = 'IPC Teachers Travel Request'
+
+
+class Others(models.Model):
+    travel_request = models.ForeignKey(TravelRequest, on_delete=models.CASCADE)
+    full_name = models.CharField("full Name", max_length=50)
+    age = models.PositiveSmallIntegerField()
+    GENDER_VALUES = (('M', 'Male'),
+                     ('F', 'Female'))
+    gender = models.CharField(max_length=2, choices=GENDER_VALUES)
+    mobile = models.CharField("Mobile Number", max_length=15, blank=True)
+
+    def __str__(self):
+        return self.full_name
+
+    class Meta:
+        ordering = ['full_name']
+        verbose_name = 'Others detail'
 
 
 class TravelNotes(models.Model):
@@ -102,3 +126,20 @@ class TravelNotes(models.Model):
     class Meta:
         ordering = ['-created']
         verbose_name = 'Travel Note'
+
+
+class Attachment(models.Model):
+    def validate_image(fieldfile_obj):
+        filesize = fieldfile_obj.file.size
+        megabyte_limit = 2.0
+        if filesize > megabyte_limit * 1024 * 1024:
+            raise ValidationError("Max file size is %sMB" % str(megabyte_limit))
+
+    event = models.ForeignKey(TravelRequest, on_delete=models.CASCADE)
+    photos_multiple = models.ImageField(upload_to='teacher_travels/%Y/%m/%d/', verbose_name='Upload image file',validators=[validate_image],  blank=True, null=True)
+
+    def __str__(self):
+        return ""
+
+    class Meta:
+        ordering = ['event']
