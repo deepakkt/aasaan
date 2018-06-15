@@ -1,0 +1,93 @@
+<html style="box-sizing: border-box;font-size: 18px;">
+{% block subject %}
+	{% if subject %}
+		Voucher {{ object }} needs your attention!
+	{% endif %}
+{% endblock %}	
+{% block frommail %}
+	{% if frommail %}
+		IPC NP|ipc.np@ishafoundation.org
+	{% endif %}
+{% endblock %}	
+
+<head style="box-sizing: border-box;">
+	<style style="box-sizing: border-box;">
+		* {
+			box-sizing: border-box;
+		}
+		html {
+			font-size: 18px;
+		}
+		header {
+		}
+		h3 {
+			color: red;
+		}
+		strong {
+			color: brown;
+			text-decoration: underline;
+			font-size: 1.15rem;
+		}
+		footer {
+			font-size: 0.9rem;	
+		}
+		.aasaan {
+			color: yellow;
+			font-style: bold;
+			margin-left: 15px;
+		}
+		.headercontainer {
+			width: 100%;
+			background-color: blue;
+			padding: 3px 3px 3px 3px;
+		}
+
+		.heading {
+			font-weight: bold;
+			text-decoration: underline;
+		}
+	</style>
+</head>
+<body style="box-sizing: border-box;">
+	<div class="headercontainer" style="box-sizing: border-box;width: 100%;background-color: blue;padding: 3px 3px 3px 3px;">
+		<header style="box-sizing: border-box;">
+			<h2 class="aasaan" style="box-sizing: border-box;color: yellow;font-style: bold;margin-left: 15px;">aasaan</h2>
+		</header>
+	</div>
+	<div class="bodycontainer" style="box-sizing: border-box;">
+		<h3 style="box-sizing: border-box;color: red;">Voucher {{ object }} needs your attention!</h3>
+		<p style="box-sizing: border-box;">
+            This is a helper notification. The actual administrative site to perform updates for this request is <a href="{{ object.get_admin_url }}">{{ object.get_admin_url }}</a>
+		</p>
+        <p style="box-sizing: border-box;">
+            The voucher status for this set has been marked by Nodal Point as "{{ meta.np_voucher_status.1 }}". Please check notes below or get in touch with the nodal point incharge for {{ object.zone.zone_name }} to resolve this.
+		</p>
+        <p style="box-sizing: border-box;">
+            <b>Program Schedule: </b>{{ object.program_schedule }}
+		</p>
+    <div class="bodycontainer" style="box-sizing: border-box;">
+        <h3>Vouchers in this set:</h3>
+        <ol>
+            {% for voucher in object.voucherdetails_set.all %}
+                <li>
+                    {{ voucher.tracking_no }} - {{ voucher.voucher_type }} - {{ voucher.amount }} - {{ voucher.expenses_description }}
+                </li>
+            {% endfor %}
+        </ol>
+    </div>		
+    
+	<div class="bodycontainer" style="box-sizing: border-box;">
+		<h3>Notes for this request:</h3>
+		<ol>
+			{% for note in object.transactionnotes_set.all %}
+				<li>
+					{{ note.created.isoformat }} - {{ note.created_by }} - {{ note.note }}
+				</li>
+			{% endfor %}
+		</ol>
+	</div>		
+	<footer style="box-sizing: border-box;font-size: 0.9rem;">	
+		<span class="heading" style="box-sizing: border-box;font-weight: bold;text-decoration: underline;">Note:</span> This is an automated notification. Please reply-all to this email in case of clarifications regarding this request.
+	</footer>
+</body>
+</html>

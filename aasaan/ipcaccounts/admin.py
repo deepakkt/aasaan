@@ -13,6 +13,8 @@ from django.utils.html import format_html
 from utils.daterange_filter import DateRangeFilter
 from utils.filters import RelatedDropdownFilter
 
+from config.admin import AuditAdmin
+
 
 class TreasurerAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'old_treasurer', 'new_treasurer')
@@ -93,7 +95,7 @@ class VoucherDetailsInline(admin.StackedInline):
     )
 
 
-class RCOAccountsMasterAdmin(admin.ModelAdmin):
+class RCOAccountsMasterAdmin(AuditAdmin):
 
     def make_email(modeladmin, request, queryset):
         pass
