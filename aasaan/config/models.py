@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from django.db import models
 from django.core.exceptions import ObjectDoesNotExist
@@ -6,6 +7,8 @@ from django.utils.text import slugify
 from django.contrib.postgres.fields import JSONField
 from django.urls import reverse
 from django.conf import settings
+
+from utils.dict_helpers import *
 
 # Create your models here.
 
@@ -82,9 +85,16 @@ class SmartModel(models.Model):
 
 
     def save(self, *args, **kwargs):
-        self.presave(*args, **kwargs)
+        pre_args, post_args = dict(kwargs), dict(kwargs)
+
+        self.presave(*args, **pre_args)
+        
+        for _arg in dict(kwargs):
+            if _arg.startswith("_meta"):
+                kwargs.pop(_arg)
+
         super().save(*args, **kwargs)
-        self.postsave(*args, **kwargs)
+        self.postsave(*args, **post_args)
     
 
     class Meta:
@@ -105,7 +115,8 @@ class NotifyModel(SmartModel):
             "notify_fields": [],
             "notify_creation": False,
             "notify_recipients": False,
-            "notify_attachments": False
+            "notify_attachments": False,
+            "notify_veto": False
         }
 
         try:
@@ -131,40 +142,60 @@ class NotifyModel(SmartModel):
         except AttributeError:
             notify_recipients = False
 
-
         try:
             attachments = cls.NotifyMeta.get_attachments
             notify_attachments = True
         except AttributeError:
             notify_attachments = False
 
+        try:
+            notify_veto = cls.NotifyMeta.get_notify_veto
+            get_notify_veto = True
+        except AttributeError:
+            get_notify_veto = False
+
+
         _result["notify_creation"] = notify_creation
         _result["notify_recipients"] = notify_recipients
         _result["notify_attachments"] = notify_attachments
+        _result["notify_veto"] = get_notify_veto
 
         return _result        
 
-    def get_notify_meta(self):
+    def get_notify_meta(self, veto_check=None):
         _notify_fields = self.__class__.NotifyMeta.notify_fields
         changed_fields = self.changed_fields()
 
-        _notify_toggle = True if self.notify_meta else False
         _notify_changed_fields = json.loads(self.notify_meta) if self.notify_meta else dict()
+        _notify_toggle = True if _notify_changed_fields else False        
 
         _valid_notifiers = list(set.intersection(set(_notify_fields),
                                                 set(changed_fields.keys())))
 
         if _valid_notifiers:                        
             for _notifier in _valid_notifiers:
-                _notify_changed_fields[_notifier] = changed_fields[_notifier]
-
-            _notify_toggle = True
+                if veto_check:                    
+                    if not veto_check(self, get_key(changed_fields, _notifier)):
+                        _notify_changed_fields = merge_dicts(_notify_changed_fields, get_key(changed_fields, _notifier))
+                        _notify_toggle = True
+                else:
+                    _notify_changed_fields = merge_dicts(_notify_changed_fields, get_key(changed_fields, _notifier))
+                    _notify_toggle = True
 
         return (_notify_toggle, _notify_changed_fields)
 
 
     def presave(self, *args, **kwargs):
-        self.notify_toggle, _notify_meta = self.get_notify_meta()
+        _notify_properties = self.__class__.get_notify_properties()
+        if not _notify_properties["notify"]:
+            return 
+
+        if _notify_properties["notify_veto"]:
+            _veto = self.__class__.NotifyMeta.get_notify_veto
+        else:
+            _veto = None
+
+        self.notify_toggle, _notify_meta = self.get_notify_meta(_veto)
         self.notify_meta = json.dumps(_notify_meta)
 
         if not self.id:
@@ -204,6 +235,94 @@ class NotifyModel(SmartModel):
             # always return a list
             return []
 
+        # does the model instance want to veto determined notify?
+        def get_notify_veto(self):
+            return False
+
+
+class AuditModel(SmartModel):
+    audit_meta = JSONField(default="{}")
+
+    @classmethod
+    def get_audit_properties(cls):
+        _result = {
+            "audit": False,
+            "audit_fields": []
+        }
+
+        try:
+            _audit_fields = cls.AuditMeta.audit_fields
+
+            _result = {
+                "audit": True,
+                "audit_fields": _audit_fields[:]
+            }
+        except AttributeError:
+            pass
+
+        return _result
+
+    def presave(self, *args, **kwargs):
+        audit_properties = self.__class__.get_audit_properties()
+
+        if not audit_properties["audit"]:
+            return
+
+        changed_fields = self.changed_fields()
+        audit_fields = audit_properties["audit_fields"]
+
+        _valid_auditees = list(set.intersection(set(audit_fields),
+                                                set(changed_fields.keys())))
+
+        if not _valid_auditees:
+            return
+
+        audit_meta = json.loads(self.audit_meta)
+        _user = kwargs.pop("_meta_user", "unknown")
+
+        for _auditee in _valid_auditees:            
+            _ts = datetime.now().isoformat()
+            _old = changed_fields[_auditee][0]
+            _new = changed_fields[_auditee][1]
+            _auditee_meta = audit_meta.get(_auditee, list())
+            _auditee_meta.append({
+                "user": _user,
+                "ts": _ts,
+                "old": _old,
+                "new": _new
+            })
+            audit_meta[_auditee] = _auditee_meta
+
+        self.audit_meta = json.dumps(audit_meta)
+        
+
+    class Meta:
+        abstract = True
+
+    class AuditMeta:
+        audit_fields = []
+
+
+class NotifyAuditModel(NotifyModel, AuditModel):
+    def save(self, *args, **kwargs):
+        pre_args, post_args = dict(kwargs), dict(kwargs)
+
+        NotifyModel.presave(self, *args, **pre_args)
+        AuditModel.presave(self, *args, **pre_args)
+        
+        for _arg in dict(kwargs):
+            if _arg.startswith("_meta"):
+                kwargs.pop(_arg)
+
+        # this should call Django's save
+        # since we are overriding everything
+        models.Model.save(self, *args, **kwargs)
+        
+        NotifyModel.postsave(self, *args, **post_args)
+        AuditModel.postsave(self, *args, **post_args)
+    
+    class Meta:
+        abstract = True
 
 
 class Configuration(models.Model):
@@ -302,4 +421,3 @@ class DatabaseRefresh(models.Model):
                                     default='ST')
     created = models.DateTimeField(auto_now_add=True)
     executed = models.DateTimeField(null=True)
-
