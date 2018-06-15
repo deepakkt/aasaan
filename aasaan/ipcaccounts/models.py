@@ -2,7 +2,7 @@ from django.db import models
 from contacts.models import Center, Contact, IndividualContactRoleZone, Zone
 from schedulemaster.models import ProgramSchedule, ProgramMaster
 import json
-from config.models import Configuration
+from config.models import Configuration, NotifyAuditModel
 from django.core.exceptions import ValidationError
 from smart_selects.db_fields import GroupedForeignKey
 import datetime
@@ -130,7 +130,7 @@ class Treasurer(models.Model):
         verbose_name = 'Treasurer'
 
 
-class RCOAccountsMaster(models.Model):
+class RCOAccountsMaster(NotifyAuditModel):
     account_type = models.ForeignKey(AccountTypeMaster, default=1, verbose_name='Account Type', on_delete=models.CASCADE)
     entity_name = models.ForeignKey(EntityMaster, default=1, verbose_name='Entity', on_delete=models.CASCADE)
     zone = models.ForeignKey(Zone, verbose_name='Zone', on_delete=models.CASCADE)
@@ -212,6 +212,23 @@ class RCOAccountsMaster(models.Model):
     class Meta:
         ordering = ['account_type', 'entity_name']
         verbose_name = 'RCO Voucher'
+
+    class NotifyMeta:
+        notify_fields = ['np_voucher_status', 'rco_voucher_status']
+        notify_creation = False
+
+        def get_notify_veto(self, field_values):
+            if 'rco_voucher_status' in field_values:
+                return True
+
+            if 'np_voucher_status' in field_values:
+                if field_values['np_voucher_status'][-1] == "Unable to process":
+                    return False
+                else:
+                    return True
+
+    class AuditMeta:
+        audit_fields = ['np_voucher_status', 'rco_voucher_status']
 
 
 class VoucherDetails(models.Model):
