@@ -84,7 +84,8 @@ class FeedbackAdmin(admin.ModelAdmin):
         login_user = User.objects.get(username=request.user.username)
         zone = AasaanUserZone.objects.get(user=login_user)
         obj.zone = zone.zone
-        obj.created_by = request.user
+        if not obj.id:
+            obj.created_by = request.user
         obj.save()
 
     def get_actions(self, request):

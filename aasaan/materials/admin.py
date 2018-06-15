@@ -100,7 +100,8 @@ class MaterialsRequestAdmin(admin.ModelAdmin):
         return qs.filter(zone__in=user_zones)
 
     def save_model(self, request, obj, form, change):
-        obj.created_by = request.user
+        if not obj.id:
+            obj.created_by = request.user
         obj.save()
 
     def save_related(self, request, form, formsets, change):

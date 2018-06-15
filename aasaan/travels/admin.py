@@ -218,7 +218,8 @@ class TravelRequestAdmin(BaseTravelAdmin):
 
 
     def save_model(self, request, obj, form, change):
-        obj.created_by = request.user
+        if not obj.id:
+            obj.created_by = request.user
         obj.save()
 
     def get_actions(self, request):
