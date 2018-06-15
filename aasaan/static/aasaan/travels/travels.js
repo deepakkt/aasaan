@@ -1,7 +1,9 @@
 'use strict';
 
 (function($) {
+
     $(document).ready(function() {
+
          $('.actions').find('button').click(function(event) {
             if($('.actions').find('select').val() == 'make_email'){
                 var favorite = [];
@@ -107,6 +109,39 @@
                 $('#id_travel_class').children("optgroup[label='Bus']").hide();
              }
         }
+        if($('#id_is_teacher').val() ==true){
+            $('#others_set-group').show()
+        }
+        else{
+            $('#others_set-group').hide()
+        }
+
+        $("#id_is_others").click(function () {
+            if ($(this).is(':checked')) {
+                $('#others_set-group').show()
+            }
+            else{
+                $('#others_set-group').hide()
+            }
+        })
+
+
+        if (document.URL.indexOf('change')>-1){
+            $('.form-row.field-invoice_no').parent().show()
+        }
+        else{
+            $('.form-row.field-invoice_no').parent().hide()
+
+        }
+
+            //Adds validation error message
+        if($('#id_is_others').is(":checked")){
+            $('#others_set-group').show()
+        }else{
+            $('#others_set-group').hide()
+        }
+
+
 
     });
 

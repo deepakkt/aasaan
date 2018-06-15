@@ -1,11 +1,15 @@
 from django.contrib import admin
-from .models import FeedbackNotes, Feedback
+from .models import FeedbackNotes, Feedback, Photo
 from django.utils import timezone
 from utils.filters import RelatedDropdownFilter
 from AasaanUser.models import AasaanUserContact, AasaanUserZone
 from django.contrib.auth.models import User
 from django.contrib import messages
 
+class PhotoInline(admin.StackedInline):
+    model = Photo
+    extra = 1
+    max_num = 5
 
 class FeedbackNotesInline(admin.StackedInline):
     model = FeedbackNotes
@@ -36,7 +40,7 @@ class FeedbackNotesInline1(admin.StackedInline):
 
 
 class FeedbackAdmin(admin.ModelAdmin):
-    inlines = [FeedbackNotesInline1, FeedbackNotesInline]
+    inlines = [FeedbackNotesInline1, FeedbackNotesInline, PhotoInline]
     list_display = ('title', 'zone', 'created', 'created_by', 'status')
     list_display_links = ['title']
     list_filter = ('created', ('zone', RelatedDropdownFilter),)

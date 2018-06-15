@@ -35,6 +35,8 @@ def get_budget_code(request):
         prefix = data[program_schedule.center.zone.zone_name]['prefix']
         formatted_start_date = formats.date_format(program_schedule.start_date, "DATE_FORMAT")
         budget_code = prefix+'-'+program_schedule.center.center_name+'-'+program_master.abbreviation+ '-'+formatted_start_date + ' ('+program_id+')'
+        if(program_master.name=='Mystic Eye' or program_master.name=='Special Event'):
+            budget_code = ''
         return JsonResponse(budget_code, safe=False)
 
 

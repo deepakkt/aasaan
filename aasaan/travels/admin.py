@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TravelRequest, TrTravelRequest, AgentTravelRequest, TravelNotes
+from .models import TravelRequest, TrTravelRequest, AgentTravelRequest, TravelNotes, Attachment, Others
 from contacts.models import Contact, IndividualRole, Zone, Center
 from django.core.exceptions import ObjectDoesNotExist
 from utils.filters import RelatedDropdownFilter, ChoiceDropdownFilter
@@ -14,7 +14,16 @@ from django.http import HttpResponse, HttpResponseNotFound, Http404,  HttpRespon
 from AasaanUser.models import AasaanUserContact, AasaanUserZone
 from django.contrib.auth.models import User
 from django.utils import timezone
+from .forms import TravelForm
+class OthersInline(admin.TabularInline):
+    model = Others
+    extra = 0
+    max_num = 10
 
+class AttachmentInline(admin.StackedInline):
+    model = Attachment
+    extra = 1
+    max_num = 5
 
 class TravelNotesInline(admin.StackedInline):
     model = TravelNotes
@@ -45,8 +54,9 @@ class TravelNotesInline1(admin.StackedInline):
 
 
 class BaseTravelAdmin(admin.ModelAdmin):
+
     date_hierarchy = 'onward_date'
-    inlines = [TravelNotesInline1, TravelNotesInline]
+    inlines = [OthersInline, TravelNotesInline1, TravelNotesInline, AttachmentInline]
 
     def save_related(self, request, form, formsets, change):
         for formset in formsets:
@@ -65,6 +75,7 @@ class BaseTravelAdmin(admin.ModelAdmin):
 
 
 class TravelRequestAdmin(BaseTravelAdmin):
+    form = TravelForm
     list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'created_by')
     list_editable = ('status',)
     list_display_links = ['status_flag', '__str__']
@@ -76,7 +87,7 @@ class TravelRequestAdmin(BaseTravelAdmin):
             'classes': ('has-cols', 'cols-2')
         }),
         ('', {
-            'fields': ('onward_date', 'travel_mode', 'travel_class', 'zone', 'teacher')
+            'fields': ('onward_date', 'travel_mode', 'travel_class', 'zone', 'teacher', 'is_others')
 
         }),
         ('Booking details', {
@@ -189,7 +200,6 @@ class TravelRequestAdmin(BaseTravelAdmin):
             try:
                 teacher_role = IndividualRole.objects.get(role_name='Teacher', role_level='ZO')
                 _teacher_list = Contact.objects.filter(individualcontactrolezone__role=teacher_role)
-                print(len(_teacher_list))
                 kwargs["queryset"] = _teacher_list.distinct()
             except ObjectDoesNotExist:
                 kwargs["queryset"] = Contact.objects.none()
