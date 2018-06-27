@@ -92,9 +92,13 @@
                  $('.form-row.field-tracking_no.field-voucher_type.field-nature_of_voucher').show()
             }
         });
-
+        handle_hoe_select()
         //Show Head Of Expenses options based on account type selection
         $("#id_account_type").change(function () {
+            handle_hoe_select()
+        });
+
+        function handle_hoe_select(){
             var hoe = $('.field-box.field-head_of_expenses').find('select')
             var options = $('#id_account_type option');
             for (var i = 0;i<options.length;i++){
@@ -103,8 +107,7 @@
                 else
                     $(hoe).children("optgroup[label='"+options[i].text+"']").hide();
             }
-
-        });
+        }
 
         if(document.URL.indexOf('npaccountsmaster')>-1){
             $('.form-row.field-np_voucher_status.field-finance_submission_date.field-movement_sheet_no').parent().show()
@@ -141,23 +144,55 @@
     });
 
     function toggleVerified() {
-        if($("#id_account_type option:selected").text()=='Teacher Accounts'){
+        var account_type = $("#id_account_type option:selected").text()
+        if(account_type == 'Teacher Accounts'){
             $('.field-program_schedule').hide()
             $('.form-row.field-program_type').hide()
             $('.field-budget_code').show()
             $('.field-teacher').show()
+            $('.form-row.field-budget_code').find('label').html('Budget code:')
+            if ($("#id_entity_name option:contains('Isha Foundation')").length ==0)
+                $("#id_entity_name").append('<option value="2">Isha Foundation</option>');
+            if($('.field-box.field-voucher_type').find('select option:contains("Cash Voucher")').length==0)
+                $('.field-box.field-voucher_type').find('select').append('<option value="CV">Cash Voucher</option>');
+            if($('.field-box.field-nature_of_voucher').find('select option:contains("Refund")').length==0)
+                $('.field-box.field-nature_of_voucher').find('select').append('<option value="5">Refund</option>');
         }
-        else if($("#id_account_type option:selected").text()=='Class Accounts'){
+        else if(account_type == 'Class Accounts'){
             $('.field-teacher').hide()
             $('.field-program_schedule').show()
             $('.form-row.field-program_type').show()
             $('.field-budget_code').show()
+            $('.form-row.field-budget_code').find('label').html('Budget code:')
+            if ($("#id_entity_name option:contains('Isha Foundation')").length ==0)
+                $("#id_entity_name").append('<option value="2">Isha Foundation</option>');
+            if($('.field-box.field-voucher_type').find('select option:contains("Cash Voucher")').length==0)
+                $('.field-box.field-voucher_type').find('select').append('<option value="CV">Cash Voucher</option>');
+            if($('.field-box.field-nature_of_voucher').find('select option:contains("Refund")').length==0)
+                $('.field-box.field-nature_of_voucher').find('select').append('<option value="5">Refund</option>');
         }
-        else {
+        else if(account_type == 'Other Accounts' || account_type == 'RCO Accounts'){
             $('.field-teacher').hide()
             $('.field-program_schedule').hide()
             $('.form-row.field-program_type').hide()
             $('.field-budget_code').show()
+            $('.form-row.field-budget_code').find('label').html('Budget code:')
+            if ($("#id_entity_name option:contains('Isha Foundation')").length ==0)
+                $("#id_entity_name").append('<option value="2">Isha Foundation</option>');
+            if($('.field-box.field-voucher_type').find('select option:contains("Cash Voucher")').length==0)
+                $('.field-box.field-voucher_type').find('select').append('<option value="CV">Cash Voucher</option>');
+            if($('.field-box.field-nature_of_voucher').find('select option:contains("Refund")').length==0)
+                $('.field-box.field-nature_of_voucher').find('select').append('<option value="5">Refund</option>');
+        }
+        else if(account_type == 'Fixed Asset'){
+            $('.field-teacher').hide()
+            $('.field-program_schedule').hide()
+            $('.form-row.field-program_type').hide()
+            $('.field-budget_code').show()
+            $('.form-row.field-budget_code').find('label').html('Fixed Asset No:')
+            $("#id_entity_name option:contains('Isha Foundation')").remove();
+            $('.field-box.field-voucher_type').find('select option:contains("Cash Voucher")').remove()
+            $('.field-box.field-nature_of_voucher').find('select option:contains("Refund")').remove()
         }
     }
 
