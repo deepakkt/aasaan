@@ -49,6 +49,7 @@ INSTALLED_APPS += [
     'materials',
     'notify',
     'feedback',
+    'servicedesk',
 ]
 
 SITE_ID = 1
