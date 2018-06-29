@@ -35,3 +35,22 @@ class VoucherAdvancedSearchFieldsForm(forms.Form):
     np_voucher_status = forms.ModelMultipleChoiceField(queryset=NPVoucherStatusMaster.objects.all(), widget=forms.SelectMultiple(attrs={'class': 'form-control'}))
     rco_voucher_status = forms.ModelMultipleChoiceField(queryset=RCOVoucherStatusMaster.objects.all(), widget=forms.SelectMultiple(attrs={'class': 'form-control'}))
 
+
+class VoucherDetailsInlineFormset(forms.models.BaseInlineFormSet):
+    def clean(self):
+        # get forms that actually have valid data
+        count = 0
+        for form in self.forms:
+            try:
+                if form.cleaned_data:
+                    count += 1
+                    if form.cleaned_data["voucher_type"] == 'CV' and form.cleaned_data["amount"] >2000:
+                        raise forms.ValidationError('Amount must be less than 2000 for Cash Voucher')
+
+            except AttributeError:
+                # annoyingly, if a subform is invalid Django explicity raises
+                # an AttributeError for cleaned_data
+                pass
+        if count < 1:
+            raise forms.ValidationError('You must have at least one Voucher')
+
