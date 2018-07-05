@@ -97,10 +97,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         # use this for test
-        output_path = "/tmp"
+        #output_path = "/tmp"
 
         # use this for prod
-        # output_path = path_join(settings.MEDIA_ROOT, "schedules")
+        output_path = path_join(settings.MEDIA_ROOT, "schedules")
 
         schedule_output_file = path_join(output_path, "schedules.json")
         enrollment_output_file = path_join(output_path, "enrollments.json")
