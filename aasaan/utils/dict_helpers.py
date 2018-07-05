@@ -108,6 +108,17 @@ def translate_values(iterable, key, func):
     return _iterable
 
 
+def append_values(iterable, key, new_key, func):
+    _iterable = list()
+
+    for item in iterable:
+        _dict = add_key(item, new_key, item[key])        
+        _iterable.append(_dict)
+
+    _iterable = translate_values(_iterable, new_key, func)
+    return _iterable
+
+
 def merge_dicts(src, dest):
     ndict = dict(src)
     ndict.update(dest)
