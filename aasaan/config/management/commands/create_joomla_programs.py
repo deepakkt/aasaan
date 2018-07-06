@@ -41,6 +41,7 @@ class Command(BaseCommand):
             return
 
         program_schedules = ProgramSchedule.objects.filter(online_registration_code="",
+                                                            online_registration=True,
                                                            program__name__in=filter_programs,
                                                            start_date__gte=date.today())
 
