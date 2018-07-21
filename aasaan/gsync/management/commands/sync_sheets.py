@@ -132,7 +132,7 @@ class Command(BaseCommand):
         output_path = path_join(settings.MEDIA_ROOT, "schedules")
 
         # use this for test
-        output_path = "/tmp"
+        #output_path = "/tmp"
 
         schedule_output_file = path_join(output_path, "schedules.json")
         enrollment_output_file = path_join(output_path, "enrollments.json")
