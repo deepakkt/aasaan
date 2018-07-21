@@ -88,7 +88,9 @@ def get_schedules(queryset=None):
 
 def get_enrollments(schedules):
     enrollments = []
-    _base_cols = ('ORS Address List Count',
+    _base_cols = (
+    'Teachers',
+    'ORS Address List Count',
     'ORS Absent Count',
     'Joomla Paid Count',
     'ORS Participant Count',
@@ -97,6 +99,7 @@ def get_enrollments(schedules):
 
     for each_schedule in schedules:
         _counts = list(ProgramScheduleCounts.objects.filter(program_id=each_schedule['id']).values('category__count_category', 'value'))
+        _teachers = ", ".join(ProgramSchedule.objects.get(pk=each_schedule['id']).program_teachers)
 
         _heading = pluck(_counts, 'category__count_category')
         _value = pluck(_counts, 'value')
@@ -104,7 +107,9 @@ def get_enrollments(schedules):
         count_map = dict(zip(_heading, _value))
         count_map = normalize([count_map], _base_cols, "")[0]
 
-        enrollments.append(merge_dicts(each_schedule, count_map))  
+        _one = merge_dicts(each_schedule, count_map)
+        _two = merge_dicts(_one, {'Teachers': _teachers})
+        enrollments.append(_two)  
 
     return enrollments
 
@@ -132,7 +137,7 @@ class Command(BaseCommand):
         output_path = path_join(settings.MEDIA_ROOT, "schedules")
 
         # use this for test
-        #output_path = "/tmp"
+        output_path = "/tmp"
 
         schedule_output_file = path_join(output_path, "schedules.json")
         enrollment_output_file = path_join(output_path, "enrollments.json")
