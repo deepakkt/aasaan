@@ -9,9 +9,12 @@ from AasaanUser.models import AasaanUserContact
 from django.contrib.auth.models import User
 from config.models import Configuration
 from django.db.models import Q
+from django.utils.html import format_html
+from utils.daterange_filter import DateRangeFilter
 from utils.filters import RelatedDropdownFilter
+
 from config.admin import AuditAdmin
-from .forms import VoucherDetailsInlineFormset
+
 
 class TreasurerAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'old_treasurer', 'new_treasurer')
@@ -69,7 +72,6 @@ class ExpensesTypeMasterAdmin(admin.ModelAdmin):
 
 
 class VoucherDetailsInline(admin.StackedInline):
-    formset = VoucherDetailsInlineFormset
     model = VoucherDetails
     extra = 0
 
