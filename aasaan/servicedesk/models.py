@@ -8,6 +8,7 @@ from django.utils.html import format_html
 
 class IPCSystemMaster(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    assigned_to = models.ForeignKey(User, on_delete=models.CASCADE, default=2)
 
     def __str__(self):
         return "%s" % self.name
@@ -29,7 +30,7 @@ class ServiceStatusMaster(models.Model):
 
 
 class ServiceRequest(NotifyModel):
-    system_type = models.ForeignKey(IPCSystemMaster, verbose_name='IPC Systems', on_delete=models.CASCADE)
+    system_type = models.ForeignKey(IPCSystemMaster, verbose_name='Service Request', on_delete=models.CASCADE)
     status = models.ForeignKey(ServiceStatusMaster, verbose_name='Status', on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     description = models.TextField('Description', max_length=200)
