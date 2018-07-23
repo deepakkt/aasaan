@@ -24,6 +24,6 @@ with t as (select zone_name as "Zone Name",
 		tds_amount as "TDS Amount"		
            from voucher_snapshot
 where created >= current_date - 30
-and account_type <> "Teacher Accounts"
+and account_type <> 'Teacher Accounts'
 order by zone_name, voucher_date desc, tracking_no)
 select json_agg(t) from t;
