@@ -233,6 +233,18 @@ class ProgramSchedule(SmartModel):
                                     DateDeux.frompydate(self.start_date).dateformat("dd-mmm-yyyy"),
                                     self.id)
 
+    @property
+    def program_teachers(self):
+        _teachers = self.programteacher_set.all()
+        _teachers_list = []
+
+        for _teacher in _teachers:
+            try:
+                _teachers_list.append(str(_teacher.teacher_type) + ' - ' + _teacher.teacher.full_name)
+            except:
+                pass
+
+        return _teachers_list
 
 
     def clean(self):
@@ -248,6 +260,13 @@ class ProgramSchedule(SmartModel):
         if self.program_name == "Special Event":
             if not self.event_name:
                 raise ValidationError("Event name is required for special events")
+
+        if not self.id:
+            _existing_schedule_count = ProgramSchedule.objects.filter(start_date=self.start_date, 
+                                                                center=self.center,
+                                                                program=self.program).count()
+            if _existing_schedule_count > 0:
+                raise ValidationError("There is a duplicate program with the same parameters. Please contact IPC IT Support to add this program if this is required")                                                       
 
         if self.id:
             _template = "%s cannot be changed once set. "
