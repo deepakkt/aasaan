@@ -43,5 +43,12 @@ python manage.py sync_iyc_schedules
 python manage.py sync_sheets
 #python manage.py sync_contacts
 
+# copy latest sql into docker container for postgres
+docker cp /home/deepak/django/aasaan/sql/voucher_tracking_snapshot_teachers.sql aasaan_db:/tmp
+docker cp /home/deepak/django/aasaan/sql/voucher_tracking_snapshot.sql aasaan_db:/tmp
+
+docker exec aasaan_db psql -U aasaan -d aasaan -t -A -f /tmp/voucher_tracking_snapshot.sql > /var/www/aasaan/media/ipcaccounts/vouchers/vouchers.json
+docker exec aasaan_db psql -U aasaan -d aasaan -t -A -f /tmp/voucher_tracking_snapshot_teachers.sql > /var/www/aasaan/media/ipcaccounts/vouchers/vouchers_teachers.json
+
 # restart metabase container
 docker restart metabase
