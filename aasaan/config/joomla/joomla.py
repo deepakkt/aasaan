@@ -332,6 +332,7 @@ class JoomlaInterface(object):
         base_fields['google_map_link'] = program_schedule.center.google_map_url
         base_fields['address'] = program_schedule.venue_address
         base_fields['city'] = _city
+        base_fields['ors_enabled'] = _parse_config_fallback('ors enabled', "1")
         base_fields['no_free_talk_first_day'] = {'1': '1', 'Yes': ''}[_parse_config_fallback('free intro enabled', '1')]
 
         feedata_create = feedata_create.replace('***donationamount***', str(program_schedule.donation_amount))

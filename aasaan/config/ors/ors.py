@@ -575,6 +575,7 @@ headers={"Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image
             create_data["MailingInfo4"] = _parse_config_fallback("Mailing Info 4")
             create_data["MailingInfo5"] = _parse_config_fallback("Mailing Info 5")
             create_data["ThankyouScript"] = _parse_config_fallback("Thank You Script")
+            create_data["ReferenceProgramID"] = program_schedule.online_registration_code
 
             if not dryrun:
                 self.postrequest(request_url=create_url, request_data=create_data,
