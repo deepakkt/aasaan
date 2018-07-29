@@ -21,7 +21,8 @@ export PYTHONPATH=$DJANGODIR:$PYTHONPATH
 # Deepak - 6-Jan-2017, Saturday
 docker exec -it aasaan_db psql -U aasaan -c "delete from schedulemaster_programteacher where teacher_id is null"
 
-python manage.py create_joomla_programs
+# 29-Jul-2018, temp comment out until Joomla issue is fixed
+# python manage.py create_joomla_programs
 python manage.py create_ors_programs
 python manage.py close_past_programs
 python manage.py sync_ors_counts
