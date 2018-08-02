@@ -281,10 +281,11 @@ class TeachersTravelRequestAdmin(BaseTravelAdmin):
 
 
 class AgentTravelRequestAdmin(BaseTravelAdmin):
+    date_hierarchy = 'created'
     list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'created_by')
     list_editable = ('status',)
     list_display_links = ['status_flag', '__str__']
-    list_filter = ('created', ('travel_mode', ChoiceDropdownFilter), ('status', ChoiceDropdownFilter),
+    list_filter = ('onward_date', ('travel_mode', ChoiceDropdownFilter), ('status', ChoiceDropdownFilter),
                    ('zone', RelatedDropdownFilter),)
     search_fields = ('source', 'destination', 'teacher__first_name', 'teacher__last_name', 'created_by__first_name')
     fieldsets = (
