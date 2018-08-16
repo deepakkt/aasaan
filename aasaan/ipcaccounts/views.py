@@ -54,10 +54,11 @@ class ComposeEmailView(LoginRequiredMixin, TemplateView):
         sender = request.user.email
         if account_master.account_type.name == 'Teacher Accounts':
             approvar = data[zone]['ta_approvar']
+            cc = data[zone]['ta_cc']
         else:
             approvar = data[zone]['ca_approvar']
+            cc = data[zone]['cc']
         accounts_incharge = request.user.get_full_name()
-        cc = data[zone]['cc']
         bcc = data[zone]['bcc']
 
         voucher_details = VoucherDetails.objects.filter(accounts_master=account_master)
