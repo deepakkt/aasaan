@@ -1,4 +1,5 @@
 from schedulemaster.models import ProgramSchedule
+from contacts.models import Zone
 from tastypie.resources import ModelResource
 from tastypie.authentication import BasicAuthentication, ApiKeyAuthentication
 from tastypie.cache import SimpleCache
@@ -20,4 +21,19 @@ class ScheduleResource(ModelResource):
         bundle.data['center_name'] = bundle.obj.center.center_name
         bundle.data['zone_name'] = bundle.obj.center.zone.zone_name
         bundle.data['schedule_long_name'] = str(bundle.obj)
+        return bundle
+
+
+class ZoneResource(ModelResource):
+    class Meta:
+        queryset = Zone.objects.all()
+
+        fields = ['zone_name']
+        authentication = ApiKeyAuthentication()
+        cache = SimpleCache(timeout=10)
+
+
+    def dehydrate(self, bundle):
+        bundle.data['centers'] = [center.center_name for center 
+                                    in bundle.obj.centers]
         return bundle
