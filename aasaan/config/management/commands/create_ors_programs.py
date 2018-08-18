@@ -41,7 +41,9 @@ class Command(BaseCommand):
 
         program_schedules = ProgramSchedule.objects.filter(event_management_code="",
                                                            program__name__in=filter_programs,
-                                                           start_date__gte=date.today())
+                                                           hidden=False,
+                                                           program__admin=False,
+                                                           start_date__gte=date.today()).exclude(status='CA')
 
         programs_created = 0
 
