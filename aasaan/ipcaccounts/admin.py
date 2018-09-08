@@ -12,7 +12,7 @@ from django.db.models import Q
 from django.utils.html import format_html
 from utils.daterange_filter import DateRangeFilter
 from utils.filters import RelatedDropdownFilter
-
+from .forms import VoucherDetailsInlineFormset
 from config.admin import AuditAdmin
 
 
@@ -72,6 +72,7 @@ class ExpensesTypeMasterAdmin(admin.ModelAdmin):
 
 
 class VoucherDetailsInline(admin.StackedInline):
+    formset = VoucherDetailsInlineFormset
     model = VoucherDetails
     extra = 0
 
@@ -125,7 +126,7 @@ class RCOAccountsMasterAdmin(AuditAdmin):
             schedule_days_to_show = Configuration.objects.get(
                 configuration_key='IPC_ACCOUNTS_SCHEDULE_DAYS').configuration_value
             time_threshold = timezone.now() - timedelta(days=int(schedule_days_to_show))
-            qs = ProgramSchedule.objects.filter(end_date__gte=time_threshold)
+            qs = ProgramSchedule.objects.filter(end_date__gte=time_threshold, status__in=['RO','RC'])
             if obj_id.isdigit():
                 am = RCOAccountsMaster.objects.get(pk=obj_id)
                 if am.program_schedule:

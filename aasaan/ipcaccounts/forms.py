@@ -51,6 +51,5 @@ class VoucherDetailsInlineFormset(forms.models.BaseInlineFormSet):
                 # annoyingly, if a subform is invalid Django explicity raises
                 # an AttributeError for cleaned_data
                 pass
-        if count < 1:
-            raise forms.ValidationError('You must have at least one Voucher')
+
 

@@ -223,7 +223,7 @@ class ProgramScheduleAdmin(admin.ModelAdmin):
 
     list_filter = [('primary_language',RelatedDropdownFilter), ProgramScheduleProgramFilter, ProgramScheduleZoneFilter,
                    ProgramScheduleTagFilter,
-                   ProgramScheduleHiddenFilter]
+                   ProgramScheduleHiddenFilter, 'status']
 
     search_fields = ['program__name', 'center__center_name', 'event_name', 'event_management_code', 'online_registration_code']
 
