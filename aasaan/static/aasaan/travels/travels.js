@@ -128,10 +128,13 @@
 
         if (document.URL.indexOf('change')>-1){
             $('.form-row.field-invoice_no').parent().show()
+            $('.form-row.field-ticket_number').show()
+            $('#id_ticket_number').prop("readonly", true);
         }
         else{
             $('.form-row.field-invoice_no').parent().hide()
-
+            $('.form-row.field-ticket_number').hide()
+            $('#id_ticket_number').prop("readonly", true);
         }
 
             //Adds validation error message

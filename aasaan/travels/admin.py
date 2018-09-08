@@ -76,18 +76,14 @@ class BaseTravelAdmin(admin.ModelAdmin):
 
 class TravelRequestAdmin(BaseTravelAdmin):
     form = TravelForm
-    list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'created_by')
+    list_display = ('status_flag', 'ticket_number', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'created_by')
     list_editable = ('status',)
-    list_display_links = ['status_flag', '__str__']
+    list_display_links = ['status_flag', '__str__', 'ticket_number']
     list_filter = ('created',('travel_mode', ChoiceDropdownFilter), ('status', ChoiceDropdownFilter), ('zone', RelatedDropdownFilter), )
     search_fields = ('source', 'destination', 'teacher__first_name', 'teacher__last_name', 'created_by__first_name')
     fieldsets = (
         ('', {
-            'fields': (('source', 'destination'),),
-            'classes': ('has-cols', 'cols-2')
-        }),
-        ('', {
-            'fields': ('onward_date', 'travel_mode', 'travel_class', 'zone', 'teacher', 'is_others')
+            'fields': ('ticket_number', 'source', 'destination', 'onward_date', 'travel_mode', 'travel_class', 'zone', 'teacher', 'is_others')
 
         }),
         ('Booking details', {
@@ -234,9 +230,9 @@ class TravelRequestAdmin(BaseTravelAdmin):
 class TeachersTravelRequestAdmin(BaseTravelAdmin):
     list_editable = []
     list_filter = []
-    list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'status')
+    list_display = ('status_flag', 'ticket_number', '__str__', 'source', 'destination', 'onward_date', 'status')
     search_fields = []
-    list_display_links = ['status_flag', '__str__']
+    list_display_links = ['status_flag', '__str__', 'ticket_number']
 
     def get_actions(self, request):
         actions = super(TeachersTravelRequestAdmin, self).get_actions(request)
@@ -246,7 +242,7 @@ class TeachersTravelRequestAdmin(BaseTravelAdmin):
 
     fieldsets = (
         ('', {
-            'fields': ('source', 'destination','onward_date', 'travel_mode', 'travel_class')
+            'fields': ('ticket_number', 'source', 'destination','onward_date', 'travel_mode', 'travel_class', 'zone')
         }),
     )
 
@@ -256,8 +252,6 @@ class TeachersTravelRequestAdmin(BaseTravelAdmin):
     def save_model(self, request, obj, form, change):
         login_user = User.objects.get(username=request.user.username)
         contact = AasaanUserContact.objects.get(user=login_user)
-        zone = AasaanUserZone.objects.get(user=login_user)
-        obj.zone = zone.zone
         obj.created_by = request.user
         obj.save()
         obj.teacher.add(contact.contact)
@@ -282,15 +276,15 @@ class TeachersTravelRequestAdmin(BaseTravelAdmin):
 
 class AgentTravelRequestAdmin(BaseTravelAdmin):
     date_hierarchy = 'created'
-    list_display = ('status_flag', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'created_by')
+    list_display = ('status_flag', 'ticket_number', '__str__', 'source', 'destination', 'onward_date', 'zone', 'status', 'created_by')
     list_editable = ('status',)
-    list_display_links = ['status_flag', '__str__']
+    list_display_links = ['status_flag', '__str__', 'ticket_number']
     list_filter = ('onward_date', ('travel_mode', ChoiceDropdownFilter), ('status', ChoiceDropdownFilter),
                    ('zone', RelatedDropdownFilter),)
     search_fields = ('source', 'destination', 'teacher__first_name', 'teacher__last_name', 'created_by__first_name')
     fieldsets = (
         ('', {
-            'fields': ('source', 'destination', 'onward_date', 'travel_mode', 'travel_class', 'zone', 'remarks')
+            'fields': ('ticket_number','source', 'destination', 'onward_date', 'travel_mode', 'travel_class', 'zone', 'remarks')
 
         }),
         ('Passanger details', {

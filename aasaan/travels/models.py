@@ -5,9 +5,9 @@ from django.utils.html import format_html
 from notify.api.resolvers import pair_contact
 from contacts.models import Contact, Zone
 from ipcaccounts.models import RCOAccountsMaster
-from config.models import NotifyModel
+from config.models import NotifyModel, Configuration
 from django.core.exceptions import ValidationError
-
+import json
 
 
 class TravelRequest(NotifyModel):
@@ -51,6 +51,21 @@ class TravelRequest(NotifyModel):
     teacher = models.ManyToManyField(Contact, blank=True)
     voucher = models.ForeignKey(RCOAccountsMaster, blank=True, null=True, on_delete=models.CASCADE)
     is_others = models.BooleanField('Others', blank=True, default=False)
+    ticket_number = models.CharField(max_length=20, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.pk is None and self.ticket_number == '':
+            cft = Configuration.objects.get(configuration_key='IPC_TRAVELS_TICKET_NO')
+            data = json.loads(cft.configuration_value)
+            z_name = self.zone.zone_name
+            key = data[z_name]['tkt_key']
+            prefix = data[z_name]['prefix']
+            tkt_no = prefix + str(key).zfill(6)
+            data[z_name]['tkt_key'] = key + 1
+            cft.configuration_value = json.dumps(data)
+            cft.save()
+            self.ticket_number = tkt_no
+        super(TravelRequest, self).save(*args, **kwargs)
 
     def status_flag(self):
         if self.status == "CL":

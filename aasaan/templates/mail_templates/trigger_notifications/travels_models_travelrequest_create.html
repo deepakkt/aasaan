@@ -59,6 +59,9 @@
 		<p style="box-sizing: border-box;">
             This is a helper notification. The actual administrative site to perform updates for this request is <a href="{{ object.get_admin_url }}">{{ object.get_admin_url }}</a>
 		</p>
+		<p style="box-sizing: border-box;">
+            <b>Ticket ID:</b>&nbsp; {{ object.ticket_number }}
+		</p>
         <p style="box-sizing: border-box;">
             <b>Zone:</b>&nbsp; {{ object.zone.zone_name }}
 		</p>
