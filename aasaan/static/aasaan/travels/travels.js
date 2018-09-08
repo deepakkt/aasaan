@@ -130,11 +130,14 @@
             $('.form-row.field-invoice_no').parent().show()
             $('.form-row.field-ticket_number').show()
             $('#id_ticket_number').prop("readonly", true);
+            $('.form-row.field-zone').hide()
+
         }
         else{
             $('.form-row.field-invoice_no').parent().hide()
             $('.form-row.field-ticket_number').hide()
             $('#id_ticket_number').prop("readonly", true);
+            $('.form-row.field-zone').show()
         }
 
             //Adds validation error message
