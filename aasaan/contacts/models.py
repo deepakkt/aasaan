@@ -491,6 +491,7 @@ class IndividualRole(models.Model):
     role_level = models.CharField(max_length=2, choices=ROLE_LEVEL_CHOICES)
     role_remarks = models.TextField(blank=True)
     admin_role = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return "%s (%s)" %(self.role_name, self.get_role_level_display())
