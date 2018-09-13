@@ -60,7 +60,7 @@ class TravelRequest(NotifyModel):
             z_name = self.zone.zone_name
             key = data[z_name]['tkt_key']
             prefix = data[z_name]['prefix']
-            tkt_no = prefix + str(key).zfill(6)
+            tkt_no = prefix + str(key).zfill(3)
             data[z_name]['tkt_key'] = key + 1
             cft.configuration_value = json.dumps(data)
             cft.save()
