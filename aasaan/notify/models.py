@@ -10,7 +10,7 @@ class NotifyContext(models.Model):
 
 
 class Notifier(models.Model):
-    notify_title = models.CharField(max_length=100)
+    notify_title = models.CharField(max_length=200)
     notify_context = models.ForeignKey(NotifyContext, on_delete=models.CASCADE)
 
     NOTIFY_STATUS = (('Draft', 'Draft'),

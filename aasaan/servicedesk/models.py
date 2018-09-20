@@ -78,11 +78,6 @@ class ServiceRequest(NotifyModel):
             _recipients.append(self.created_by.email)
             return _recipients
 
-        def get_attachments(self):
-            _attachments = []
-            if self.attachments:
-                _attachments.append(self.attachments.path)
-            return _attachments
 
 
 class IPCServiceRequest(ServiceRequest):
