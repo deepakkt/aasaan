@@ -1,0 +1,87 @@
+<html style="box-sizing: border-box;font-size: 18px;">
+{% block subject %}
+	{% if subject %}
+		Teacher {{ object.contact.first_name }} {{ object.contact.last_name }}  change alert for {{ object.zone.zone_name }}
+	{% endif %}
+{% endblock %}	
+{% block frommail %}
+	{% if frommail %}
+		IPC NP|ipc.np@ishafoundation.org
+	{% endif %}
+{% endblock %}	
+
+<head style="box-sizing: border-box;">
+	<style style="box-sizing: border-box;">
+		* {
+			box-sizing: border-box;
+		}
+		html {
+			font-size: 18px;
+		}
+		header {
+		}
+		h3 {
+			color: red;
+		}
+		strong {
+			color: brown;
+			text-decoration: underline;
+			font-size: 1.15rem;
+		}
+		footer {
+			font-size: 0.9rem;	
+		}
+		.aasaan {
+			color: yellow;
+			font-style: bold;
+			margin-left: 15px;
+		}
+		.headercontainer {
+			width: 100%;
+			background-color: blue;
+			padding: 3px 3px 3px 3px;
+		}
+
+		.heading {
+			font-weight: bold;
+			text-decoration: underline;
+		}
+	</style>
+</head>
+<body style="box-sizing: border-box;">
+	<div class="headercontainer" style="box-sizing: border-box;width: 100%;background-color: blue;padding: 3px 3px 3px 3px;">
+		<header style="box-sizing: border-box;">
+			<h2 class="aasaan" style="box-sizing: border-box;color: yellow;font-style: bold;margin-left: 15px;">aasaan</h2>
+		</header>
+	</div>
+	<div class="bodycontainer" style="box-sizing: border-box;">
+		<h3 style="box-sizing: border-box;color: red;">Please review this teacher change notification</h3>
+		<p style="box-sizing: border-box;">
+            The following teacher has been assigned or reassigned:
+		</p>
+
+		{% if "role" in meta %}
+			<p>Old role of {{ object.contact.first_name }} {{ object.contact.last_name }}: {{ meta.role.0 }}</p>
+			<p>New role of {{ object.contact.first_name }} {{ object.contact.last_name }}: {{ meta.role.1 }}</p>
+		{% endif %}
+
+		{% if "zone" in meta %}
+			<p>Old zone of {{ object.contact.first_name }} {{ object.contact.last_name }}: {{ meta.zone.0 }}</p>
+			<p>New zone of {{ object.contact.first_name }} {{ object.contact.last_name }}: {{ meta.zone.1 }}</p>
+		{% endif %}
+	</div>
+	<div class="bodycontainer" style="box-sizing: border-box;">
+		<h3>All other zonal roles for {{ object.contact.first_name }} {{ object.contact.last_name }}:</h3>
+		<ol>
+			{% for role in object.contact.individualcontactrolezone_set.all %}
+				<li>
+					{{ role.role.role_name }} ({{ role.zone.zone_name }})
+				</li>
+			{% endfor %}
+		</ol>
+	</div>		
+	<footer style="box-sizing: border-box;font-size: 0.9rem;">	
+		<span class="heading" style="box-sizing: border-box;font-weight: bold;text-decoration: underline;">Note:</span> This is an automated notification. Please reply-all to this email or contact the role who effected this change in case of clarifications regarding this request.
+	</footer>
+</body>
+</html>
