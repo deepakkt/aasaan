@@ -133,6 +133,7 @@ class IndividualContactRoleZoneInline(admin.TabularInline):
         return super(IndividualContactRoleZoneInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     model = IndividualContactRoleZone
+    fields = ['zone', 'role']
     extra = 1
 
 

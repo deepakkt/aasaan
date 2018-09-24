@@ -227,6 +227,20 @@ class RCOAccountsMaster(NotifyAuditModel):
                 else:
                     return True
 
+        def get_recipients(self):
+            _recipients = []
+
+            if self.account_type.name == "Teacher Accounts":
+                try:
+                    irc = IndividualContactRoleZone.objects.get(role__role_name="Isha Regional Coordinator",
+                                                                zone=self.zone)
+                    _recipients.append(irc.primary_email)
+                except:
+                    pass
+
+            return _recipients
+                
+
     class AuditMeta:
         audit_fields = ['np_voucher_status', 'rco_voucher_status']
 

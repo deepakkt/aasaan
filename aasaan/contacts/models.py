@@ -12,7 +12,8 @@ from .settings import GENDER_VALUES, STATUS_VALUES, ID_PROOF_VALUES,\
                         CENTER_CATEGORY_VALUES,MARITAL_STATUS_VALUES
 
 
-from config.models import SmartModel, Tag
+from config.models import (SmartModel, Tag,
+                        Configuration, NotifyModel)
 from smart_selects.db_fields import GroupedForeignKey
 from PIL import Image
 from django.utils.html import format_html
@@ -535,7 +536,7 @@ class IndividualContactRoleCenter(models.Model):
                                self.role.role_name)
 
 
-class IndividualContactRoleZone(models.Model):
+class IndividualContactRoleZone(NotifyModel):
     """ Maps individual contacts to individual roles.
     They always need to be mapped to a center
     """
@@ -563,6 +564,24 @@ class IndividualContactRoleZone(models.Model):
     def __str__(self):
         return "%s - %s - %s" % (self.contact.full_name, self.zone.zone_name,
                                self.role.role_name)
+
+    class NotifyMeta:
+        notify_fields = ['zone', 'role']
+        notify_creation = True
+
+        def get_notify_veto(self, field_values):
+            _veto = True
+            if 'role' in field_values:
+                _cleaned_role_names = [x.split()[0] for x in field_values['role'] if x]
+                if 'Teacher' in _cleaned_role_names:
+                    _veto = False
+
+            if 'zone' in field_values:
+                if self.role.role_name == 'Teacher':
+                    _veto = False
+
+            return _veto
+
 
 
 class IndividualContactRoleSector(models.Model):
