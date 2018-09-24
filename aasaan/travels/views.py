@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from config.models import Configuration
 import json
-from notify.api.sendgrid_api import stage_classic_notification
+from notify.api.sendgrid_api import send_email, stage_classic_notification
 from django.utils import formats
 from .models import TravelRequest, TravelNotes
 from .forms import MessageForm
@@ -90,11 +90,11 @@ class ComposeEmailView(LoginRequiredMixin, TemplateView):
                 message_body += ticket_request
             subject = ''
             if len(t_request) > 2:
-                subject = 'TR' + str(t_request[0].id).zfill(6) + ' - ' + 'TR'+ str(t_request[len(t_request) - 1].id).zfill(6)
+                subject = t_request[0].ticket_number + ' - ' + t_request[len(t_request) - 1].ticket_number
             elif len(t_request) == 2:
-                subject = 'TR' + str(t_request[0].id).zfill(6) + ' & ' + 'TR'+ str(t_request[1].id).zfill(6)
+                subject = t_request[0].ticket_number + ' & ' + t_request[1].ticket_number
             elif len(t_request) == 1:
-                subject = 'TR' + str(t_request[0].id).zfill(6)
+                subject = t_request[0].ticket_number
             subject = '(' + subject + ') - Ticket booking request'
 
             pranam = pranam.replace('SENDER_SIGNATURE', travels_incharge)
@@ -148,8 +148,9 @@ class SendEmailView(LoginRequiredMixin, TemplateView):
         cc = get_email_list(request.POST.get('cc'))
         bcc = get_email_list(request.POST.get('bcc'))
 
-        stage_classic_notification("IPC Travels", sender, to, cc,
+        notify_id = stage_classic_notification("IPC Travels", sender, to, cc,
                                     msg_subject, message_body)
+        send_email(notify_id)
         _dispatch_status = True              
         if _dispatch_status:
             request_id = request.POST.get('account_id')

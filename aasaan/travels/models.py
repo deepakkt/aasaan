@@ -40,8 +40,8 @@ class TravelRequest(NotifyModel):
                                    default=STATUS_VALUES[0][0])
     email_sent = models.BooleanField(blank=True, default=False)
     invoice_no = models.CharField(max_length=200, blank=True, null=True)
-    amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
-    refund_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=0)
+    refund_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
     attachments = models.FileField(upload_to='documents/%Y/%m/%d/', null=True, blank=True)
     invoice = models.FileField(upload_to='invoice/%Y/%m/%d/', null=True, blank=True)
     created_by = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
@@ -52,6 +52,19 @@ class TravelRequest(NotifyModel):
     voucher = models.ForeignKey(RCOAccountsMaster, blank=True, null=True, on_delete=models.CASCADE)
     is_others = models.BooleanField('Others', blank=True, default=False)
     ticket_number = models.CharField(max_length=20, blank=True)
+
+    def clean(self):
+        if self.status == 'BK':
+            if self.booked_date is None:
+                raise ValidationError('Booked date can not be empty')
+            if self.invoice_no is None:
+                raise ValidationError('Invoice number can not be empty')
+            if self.amount is None:
+                raise ValidationError('Amount can not be empty')
+            if self.attachments == '':
+                raise ValidationError('Ticket attachments can not be empty')
+            if self.invoice == '':
+                raise ValidationError('Invoice attachments can not be empty')
 
     def save(self, *args, **kwargs):
         if self.pk is None and self.ticket_number == '':
