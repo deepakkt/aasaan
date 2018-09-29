@@ -2,6 +2,7 @@ from django import forms
 from tinymce.widgets import TinyMCE
 from .models import TravelRequest
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from contacts.models import Zone
 
 class MessageForm(forms.Form):
     sender = forms.CharField(max_length=500, widget=forms.TextInput(attrs={'size': '88'}))
@@ -28,3 +29,7 @@ class TravelForm(forms.ModelForm):
         if not teacher and not is_others:
                 raise ValidationError("Both Techer and Others cannot be empty")
         return self.cleaned_data
+
+
+class TicketAdvancedSearchFieldsForm(forms.Form):
+    zone = forms.ModelMultipleChoiceField(queryset=Zone.objects.all(), widget=forms.SelectMultiple(attrs={'class': 'form-control'}))

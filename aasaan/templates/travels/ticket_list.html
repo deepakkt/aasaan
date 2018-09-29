@@ -1,6 +1,6 @@
 {% extends 'contacts/base_summary.html' %}
 
-{% block title %}Voucher Advanced Search & Report{% endblock %}
+{% block title %}Tickets Reporting Dashboard{% endblock %}
 
 {% block scripts %}
 <style type="text/css">
@@ -8,9 +8,9 @@
     text-align: left;
     }
 </style>
-<link href="/static/bootstrap/css/bootstrap-select.min.css" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="/static/datatables/DataTables/css/jquery.dataTables.css">
 <link rel="stylesheet" type="text/css" href="/static/datatables/Buttons/css/buttons.dataTables.min.css">
+<link rel="stylesheet" type="text/css" href="/static/datatables/Responsive/css/responsive.dataTables.min.css">
 
 <script type="text/javascript" charset="utf8"  src='/static/bootstrap/js/jquery.js'></script>
 <script type="text/javascript" charset="utf8" src="/static/datatables/DataTables/js/jquery.dataTables.min.js"></script>
@@ -19,6 +19,7 @@
 <script type="text/javascript" charset="utf8" src="/static/datatables/Buttons/js/buttons.html5.min.js"></script>
 <script type="text/javascript" charset="utf8" src="/static/datatables/Buttons/js/buttons.print.min.js"></script>
 <script type="text/javascript" charset="utf8" src="/static/datatables/Buttons/js/buttons.colVis.min.js"></script>
+<script type="text/javascript" charset="utf8" src="/static/datatables/Responsive/js/dataTables.responsive.min.js"></script>
 <script type="text/javascript" charset="utf8" src='/static/pdfmake/pdfmake.min.js'></script>
 <script type="text/javascript" charset="utf8"  src='/static/pdfmake/vfs_fonts.js'></script>
 <script type="text/javascript" charset="utf8"  src='/static/jszip/jszip.min.js'></script>
@@ -26,8 +27,8 @@
 <link rel="stylesheet" type="text/css" href="/static/datatables/AutoFill/css/autoFill.dataTables.min.css">
 <script type="text/javascript" charset="utf8" src="/static/datatables/AutoFill/js/dataTables.autoFill.min.js"></script>
 
-<script type="text/javascript" src="/static/aasaan/ipcaccounts/voucher_adv_search.js"></script>
-<script type="text/javascript" charset="utf8" src="/static/datatables/ColReorder/js/ColReorderWithResize.js"></script>
+<script type="text/javascript" src="/static/aasaan/travels/travel_list.js"></script>
+
 
 {% endblock %}
 
@@ -40,72 +41,53 @@
 
 
 {% block pagetitle %}
-Voucher Advanced Search
+Ticket List
 {% endblock pagetitle %}
 
 {% block main %}
 <div class="container-fluid" style="border:1px solid #cecece;">
-    <form>{% csrf_token %}
-    <div class="form-group col-xs-2 col-md-2">
+<form>{% csrf_token %}
+ <div class="form-group col-xs-2 col-md-2">
         <label for="zone" class="control-label">Zone</label>
        {{ form.zone }}
     </div>
-    <div class="form-group col-xs-2 col-md-2">
-        <label for="account_type" class="control-label">Account Type</label>
-        {{ form.account_type }}
-    </div>
-    <div class="form-group col-xs-3 col-md-3">
-        <label for="rco_voucher_status" class="control-label">RCO Status</label>
-        {{ form.rco_voucher_status }}
-    </div>
-     <div class="form-group col-xs-3 col-md-3">
-        <label for="np_voucher_status" class="control-label"></label>
-         <label for="np_voucher_statusaa" class="control-label"></label>
-        <!--{{ form.np_voucher_status }}-->
-    </div>
-    <div class="form-group col-xs-3 col-md-3 align-bottom">
-        <input type="button" value="Submit" class="btn btn-primary btn-md align-middle" onclick="button_submit()" />
-        <input type="button" value="Reset" class="btn btn-primary btn-md" onclick="button_reset()"/>
-    </div>
+
     <input type="hidden" name="temp_message" id="temp_message" value="">
 
-    </form>
+</form>
+
 <div id="row-tn-ie-table" class="row placeholders">
         <h4 id="header_ie_table"></h4>
-        <table id="voucher_table" class="display cell-border" width="100%">
+        <table id="passanger_table" class="display responsive nowrap table table-striped cell-border" width="100%">
             <thead>
                 <tr>
-                    <th>Tracking No</th>
-                    <th>Account Type</th>
-                    <th>Voucher Type</th>
-                    <th>Nature of Voucher</th>
-                    <th>Voucher Date</th>
-                    <th>Head of Expenses</th>
-                    <th>Party name</th>
+                    <th>Ticket Number</th>
+                    <th>Teacher Name</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Date of Journey</th>
+                    <th>Travel Mode</th>
+                    <th>Travel Class</th>
+                    <th>Status</th>
+                    <th>Invoice No</th>
                     <th>Amount</th>
-                    <th>UTR NO</th>
-                    <th>Budget code</th>
-                    <th>RCO Status</th>
-                    <th>Entity</th>
-                    <th>NP Status</th>
+                    <th>Created By</th>
                     <th>Zone</th>
                 </tr>
             </thead>
             <tfoot>
-                <tr>
-                    <th>Tracking No</th>
-                    <th>Account Type</th>
-                    <th>Voucher Type</th>
-                    <th>Nature of Voucher</th>
-                    <th>Voucher Date</th>
-                    <th>Head of Expenses</th>
-                    <th>Party name</th>
+                 <tr>
+                    <th>Ticket Number</th>
+                    <th>Teacher Name</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Date of Journey</th>
+                    <th>Travel Mode</th>
+                    <th>Travel Class</th>
+                    <th>Status</th>
+                    <th>Invoice No</th>
                     <th>Amount</th>
-                    <th>UTR NO</th>
-                    <th>Budget code</th>
-                    <th>RCO Status</th>
-                    <th>Entity</th>
-                    <th>NP Status</th>
+                    <th>Created By</th>
                     <th>Zone</th>
                 </tr>
             </tfoot>

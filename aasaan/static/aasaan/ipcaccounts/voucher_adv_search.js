@@ -70,6 +70,7 @@ function reload(){
             { "data": "account_type" },
             { "data": "nature_of_voucher" },
             { "data": "voucher_type" },
+            { "data": "voucher_date" },
             { "data": "head_of_expenses" },
             { "data": "party_name" },
             { "data": "amount" },
@@ -81,7 +82,7 @@ function reload(){
             { "data": "zone" },
         ],
         columnDefs: [
-            {   "targets": [3,8,10,12],
+            {   "targets": [3,9,11,13],
                 "visible": false
             }
         ],

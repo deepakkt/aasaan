@@ -258,7 +258,7 @@ def voucher_refresh(request):
         data.append(
             {'id': am.pk, 'tracking_no': v.tracking_no, 'voucher_type': v.get_voucher_type_display() if v.voucher_type else '', 'nature_of_voucher': v.nature_of_voucher.name, 'head_of_expenses': v.head_of_expenses.name if v.head_of_expenses else '', 'party_name': v.party_name,
              'amount': v.amount, 'utr_no': v.utr_no, 'budget_code': am.budget_code, 'rco_voucher_status': am.rco_voucher_status.name, 'entity_name': am.entity_name.name,'account_type': am.account_type.name,
-             'np_voucher_status': am.np_voucher_status.name if am.np_voucher_status else '', 'zone': am.zone.zone_name})
+             'np_voucher_status': am.np_voucher_status.name if am.np_voucher_status else '', 'zone': am.zone.zone_name, 'voucher_date':am.voucher_date})
         summary['data'] = data
     if not vd:
         data.append(
@@ -267,7 +267,7 @@ def voucher_refresh(request):
              'head_of_expenses': '', 'party_name': '',
              'amount': '', 'utr_no':'', 'budget_code': '', 'rco_voucher_status': '',
              'entity_name': '', 'account_type': '',
-             'np_voucher_status': '', 'zone': ''})
+             'np_voucher_status': '', 'zone': '', 'voucher_date':''})
         summary['data'] = data
     return JsonResponse(summary, safe=False)
 

@@ -4,7 +4,7 @@ import json
 from notify.api.sendgrid_api import send_email, stage_classic_notification
 from django.utils import formats
 from .models import TravelRequest, TravelNotes
-from .forms import MessageForm
+from .forms import MessageForm, TicketAdvancedSearchFieldsForm
 from datetime import date, timedelta
 from django.views.generic import TemplateView
 from braces.views import LoginRequiredMixin
@@ -94,8 +94,13 @@ class ComposeEmailView(LoginRequiredMixin, TemplateView):
             elif len(t_request) == 2:
                 subject = t_request[0].ticket_number + ' & ' + t_request[1].ticket_number
             elif len(t_request) == 1:
-                subject = t_request[0].ticket_number
-            subject = '(' + subject + ') - Ticket booking request'
+                travel_request = t_request[0]
+                onward_date = formats.date_format(travel_request.onward_date, "DATE_FORMAT")
+                traveller_details = list(travel_request.teacher.all())
+                for index, tr in enumerate(traveller_details):
+                   passanger_name = tr._get_actual_name()
+                   break;
+                subject = "%s - %s (%s - %s) - %s By %s" % (travel_request.ticket_number, passanger_name, travel_request.source, travel_request.destination, onward_date, travel_request.get_travel_mode_display())
 
             pranam = pranam.replace('SENDER_SIGNATURE', travels_incharge)
             message_body = namaskaram + message_body + pranam
@@ -181,7 +186,7 @@ class PassengerListView(LoginRequiredMixin, TemplateView):
     login_url = "/admin/login/?next=/"
 
     def get(self, request):
-
+        form = TicketAdvancedSearchFieldsForm()
         return render(request, self.template)
 
 
@@ -205,3 +210,54 @@ def passanger_refresh(request):
                      'zone':zone})
     summary['data'] = data
     return JsonResponse( summary , safe=False)
+
+
+class TicketListView(LoginRequiredMixin, TemplateView):
+    template = "travels/ticket_list.html"
+    template_name = "travels/ticket_list.html"
+    login_url = "/admin/login/?next=/"
+
+    def get(self, request):
+
+        return render(request, self.template)
+
+
+def ticketlist_refresh(request):
+    summary = {}
+    data = []
+    zone = request.GET['zone']
+    if request.user.is_superuser and zone != 'null':
+        if zone.find(',') > 0:
+            zs = zone.split(',')
+        else:
+            zs = [zone, ]
+        z = list(Zone.objects.filter(pk__in=zs))
+
+        _travel_list = TravelRequest.objects.filter(zone__in=z)
+    elif request.user.is_superuser and zone == 'null':
+        _travel_list = TravelRequest.objects.all()
+    elif request.user.is_superuser is not True:
+        user_zones = [x.zone for x in request.user.aasaanuserzone_set.all()]
+        _travel_list = TravelRequest.objects.filter(zone__in=user_zones)
+
+    for tl in _travel_list:
+        onward_date = formats.date_format(tl.onward_date, "DATE_FORMAT")
+        traveller_details = list(tl.teacher.all())
+        passanger_name = ''
+        for index, tr in enumerate(traveller_details):
+            passanger_name = tr._get_actual_name()
+            break;
+
+        data.append(
+            {'id': tl.pk, 'ticket_number': tl.ticket_number, 'source': tl.source, 'destination': tl.destination, 'onward_date': onward_date, 'passanger_name': passanger_name,
+             'travel_mode': tl.get_travel_mode_display(), 'travel_class': tl.get_travel_class_display(), 'status': tl.get_status_display(), 'invoice_no': tl.invoice_no, 'amount': tl.amount,'created_by': tl.created_by.username, 'zone': tl.zone.zone_name})
+        summary['data'] = data
+    if not _travel_list:
+        data.append(
+            {'id': tl.pk, 'ticket_number': '', 'source': '', 'destination': '',
+             'onward_date': '', 'passanger_name': '',
+             'travel_mode': '', 'travel_class': '',
+             'status': '', 'invoice_no': '', 'amount': '',
+             'created_by': '', 'zone': ''})
+        summary['data'] = data
+    return JsonResponse(summary, safe=False)

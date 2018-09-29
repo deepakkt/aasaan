@@ -80,7 +80,7 @@ class TravelRequestAdmin(BaseTravelAdmin):
     list_editable = ('status',)
     list_display_links = ['status_flag', '__str__', 'ticket_number']
     list_filter = ('created',('travel_mode', ChoiceDropdownFilter), ('status', ChoiceDropdownFilter), ('zone', RelatedDropdownFilter), )
-    search_fields = ('source', 'destination', 'teacher__first_name', 'teacher__last_name', 'created_by__first_name', 'invoice_no')
+    search_fields = ('source', 'destination', 'teacher__first_name', 'teacher__last_name', 'created_by__first_name', 'invoice_no', 'ticket_number')
     fieldsets = (
         ('', {
             'fields': ('ticket_number', 'source', 'destination', 'onward_date', 'travel_mode', 'travel_class', 'zone', 'teacher', 'is_others')
@@ -281,7 +281,7 @@ class AgentTravelRequestAdmin(BaseTravelAdmin):
     list_display_links = ['status_flag', '__str__', 'ticket_number']
     list_filter = ('onward_date', ('travel_mode', ChoiceDropdownFilter), ('status', ChoiceDropdownFilter),
                    ('zone', RelatedDropdownFilter),)
-    search_fields = ('source', 'destination', 'teacher__first_name', 'teacher__last_name', 'created_by__first_name')
+    search_fields = ('source', 'destination', 'teacher__first_name', 'teacher__last_name', 'created_by__first_name','invoice_no', 'ticket_number')
     fieldsets = (
         ('', {
             'fields': ('ticket_number','source', 'destination', 'onward_date', 'travel_mode', 'travel_class', 'zone', 'remarks')
