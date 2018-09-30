@@ -14,8 +14,11 @@ from django.http import HttpResponse, HttpResponseNotFound, Http404,  HttpRespon
 from AasaanUser.models import AasaanUserContact, AasaanUserZone
 from django.contrib.auth.models import User
 from django.utils import timezone
-from .forms import TravelForm
+from .forms import TravelForm, TravelOtherDetailsInlineFormset
+
+
 class OthersInline(admin.TabularInline):
+    formset = TravelOtherDetailsInlineFormset
     model = Others
     extra = 0
     max_num = 10

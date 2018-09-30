@@ -33,3 +33,17 @@ class TravelForm(forms.ModelForm):
 
 class TicketAdvancedSearchFieldsForm(forms.Form):
     zone = forms.ModelMultipleChoiceField(queryset=Zone.objects.all(), widget=forms.SelectMultiple(attrs={'class': 'form-control'}))
+
+
+class TravelOtherDetailsInlineFormset(forms.models.BaseInlineFormSet):
+    def clean(self):
+        count = 0
+        for form in self.forms:
+            try:
+                if form.cleaned_data:
+                    count += 1
+            except AttributeError:
+                pass
+        if self.data.get('is_others', False):
+            if count==0:
+                raise forms.ValidationError('Please fill others passanger details')

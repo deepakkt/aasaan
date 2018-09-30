@@ -174,7 +174,7 @@ class Others(models.Model):
     GENDER_VALUES = (('M', 'Male'),
                      ('F', 'Female'))
     gender = models.CharField(max_length=2, choices=GENDER_VALUES)
-    mobile = models.CharField("Mobile Number", max_length=15, blank=True)
+    mobile = models.CharField("Mobile Number", max_length=15)
 
     def __str__(self):
         return self.full_name
