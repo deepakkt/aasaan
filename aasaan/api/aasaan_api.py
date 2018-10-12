@@ -1,4 +1,4 @@
-from schedulemaster.models import ProgramSchedule
+from schedulemaster.models import ProgramSchedule, ProgramMaster
 from contacts.models import Zone, IndividualRole
 from tastypie.resources import ModelResource
 from tastypie.authentication import BasicAuthentication, ApiKeyAuthentication
@@ -50,3 +50,11 @@ class RoleResource(ModelResource):
     def dehydrate(self, bundle):
         bundle.data['role_level'] = bundle.obj.get_role_level_display()    
         return bundle
+
+
+class ProgramResource(ModelResource):
+    class Meta:
+        queryset = ProgramMaster.objects.filter(active=True)
+        fields = ['name', 'admin', 'abbreviation']
+        authentication = ApiKeyAuthentication()
+        cache = SimpleCache(timeout=10)

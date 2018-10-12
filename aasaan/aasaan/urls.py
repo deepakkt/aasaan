@@ -7,14 +7,18 @@ from django.urls import include, path
 from django.conf.urls import url
 from django.conf import settings
 from django.conf.urls.static import static
-from api.aasaan_api import ScheduleResource, ZoneResource, RoleResource
+from api.aasaan_api import (ScheduleResource, ZoneResource, 
+                            RoleResource, ProgramResource)
 from tastypie.api import Api
 from django.shortcuts import redirect
+
 
 aasaan_v1_api = Api(api_name='v1')
 aasaan_v1_api.register(ScheduleResource())
 aasaan_v1_api.register(ZoneResource())
 aasaan_v1_api.register(RoleResource())
+aasaan_v1_api.register(ProgramResource())
+
 
 urlpatterns = [
     path('', lambda _: redirect('/accounts/google/login/?process=login'), name="login"),
