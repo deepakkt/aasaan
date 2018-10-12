@@ -135,6 +135,7 @@ class TravelRequest(NotifyModel):
     class NotifyMeta:
         notify_fields = ['status']
         notify_creation = True
+        delete_attachments = False
 
         def get_recipients(self):
             _recipients = self.teachers[:]

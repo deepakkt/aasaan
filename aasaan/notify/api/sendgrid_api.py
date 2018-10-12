@@ -175,7 +175,8 @@ def send_email(notify_id, dryrun=False):
 def stage_classic_notification(context, from_email, tos, ccs,
                                 subject,
                                 message, attachments=[],
-                                sender_in_cc=True):
+                                sender_in_cc=True,
+                                delete_attachments=True):
     """
         from_email = email or Name|email
         tos = list of email or Name|email
@@ -197,7 +198,7 @@ def stage_classic_notification(context, from_email, tos, ccs,
         _notify.notify_cc += "\r\n" + from_email
     _notify.message = message
     _notify.attachments = "\r\n".join(attachments)
-    _notify.delete_attachments = True
+    _notify.delete_attachments = delete_attachments
     _notify.save()
 
     return _notify.id

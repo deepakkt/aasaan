@@ -73,10 +73,13 @@ def process_instance_trigger(_instance, _model_setting,
     email_subject = email_content.get("subject")
     email_from = email_content.get("from")
 
+    delete_attachments = _model_notify["delete_attachments"]
+
     stage_classic_notification("Trigger Notification", email_from,
                                 template_recipients, list(), email_subject,
                                 email_message, _attachments,
-                                sender_in_cc=False)
+                                sender_in_cc=False,
+                                delete_attachments=delete_attachments)
 
     _instance.notify_meta = ""                                            
     _instance.notify_toggle = False

@@ -116,7 +116,8 @@ class NotifyModel(SmartModel):
             "notify_creation": False,
             "notify_recipients": False,
             "notify_attachments": False,
-            "notify_veto": False
+            "notify_veto": False,
+            "delete_attachments": True,
         }
 
         try:
@@ -155,10 +156,17 @@ class NotifyModel(SmartModel):
             get_notify_veto = False
 
 
+        try:
+            delete_attachments = cls.NotifyMeta.delete_attachments
+        except AttributeError:
+            delete_attachments = True
+
+
         _result["notify_creation"] = notify_creation
         _result["notify_recipients"] = notify_recipients
         _result["notify_attachments"] = notify_attachments
         _result["notify_veto"] = get_notify_veto
+        _result["delete_attachments"] = delete_attachments
 
         return _result        
 
