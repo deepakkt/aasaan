@@ -21,6 +21,7 @@ class ScheduleResource(ModelResource):
         bundle.data['center_name'] = bundle.obj.center.center_name
         bundle.data['zone_name'] = bundle.obj.center.zone.zone_name
         bundle.data['schedule_long_name'] = str(bundle.obj)
+        bundle.data['program_key'] = bundle.obj.program.id
         return bundle
 
 
@@ -31,7 +32,6 @@ class ZoneResource(ModelResource):
         fields = ['zone_name']
         authentication = ApiKeyAuthentication()
         cache = SimpleCache(timeout=10)
-
 
     def dehydrate(self, bundle):
         bundle.data['centers'] = [center.center_name for center 
@@ -55,6 +55,6 @@ class RoleResource(ModelResource):
 class ProgramResource(ModelResource):
     class Meta:
         queryset = ProgramMaster.objects.filter(active=True)
-        fields = ['name', 'admin', 'abbreviation']
+        fields = ['name', 'admin', 'abbreviation', 'id']
         authentication = ApiKeyAuthentication()
         cache = SimpleCache(timeout=10)
