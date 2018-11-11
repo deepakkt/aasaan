@@ -5,6 +5,7 @@ from django.utils.text import slugify
 
 from datetime import date
 import os, os.path
+import json
 
 from .settings import GENDER_VALUES, STATUS_VALUES, ID_PROOF_VALUES,\
                         ROLE_LEVEL_CHOICES, NOTE_TYPE_VALUES, \
@@ -581,6 +582,26 @@ class IndividualContactRoleZone(NotifyModel):
                     _veto = False
 
             return _veto
+
+        def get_recipients(self):
+            _recipients = []
+
+            _recipients.append("|".join([self.contact.full_name, 
+                                        self.contact.primary_email]))
+            
+            _notify_meta = json.loads(self.notify_meta)
+
+            if "zone" in _notify_meta:
+                old_zone = _notify_meta["zone"][0]
+
+                old_ircs_qs = IndividualContactRoleZone.objects.filter(role__role_name="Isha Regional Coordinator", 
+                                                                        zone__zone_name=old_zone)
+
+                for irc in old_ircs_qs:
+                    _recipients.append("|".join([irc.contact.full_name, 
+                                                irc.contact.primary_email]))                                                                        
+
+            return _recipients
 
 
 
